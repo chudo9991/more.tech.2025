@@ -1,0 +1,51 @@
+"""
+Scoring service configuration settings
+"""
+from typing import List
+from pydantic import BaseSettings, validator
+
+
+class Settings(BaseSettings):
+    """Scoring service settings"""
+    
+    # Application
+    DEBUG: bool = False
+    LOG_LEVEL: str = "INFO"
+    
+    # Database
+    DATABASE_URL: str = "postgresql://interview_user:interview_pass@db:5432/interview_ai"
+    
+    # CORS
+    ALLOWED_HOSTS: List[str] = ["*"]
+    
+    # LLM APIs
+    OPENAI_API_KEY: str = ""
+    ANTHROPIC_API_KEY: str = ""
+    
+    # LLM settings
+    LLM_TEMPERATURE: float = 0.1
+    LLM_MAX_TOKENS: int = 2000
+    LLM_RETRY_ATTEMPTS: int = 3
+    
+    # Feature flags
+    ENABLE_PARALINGUISTICS: bool = False
+    ENABLE_TONE_ANALYSIS: bool = True
+    
+    # Logging
+    SENTRY_DSN: str = ""
+    
+    @validator("ALLOWED_HOSTS", pre=True)
+    def assemble_cors_origins(cls, v):
+        if isinstance(v, str) and not v.startswith("["):
+            return [i.strip() for i in v.split(",")]
+        elif isinstance(v, (list, str)):
+            return v
+        raise ValueError(v)
+    
+    class Config:
+        env_file = ".env"
+        case_sensitive = True
+
+
+# Create settings instance
+settings = Settings()
