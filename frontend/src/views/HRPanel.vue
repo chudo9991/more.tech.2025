@@ -160,14 +160,16 @@ const hrStore = useHRStore()
 
 // Reactive data
 const loading = ref(false)
-const sessions = ref([])
-const vacancies = ref([])
 const statistics = ref([
   { title: 'Total Sessions', value: 0, change: '+0%', trend: 'neutral' },
   { title: 'Completed', value: 0, change: '+0%', trend: 'positive' },
   { title: 'In Progress', value: 0, change: '+0%', trend: 'neutral' },
   { title: 'Avg Score', value: '0%', change: '+0%', trend: 'positive' }
 ])
+
+// Use store data
+const sessions = computed(() => hrStore.sessions)
+const vacancies = computed(() => hrStore.vacancies)
 
 const filters = reactive({
   vacancy_id: null,
@@ -198,8 +200,7 @@ const loadSessions = async () => {
   try {
     loading.value = true
     const response = await hrStore.fetchSessions(queryParams.value)
-    sessions.value = response.sessions || []
-    pagination.total = response.total || 0
+    pagination.total = response.total || response.length || 0
   } catch (error) {
     ElMessage.error('Failed to load sessions')
     console.error('Error loading sessions:', error)
@@ -210,8 +211,7 @@ const loadSessions = async () => {
 
 const loadVacancies = async () => {
   try {
-    const response = await hrStore.fetchVacancies()
-    vacancies.value = response || []
+    await hrStore.fetchVacancies()
   } catch (error) {
     console.error('Error loading vacancies:', error)
   }
@@ -232,10 +232,8 @@ const loadStatistics = async () => {
 }
 
 const refreshData = async () => {
-  await Promise.all([
-    loadSessions(),
-    loadStatistics()
-  ])
+  await loadSessions()
+  await loadStatistics()
   ElMessage.success('Data refreshed')
 }
 
@@ -333,11 +331,9 @@ const formatDate = (dateString) => {
 
 // Lifecycle
 onMounted(async () => {
-  await Promise.all([
-    loadSessions(),
-    loadVacancies(),
-    loadStatistics()
-  ])
+  await loadVacancies()
+  await loadSessions()
+  await loadStatistics()
 })
 </script>
 

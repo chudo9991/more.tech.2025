@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_BASE_URL = import.meta.env.VITE_API_URL || ''
 
 export const useHRStore = defineStore('hr', {
   state: () => ({
@@ -33,6 +33,7 @@ export const useHRStore = defineStore('hr', {
           }
         })
         
+        this.sessions = response.data
         return response.data
       } catch (error) {
         this.error = error.response?.data?.detail || 'Failed to fetch sessions'
@@ -62,7 +63,7 @@ export const useHRStore = defineStore('hr', {
         this.loading = true
         this.error = null
         
-        const response = await axios.get(`${API_BASE_URL}/api/v1/sessions/${sessionId}/results`)
+        const response = await axios.get(`${API_BASE_URL}/api/v1/hr/sessions/${sessionId}/results`)
         return response.data
       } catch (error) {
         this.error = error.response?.data?.detail || 'Failed to fetch session results'
@@ -93,16 +94,36 @@ export const useHRStore = defineStore('hr', {
         this.loading = true
         this.error = null
         
-        // Mock statistics for now - in real app this would come from API
+        // Calculate real statistics from sessions data
+        const totalSessions = this.sessions.length
+        const completedSessions = this.completedSessions.length
+        const inProgressSessions = this.inProgressSessions.length
+        
+        // Calculate average score from completed sessions
+        let avgScore = 0
+        if (completedSessions > 0) {
+          const totalScore = this.sessions
+            .filter(s => s.status === 'completed' && s.total_score !== null)
+            .reduce((sum, s) => sum + (s.total_score || 0), 0)
+          avgScore = totalScore / completedSessions
+        }
+        
+        // Calculate changes (for now, we'll use simple calculations)
+        // In a real app, this would compare with previous period data
+        const sessionsChange = totalSessions > 0 ? '+100%' : '0%'
+        const completedChange = completedSessions > 0 ? '+100%' : '0%'
+        const progressChange = inProgressSessions > 0 ? '+100%' : '0%'
+        const scoreChange = avgScore > 0 ? `+${(avgScore * 100).toFixed(1)}%` : '0%'
+        
         const stats = {
-          total_sessions: this.sessions.length,
-          completed_sessions: this.completedSessions.length,
-          in_progress_sessions: this.inProgressSessions.length,
-          avg_score: 0.75,
-          sessions_change: '+5%',
-          completed_change: '+2%',
-          progress_change: '+3%',
-          score_change: '+1.2%'
+          total_sessions: totalSessions,
+          completed_sessions: completedSessions,
+          in_progress_sessions: inProgressSessions,
+          avg_score: avgScore,
+          sessions_change: sessionsChange,
+          completed_change: completedChange,
+          progress_change: progressChange,
+          score_change: scoreChange
         }
         
         this.statistics = stats

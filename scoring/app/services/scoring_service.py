@@ -69,7 +69,7 @@ class ScoringService:
         """Create prompt for LLM scoring"""
         
         criteria_text = "\n".join([
-            f"- {c['id']}: weight={c['weight']}, must_have={c.get('must_have', False)}, min_score={c.get('min_score', 0.0)}"
+            f"- {c.id}: weight={c.weight}, must_have={c.must_have}, min_score={c.min_score}"
             for c in criteria
         ])
         

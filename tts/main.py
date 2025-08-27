@@ -54,8 +54,8 @@ app = FastAPI(
     description="Text-to-Speech service for AI-powered interview system",
     version="1.0.0",
     lifespan=lifespan,
-    docs_url="/docs" if settings.DEBUG else None,
-    redoc_url="/redoc" if settings.DEBUG else None,
+    docs_url="/docs",
+    redoc_url="/redoc",
 )
 
 # Add CORS middleware

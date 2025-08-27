@@ -6,13 +6,18 @@ from sqlalchemy.orm import Session as DBSession
 from sqlalchemy import and_
 from datetime import datetime
 
-from app.models import Session as SessionModel, QA, QAScore, Criteria
-from app.schemas.hr import SessionListResponse, SessionDetailResponse, QAResponse, QAScoreResponse
+from app.models import Session as SessionModel, QA, QAScore, Criteria, Vacancy, Candidate
+from app.schemas.hr import SessionListResponse, SessionDetailResponse, QAResponse, QAScoreResponse, VacancyResponse
 
 
 class HRService:
     def __init__(self, db: DBSession):
         self.db = db
+
+    async def get_vacancies(self) -> List[VacancyResponse]:
+        """Get list of all vacancies"""
+        vacancies = self.db.query(Vacancy).all()
+        return [VacancyResponse.from_orm(vacancy) for vacancy in vacancies]
 
     async def get_sessions(
         self, 
@@ -32,7 +37,37 @@ class HRService:
         
         sessions = query.offset(skip).limit(limit).all()
         
-        return [SessionListResponse.from_orm(session) for session in sessions]
+        # Get vacancy titles and candidate phones
+        vacancy_ids = list(set([s.vacancy_id for s in sessions if s.vacancy_id]))
+        candidate_ids = list(set([s.candidate_id for s in sessions if s.candidate_id]))
+        
+        vacancies = {}
+        if vacancy_ids:
+            from app.models import Vacancy
+            vacancy_models = self.db.query(Vacancy).filter(Vacancy.id.in_(vacancy_ids)).all()
+            vacancies = {v.id: v.title for v in vacancy_models}
+        
+        candidates = {}
+        if candidate_ids:
+            from app.models import Candidate
+            candidate_models = self.db.query(Candidate).filter(Candidate.id.in_(candidate_ids)).all()
+            candidates = {c.id: c.phone for c in candidate_models}
+        
+        # Count total steps for each session
+        session_steps = {}
+        for session in sessions:
+            qa_count = self.db.query(QA).filter(QA.session_id == session.id).count()
+            session_steps[session.id] = qa_count
+        
+        result = []
+        for session in sessions:
+            session_data = SessionListResponse.from_orm(session)
+            session_data.vacancy_title = vacancies.get(session.vacancy_id)
+            session_data.phone = candidates.get(session.candidate_id)
+            session_data.total_steps = session_steps.get(session.id, 0)
+            result.append(session_data)
+        
+        return result
 
     async def get_session_detail(self, session_id: str) -> SessionDetailResponse:
         """Get detailed session information with Q&A records"""
@@ -85,6 +120,58 @@ class HRService:
             created_at=session.created_at,
             updated_at=session.updated_at
         )
+
+    async def get_session_results(self, session_id: str) -> Dict[str, Any]:
+        """Get session results with Q&A details"""
+        session = self.db.query(SessionModel).filter(SessionModel.id == session_id).first()
+        if not session:
+            raise ValueError("Session not found")
+
+        # Get Q&A records with scores
+        qa_records = self.db.query(QA).filter(QA.session_id == session_id).all()
+        
+        qa_responses = []
+        for qa_record in qa_records:
+            # Get scores for this Q&A
+            scores = self.db.query(QAScore, Criteria).join(
+                Criteria, QAScore.criterion_id == Criteria.id
+            ).filter(QAScore.qa_id == qa_record.id).all()
+            
+            score_responses = []
+            for score, criterion in scores:
+                score_responses.append({
+                    "criterion_id": criterion.id,
+                    "criterion_name": criterion.name,
+                    "score": float(score.score),
+                    "evidence": score.evidence,
+                    "red_flag": score.red_flag
+                })
+            
+            qa_responses.append({
+                "id": qa_record.id,
+                "step_no": qa_record.step_no,
+                "question_text": qa_record.question_text,
+                "answer_text": qa_record.answer_text,
+                "audio_url": qa_record.audio_url,
+                "tone": qa_record.tone,
+                "passed": qa_record.passed,
+                "scores": score_responses,
+                "created_at": qa_record.created_at.isoformat() if qa_record.created_at else None
+            })
+
+        return {
+            "session_id": session.id,
+            "candidate_id": session.candidate_id,
+            "vacancy_id": session.vacancy_id,
+            "status": session.status,
+            "started_at": session.started_at.isoformat() if session.started_at else None,
+            "finished_at": session.finished_at.isoformat() if session.finished_at else None,
+            "total_score": float(session.total_score) if session.total_score else None,
+            "current_step": session.current_step,
+            "qa_records": qa_responses,
+            "created_at": session.created_at.isoformat() if session.created_at else None,
+            "updated_at": session.updated_at.isoformat() if session.updated_at else None
+        }
 
     async def review_answer(self, qa_id: str, review_data: Dict[str, Any]) -> Dict[str, Any]:
         """Manually review and override answer scores"""

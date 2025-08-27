@@ -33,21 +33,21 @@
             </div>
             <div class="info-item">
               <label>Progress:</label>
-              <span>{{ sessionData.answered_questions }}/{{ sessionData.total_questions }}</span>
+              <span>{{ sessionData.current_step }}/{{ sessionData.qa_records?.length || 0 }}</span>
             </div>
           </el-col>
           <el-col :span="8">
             <div class="info-item">
               <label>Completion Rate:</label>
-              <span>{{ (sessionData.completion_rate * 100).toFixed(1) }}%</span>
+              <span>{{ sessionData.qa_records ? ((sessionData.qa_records.length / sessionData.current_step) * 100).toFixed(1) : 0 }}%</span>
             </div>
             <div class="info-item">
               <label>Total Score:</label>
-              <span>{{ (sessionData.total_score * 100).toFixed(1) }}%</span>
+              <span>{{ sessionData.total_score ? (sessionData.total_score * 100).toFixed(1) : 0 }}%</span>
             </div>
             <div class="info-item">
               <label>Pass Rate:</label>
-              <span>{{ (sessionData.pass_rate * 100).toFixed(1) }}%</span>
+              <span>{{ sessionData.qa_records ? ((sessionData.qa_records.filter(q => q.passed).length / sessionData.qa_records.length) * 100).toFixed(1) : 0 }}%</span>
             </div>
           </el-col>
           <el-col :span="8">
@@ -57,11 +57,11 @@
             </div>
             <div class="info-item">
               <label>Completed:</label>
-              <span>{{ formatDate(sessionData.completed_at) || 'In Progress' }}</span>
+              <span>{{ formatDate(sessionData.finished_at) || 'In Progress' }}</span>
             </div>
             <div class="info-item">
               <label>Duration:</label>
-              <span>{{ sessionData.duration || 'N/A' }}</span>
+              <span>{{ sessionData.started_at && sessionData.finished_at ? formatDuration(sessionData.started_at, sessionData.finished_at) : 'N/A' }}</span>
             </div>
           </el-col>
         </el-row>
@@ -73,48 +73,50 @@
           <span>Questions & Answers</span>
         </template>
         
-        <div v-if="sessionData && sessionData.questions.length > 0">
+        <div v-if="sessionData && sessionData.qa_records && sessionData.qa_records.length > 0">
           <div 
-            v-for="(question, index) in sessionData.questions" 
-            :key="question.question_id"
+            v-for="(qa, index) in sessionData.qa_records" 
+            :key="qa.id"
             class="question-item"
           >
             <div class="question-header">
-              <h3>Question {{ index + 1 }}</h3>
+              <h3>Question {{ qa.step_no }}</h3>
               <div class="question-score">
                 <span class="score-label">Score:</span>
-                <span class="score-value">{{ (question.avg_score * 100).toFixed(1) }}%</span>
+                <span class="score-value">{{ qa.scores && qa.scores.length > 0 ? (qa.scores.reduce((sum, s) => sum + s.score, 0) / qa.scores.length * 100).toFixed(1) : 0 }}%</span>
               </div>
             </div>
             
             <div class="question-content">
               <div class="question-text">
-                <strong>Question:</strong> {{ question.question_text }}
+                <strong>Question:</strong> {{ qa.question_text }}
               </div>
               
               <div class="answer-section">
                 <div class="answer-text">
-                  <strong>Answer:</strong> {{ question.answer_text }}
+                  <strong>Answer:</strong> {{ qa.answer_text }}
                 </div>
                 
                 <div class="answer-metrics">
                   <el-row :gutter="20">
                     <el-col :span="6">
                       <div class="metric">
-                        <label>Confidence:</label>
-                        <span>{{ (question.transcription_confidence * 100).toFixed(1) }}%</span>
+                        <label>Tone:</label>
+                        <span>{{ qa.tone || 'N/A' }}</span>
                       </div>
                     </el-col>
                     <el-col :span="6">
                       <div class="metric">
-                        <label>Pre-answer Pause:</label>
-                        <span>{{ question.pre_answer_pause_s.toFixed(1) }}s</span>
+                        <label>Passed:</label>
+                        <el-tag :type="qa.passed ? 'success' : 'danger'">
+                          {{ qa.passed ? 'Yes' : 'No' }}
+                        </el-tag>
                       </div>
                     </el-col>
                     <el-col :span="6">
                       <div class="metric">
-                        <label>Speech Rate:</label>
-                        <span>{{ question.speech_rate_wpm.toFixed(0) }} WPM</span>
+                        <label>Created:</label>
+                        <span>{{ formatDate(qa.created_at) }}</span>
                       </div>
                     </el-col>
                     <el-col :span="6">
@@ -123,8 +125,8 @@
                         <el-button 
                           size="small" 
                           type="primary" 
-                          @click="playAudio(question.audio_url)"
-                          :disabled="!question.audio_url"
+                          @click="playAudio(qa.audio_url)"
+                          :disabled="!qa.audio_url"
                         >
                           <el-icon><VideoPlay /></el-icon>
                           Play
@@ -135,17 +137,17 @@
                 </div>
                 
                 <!-- Criteria Scores -->
-                <div class="criteria-scores" v-if="question.scores.length > 0">
+                <div class="criteria-scores" v-if="qa.scores && qa.scores.length > 0">
                   <h4>Criteria Scores:</h4>
                   <el-row :gutter="20">
                     <el-col 
                       :span="8" 
-                      v-for="score in question.scores" 
+                      v-for="score in qa.scores" 
                       :key="score.criterion_id"
                     >
                       <div class="criterion-score">
                         <div class="criterion-header">
-                          <span class="criterion-name">{{ score.criterion_id }}</span>
+                          <span class="criterion-name">{{ score.criterion_name }}</span>
                           <span class="criterion-value">{{ (score.score * 100).toFixed(1) }}%</span>
                         </div>
                         <div class="criterion-evidence" v-if="score.evidence">
@@ -166,31 +168,26 @@
       </el-card>
 
       <!-- Summary -->
-      <el-card class="summary-card" v-if="sessionData && sessionData.questions.length > 0">
+      <el-card class="summary-card" v-if="sessionData && sessionData.qa_records && sessionData.qa_records.length > 0">
         <template #header>
           <span>Performance Summary</span>
         </template>
         
         <el-row :gutter="20">
           <el-col :span="12">
-            <h4>Top Performing Questions:</h4>
+            <h4>Session Overview:</h4>
             <ul class="summary-list">
-              <li 
-                v-for="question in sessionData.top_performing_questions" 
-                :key="question.question_text"
-              >
-                {{ question.question_text }} ({{ question.avg_score }})
-              </li>
+              <li>Total Questions: {{ sessionData.qa_records.length }}</li>
+              <li>Completed: {{ sessionData.current_step }}</li>
+              <li>Passed: {{ sessionData.qa_records.filter(q => q.passed).length }}</li>
+              <li>Average Score: {{ sessionData.total_score ? (sessionData.total_score * 100).toFixed(1) : 0 }}%</li>
             </ul>
           </el-col>
           <el-col :span="12">
-            <h4>Areas for Improvement:</h4>
+            <h4>Criteria Performance:</h4>
             <ul class="summary-list">
-              <li 
-                v-for="area in sessionData.areas_for_improvement" 
-                :key="area"
-              >
-                {{ area }}
+              <li v-for="qa in sessionData.qa_records" :key="qa.id">
+                Question {{ qa.step_no }}: {{ qa.scores && qa.scores.length > 0 ? (qa.scores.reduce((sum, s) => sum + s.score, 0) / qa.scores.length * 100).toFixed(1) : 0 }}%
               </li>
             </ul>
           </el-col>
@@ -294,6 +291,16 @@ const getStatusLabel = (status) => {
 const formatDate = (dateString) => {
   if (!dateString) return '-'
   return new Date(dateString).toLocaleString()
+}
+
+const formatDuration = (startDate, endDate) => {
+  if (!startDate || !endDate) return 'N/A'
+  const start = new Date(startDate)
+  const end = new Date(endDate)
+  const diffMs = end - start
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffSecs = Math.floor((diffMs % 60000) / 1000)
+  return `${diffMins}m ${diffSecs}s`
 }
 
 // Watchers

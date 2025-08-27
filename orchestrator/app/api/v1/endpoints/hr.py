@@ -13,6 +13,19 @@ from app.services.export_service import ExportService
 router = APIRouter()
 
 
+@router.get("/vacancies", response_model=List[VacancyResponse])
+async def get_vacancies(
+    db: Session = Depends(get_db)
+) -> List[Dict[str, Any]]:
+    """Get list of vacancies"""
+    try:
+        hr_service = HRService(db)
+        vacancies = await hr_service.get_vacancies()
+        return vacancies
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @router.get("/sessions", response_model=List[SessionListResponse])
 async def get_sessions(
     skip: int = Query(0, ge=0),
@@ -40,6 +53,20 @@ async def get_session_detail(
         hr_service = HRService(db)
         session = await hr_service.get_session_detail(session_id)
         return session
+    except Exception as e:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+
+@router.get("/sessions/{session_id}/results")
+async def get_session_results(
+    session_id: str,
+    db: Session = Depends(get_db)
+) -> Dict[str, Any]:
+    """Get session results with Q&A details"""
+    try:
+        hr_service = HRService(db)
+        results = await hr_service.get_session_results(session_id)
+        return results
     except Exception as e:
         raise HTTPException(status_code=404, detail="Session not found")
 
