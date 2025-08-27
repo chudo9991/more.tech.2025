@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --only=production
+RUN npm install
 
 # Copy source code
 COPY . .
@@ -33,7 +33,8 @@ RUN addgroup -g 1001 -S nodejs && \
 RUN chown -R nextjs:nodejs /usr/share/nginx/html && \
     chown -R nextjs:nodejs /var/cache/nginx && \
     chown -R nextjs:nodejs /var/log/nginx && \
-    chown -R nextjs:nodejs /etc/nginx/conf.d
+    chown -R nextjs:nodejs /etc/nginx/conf.d && \
+    chown -R nextjs:nodejs /tmp
 
 # Switch to non-root user
 USER nextjs

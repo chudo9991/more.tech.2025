@@ -20,28 +20,28 @@ help:
 # Start all services
 up:
 	@echo "Starting all services..."
-	docker-compose up -d
+	docker compose up -d
 	@echo "Waiting for services to be ready..."
 	@make health
 
 # Stop all services
 down:
 	@echo "Stopping all services..."
-	docker-compose down
+	docker compose down
 
 # Build all Docker images
 build:
 	@echo "Building all Docker images..."
-	docker-compose build --no-cache
+	docker compose build --no-cache
 
 # Show logs from all services
 logs:
-	docker-compose logs -f
+	docker compose logs -f
 
 # Clean up everything
 clean:
 	@echo "Cleaning up containers, volumes, and images..."
-	docker-compose down -v --rmi all
+	docker compose down -v --rmi all
 	docker system prune -f
 
 # Run tests for all services
@@ -76,7 +76,7 @@ seed:
 	@if [ -f "scripts/seed.sh" ]; then \
 		./scripts/seed.sh; \
 	else \
-		docker-compose exec db psql -U interview_user -d interview_ai -f /docker-entrypoint-initdb.d/seed.sql; \
+		docker compose exec db psql -U interview_user -d interview_ai -f /docker-entrypoint-initdb.d/seed.sql; \
 	fi
 
 # Run demo script
@@ -114,66 +114,66 @@ health:
 # Development helpers
 dev-up:
 	@echo "Starting development environment..."
-	docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 
 dev-down:
 	@echo "Stopping development environment..."
-	docker-compose -f docker-compose.yml -f docker-compose.dev.yml down
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml down
 
 # Database helpers
 db-migrate:
 	@echo "Running database migrations..."
-	docker-compose exec orchestrator alembic upgrade head
+	docker compose exec orchestrator alembic upgrade head
 
 db-rollback:
 	@echo "Rolling back last migration..."
-	docker-compose exec orchestrator alembic downgrade -1
+	docker compose exec orchestrator alembic downgrade -1
 
 db-reset:
 	@echo "Resetting database..."
-	docker-compose down -v
-	docker-compose up -d db
+	docker compose down -v
+	docker compose up -d db
 	@sleep 10
 	@make db-migrate
 	@make seed
 
 db-init:
 	@echo "Initializing database with migrations..."
-	docker-compose exec orchestrator alembic upgrade head
+	docker compose exec orchestrator alembic upgrade head
 
 db-status:
 	@echo "Checking migration status..."
-	docker-compose exec orchestrator alembic current
+	docker compose exec orchestrator alembic current
 
 db-history:
 	@echo "Migration history..."
-	docker-compose exec orchestrator alembic history
+	docker compose exec orchestrator alembic history
 
 # Logs for specific services
 logs-orchestrator:
-	docker-compose logs -f orchestrator
+	docker compose logs -f orchestrator
 
 logs-stt:
-	docker-compose logs -f stt
+	docker compose logs -f stt
 
 logs-tts:
-	docker-compose logs -f tts
+	docker compose logs -f tts
 
 logs-scoring:
-	docker-compose logs -f scoring
+	docker compose logs -f scoring
 
 logs-frontend:
-	docker-compose logs -f frontend
+	docker compose logs -f frontend
 
 # Shell access to services
 shell-orchestrator:
-	docker-compose exec orchestrator /bin/bash
+	docker compose exec orchestrator /bin/bash
 
 shell-db:
-	docker-compose exec db psql -U interview_user -d interview_ai
+	docker compose exec db psql -U interview_user -d interview_ai
 
 shell-minio:
-	docker-compose exec minio /bin/sh
+	docker compose exec minio /bin/sh
 
 # Testing commands
 test-sip:

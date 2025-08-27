@@ -2,7 +2,8 @@
 Scoring service configuration settings
 """
 from typing import List
-from pydantic import BaseSettings, validator
+from pydantic_settings import BaseSettings
+from pydantic import validator
 
 
 class Settings(BaseSettings):

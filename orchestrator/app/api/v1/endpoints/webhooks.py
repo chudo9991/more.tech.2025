@@ -2,7 +2,7 @@
 Webhook endpoints for SIP provider integration
 """
 from typing import Dict, Any
-from fastapi import APIRouter, HTTPException, Request, Header
+from fastapi import APIRouter, HTTPException, Request, Header, Depends
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
