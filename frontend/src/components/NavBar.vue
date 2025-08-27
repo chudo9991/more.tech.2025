@@ -1,11 +1,12 @@
 <template>
   <div class="navbar">
     <div class="nav-brand">
-      <h2>Interview AI</h2>
+      <h2>Система ИИ-Интервью</h2>
     </div>
     <div class="nav-links">
-      <router-link to="/" class="nav-link">Home</router-link>
-      <router-link to="/hr" class="nav-link">HR Panel</router-link>
+      <router-link to="/" class="nav-link">Главная</router-link>
+      <router-link to="/hr" class="nav-link">HR Панель</router-link>
+      <router-link to="/interview" class="nav-link">Интервью</router-link>
     </div>
   </div>
 </template>

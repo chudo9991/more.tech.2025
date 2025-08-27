@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     MINIO_ENDPOINT: str = "minio:9000"
     MINIO_ACCESS_KEY: str = "minioadmin"
     MINIO_SECRET_KEY: str = "minioadmin123"
-    MINIO_BUCKET_NAME: str = "interview-audio"
+    MINIO_BUCKET_NAME: str = "audio-files"
     
     # CORS
     ALLOWED_HOSTS: List[str] = ["*"]

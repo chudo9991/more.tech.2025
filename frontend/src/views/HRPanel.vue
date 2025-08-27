@@ -3,10 +3,10 @@
     <el-container>
       <el-header>
         <div class="header-content">
-          <h1>HR Panel - Interview Management</h1>
+          <h1>HR Панель - Управление интервью</h1>
           <el-button type="primary" @click="refreshData">
             <el-icon><Refresh /></el-icon>
-            Refresh
+            Обновить
           </el-button>
         </div>
       </el-header>
@@ -73,22 +73,22 @@
             @row-click="viewSession"
             class="sessions-table"
           >
-            <el-table-column prop="id" label="Session ID" width="200" />
-            <el-table-column prop="vacancy_title" label="Vacancy" />
-            <el-table-column prop="phone" label="Phone" width="150" />
-            <el-table-column prop="status" label="Status" width="120">
+            <el-table-column prop="id" label="ID Сессии" width="200" />
+            <el-table-column prop="vacancy_title" label="Вакансия" />
+            <el-table-column prop="phone" label="Телефон" width="150" />
+            <el-table-column prop="status" label="Статус" width="120">
               <template #default="{ row }">
                 <el-tag :type="getStatusType(row.status)">
                   {{ getStatusLabel(row.status) }}
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="current_step" label="Progress" width="120">
+            <el-table-column prop="current_step" label="Прогресс" width="120">
               <template #default="{ row }">
                 {{ row.current_step }}/{{ row.total_steps }}
               </template>
             </el-table-column>
-            <el-table-column prop="total_score" label="Score" width="100">
+            <el-table-column prop="total_score" label="Балл" width="100">
               <template #default="{ row }">
                 <span v-if="row.total_score !== null">
                   {{ (row.total_score * 100).toFixed(1) }}%
@@ -96,15 +96,15 @@
                 <span v-else>-</span>
               </template>
             </el-table-column>
-            <el-table-column prop="created_at" label="Created" width="180">
+            <el-table-column prop="created_at" label="Создано" width="180">
               <template #default="{ row }">
                 {{ formatDate(row.created_at) }}
               </template>
             </el-table-column>
-            <el-table-column label="Actions" width="200" fixed="right">
+            <el-table-column label="Действия" width="250" fixed="right">
               <template #default="{ row }">
                 <el-button size="small" @click.stop="viewSession(row)">
-                  View
+                  Просмотр
                 </el-button>
                 <el-button 
                   size="small" 
@@ -112,8 +112,15 @@
                   @click.stop="exportSession(row)"
                   :disabled="row.status !== 'completed'"
                 >
-                  Export
+                  Экспорт
                 </el-button>
+                <el-button 
+                  size="small" 
+                  type="danger" 
+                  @click.stop="deleteSession(row)"
+                  :icon="Delete"
+                  circle
+                />
               </template>
             </el-table-column>
           </el-table>
@@ -136,7 +143,7 @@
     <!-- Session Detail Dialog -->
     <el-dialog
       v-model="sessionDialog.visible"
-      title="Session Details"
+      title="Детали сессии"
       width="80%"
       :before-close="closeSessionDialog"
     >
@@ -152,7 +159,7 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Refresh, Download } from '@element-plus/icons-vue'
+import { Refresh, Download, Delete } from '@element-plus/icons-vue'
 import SessionDetail from '@/components/SessionDetail.vue'
 import { useHRStore } from '@/stores/hr'
 
@@ -161,10 +168,10 @@ const hrStore = useHRStore()
 // Reactive data
 const loading = ref(false)
 const statistics = ref([
-  { title: 'Total Sessions', value: 0, change: '+0%', trend: 'neutral' },
-  { title: 'Completed', value: 0, change: '+0%', trend: 'positive' },
-  { title: 'In Progress', value: 0, change: '+0%', trend: 'neutral' },
-  { title: 'Avg Score', value: '0%', change: '+0%', trend: 'positive' }
+  { title: 'Всего сессий', value: 0, change: '+0%', trend: 'neutral' },
+  { title: 'Завершено', value: 0, change: '+0%', trend: 'positive' },
+  { title: 'В процессе', value: 0, change: '+0%', trend: 'neutral' },
+  { title: 'Средний балл', value: '0%', change: '+0%', trend: 'positive' }
 ])
 
 // Use store data
@@ -234,7 +241,7 @@ const loadStatistics = async () => {
 const refreshData = async () => {
   await loadSessions()
   await loadStatistics()
-  ElMessage.success('Data refreshed')
+      ElMessage.success('Данные обновлены')
 }
 
 const applyFilters = () => {
@@ -274,10 +281,37 @@ const exportSession = async (session) => {
   try {
     const response = await hrStore.exportSession(session.id, 'csv')
     downloadFile(response.content, response.filename)
-    ElMessage.success('Session exported successfully')
+    ElMessage.success('Сессия успешно экспортирована')
   } catch (error) {
-    ElMessage.error('Failed to export session')
+    ElMessage.error('Не удалось экспортировать сессию')
     console.error('Error exporting session:', error)
+  }
+}
+
+const deleteSession = async (session) => {
+  try {
+    // Show confirmation dialog
+    await ElMessageBox.confirm(
+      `Вы уверены, что хотите удалить сессию "${session.id}"? Это действие нельзя отменить.`,
+      'Подтверждение удаления',
+      {
+        confirmButtonText: 'Удалить',
+        cancelButtonText: 'Отмена',
+        type: 'warning',
+      }
+    )
+    
+    await hrStore.deleteSession(session.id)
+    ElMessage.success('Сессия успешно удалена')
+    
+    // Refresh data
+    await loadSessions()
+    await loadStatistics()
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('Не удалось удалить сессию')
+      console.error('Error deleting session:', error)
+    }
   }
 }
 
@@ -285,9 +319,9 @@ const exportAllSessions = async () => {
   try {
     const response = await hrStore.exportAllSessions('csv')
     downloadFile(response.content, response.filename)
-    ElMessage.success('All sessions exported successfully')
+    ElMessage.success('Все сессии успешно экспортированы')
   } catch (error) {
-    ElMessage.error('Failed to export sessions')
+    ElMessage.error('Не удалось экспортировать сессии')
     console.error('Error exporting sessions:', error)
   }
 }
@@ -316,10 +350,10 @@ const getStatusType = (status) => {
 
 const getStatusLabel = (status) => {
   const labels = {
-    created: 'Created',
-    in_progress: 'In Progress',
-    completed: 'Completed',
-    failed: 'Failed'
+    created: 'Создана',
+    in_progress: 'В процессе',
+    completed: 'Завершена',
+    failed: 'Ошибка'
   }
   return labels[status] || status
 }

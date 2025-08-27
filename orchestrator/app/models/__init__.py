@@ -10,6 +10,7 @@ from .qa_score import QAScore
 from .media import Media
 from .vacancy_question import VacancyQuestion
 from .question_criterion import QuestionCriterion
+from .message import Message
 
 __all__ = [
     "Candidate",
@@ -21,5 +22,6 @@ __all__ = [
     "QAScore",
     "Media",
     "VacancyQuestion",
-    "QuestionCriterion"
+    "QuestionCriterion",
+    "Message"
 ]

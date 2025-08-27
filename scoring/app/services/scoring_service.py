@@ -5,7 +5,7 @@ import json
 import asyncio
 from typing import Dict, Any, List
 import openai
-from anthropic import Anthropic
+from openai import AzureOpenAI
 import jsonschema
 
 from app.core.config import settings
@@ -13,17 +13,20 @@ from app.core.config import settings
 
 class ScoringService:
     def __init__(self):
-        self.openai_client = None
-        self.anthropic_client = None
+        self.azure_client = None
         self._init_clients()
 
     def _init_clients(self):
-        """Initialize LLM clients"""
-        if settings.OPENAI_API_KEY:
-            self.openai_client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
-        
-        if settings.ANTHROPIC_API_KEY:
-            self.anthropic_client = Anthropic(api_key=settings.ANTHROPIC_API_KEY)
+        """Initialize Azure OpenAI client"""
+        if settings.AZURE_OPENAI_ENDPOINT and settings.AZURE_OPENAI_API_KEY:
+            self.azure_client = AzureOpenAI(
+                azure_endpoint=settings.AZURE_OPENAI_ENDPOINT,
+                api_key=settings.AZURE_OPENAI_API_KEY,
+                api_version=settings.AZURE_OPENAI_API_VERSION
+            )
+        else:
+            print("Azure OpenAI credentials not configured, using fallback mode")
+            self.azure_client = None
 
     async def score_answer(
         self,
@@ -109,11 +112,11 @@ Rules:
         return prompt
 
     async def _call_llm(self, prompt: str) -> str:
-        """Call LLM API"""
-        if self.openai_client:
+        """Call Azure OpenAI API"""
+        if self.azure_client:
             try:
-                response = self.openai_client.chat.completions.create(
-                    model="gpt-4",
+                response = self.azure_client.chat.completions.create(
+                    model=settings.AZURE_OPENAI_DEPLOYMENT_NAME,
                     messages=[
                         {"role": "system", "content": "You are a professional HR evaluator. Respond only with valid JSON."},
                         {"role": "user", "content": prompt}
@@ -123,21 +126,7 @@ Rules:
                 )
                 return response.choices[0].message.content
             except Exception as e:
-                print(f"OpenAI call failed: {e}")
-        
-        if self.anthropic_client:
-            try:
-                response = self.anthropic_client.messages.create(
-                    model="claude-3-sonnet-20240229",
-                    max_tokens=settings.LLM_MAX_TOKENS,
-                    temperature=settings.LLM_TEMPERATURE,
-                    messages=[
-                        {"role": "user", "content": prompt}
-                    ]
-                )
-                return response.content[0].text
-            except Exception as e:
-                print(f"Anthropic call failed: {e}")
+                print(f"Azure OpenAI call failed: {e}")
         
         # Fallback: return mock response
         return self._get_mock_response()

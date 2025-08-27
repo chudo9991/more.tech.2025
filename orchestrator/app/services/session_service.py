@@ -17,7 +17,7 @@ class SessionService:
     def __init__(self, db: DBSession):
         self.db = db
 
-    async def create_session(self, session_data: SessionCreate) -> SessionResponse:
+    def create_session(self, session_data: SessionCreate) -> SessionResponse:
         """Create a new interview session"""
         try:
             session = SessionModel(
@@ -27,17 +27,9 @@ class SessionService:
                 email=session_data.email,
                 status="created",
                 current_step=0,
-                total_steps=0
+                total_steps=8  # Default number of questions
             )
             
-            # Get total questions for this vacancy
-            total_questions = self.db.query(Question).join(
-                Question.vacancy_questions
-            ).filter(
-                Question.vacancy_questions.any(vacancy_id=session_data.vacancy_id)
-            ).count()
-            
-            session.total_steps = total_questions
             self.db.add(session)
             self.db.commit()
             self.db.refresh(session)
@@ -47,7 +39,7 @@ class SessionService:
             self.db.rollback()
             raise Exception(f"Failed to create session: {str(e)}")
 
-    async def get_next_question(self, session_id: str) -> SessionNextResponse:
+    def get_next_question(self, session_id: str) -> SessionNextResponse:
         """Get the next question for the session"""
         try:
             session = self.db.query(SessionModel).filter(
@@ -130,7 +122,7 @@ class SessionService:
                 Criteria.question_criteria.any(question_id=question_id)
             ).all()
             
-            # 3. Score answer using scoring service
+            # 3. Score answer using LLM service
             scoring_result = await self._score_answer(
                 question.text,
                 transcription["text"],
@@ -201,7 +193,7 @@ class SessionService:
             self.db.rollback()
             raise Exception(f"Failed to submit answer: {str(e)}")
 
-    async def get_session(self, session_id: str) -> SessionResponse:
+    def get_session(self, session_id: str) -> SessionResponse:
         """Get session details with aggregated results"""
         try:
             session = self.db.query(SessionModel).filter(
@@ -246,6 +238,127 @@ class SessionService:
         except Exception as e:
             raise Exception(f"Failed to get session: {str(e)}")
 
+    def update_session(self, session_id: str, session_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Update session details"""
+        try:
+            session = self.db.query(SessionModel).filter(
+                SessionModel.id == session_id
+            ).first()
+            
+            if not session:
+                raise Exception("Session not found")
+            
+            # Update fields
+            if 'status' in session_data:
+                session.status = session_data['status']
+            if 'finished_at' in session_data:
+                session.finished_at = datetime.fromisoformat(session_data['finished_at'].replace('Z', '+00:00'))
+            if 'total_score' in session_data:
+                session.total_score = session_data['total_score']
+            
+            self.db.commit()
+            self.db.refresh(session)
+            
+            return {"status": "success", "session_id": session_id}
+        except Exception as e:
+            self.db.rollback()
+            raise Exception(f"Failed to update session: {str(e)}")
+
+    def delete_session(self, session_id: str) -> Dict[str, Any]:
+        """Delete a session and all related data"""
+        try:
+            session = self.db.query(SessionModel).filter(
+                SessionModel.id == session_id
+            ).first()
+            
+            if not session:
+                raise Exception("Session not found")
+            
+            # Delete related records (cascade will handle most)
+            # Delete messages
+            from app.models import Message
+            self.db.query(Message).filter(Message.session_id == session_id).delete()
+            
+            # Delete QA records (cascade will delete QA scores)
+            self.db.query(QA).filter(QA.session_id == session_id).delete()
+            
+            # Delete media records
+            self.db.query(Media).filter(Media.session_id == session_id).delete()
+            
+            # Delete the session itself
+            self.db.delete(session)
+            self.db.commit()
+            
+            return {"status": "success", "message": f"Session {session_id} deleted successfully"}
+        except Exception as e:
+            self.db.rollback()
+            raise Exception(f"Failed to delete session: {str(e)}")
+
+    def get_audio_file(self, session_id: str, filename: str) -> bytes:
+        """Get audio file from MinIO"""
+        try:
+            from minio import Minio
+            
+            print(f"Getting audio file: session_id={session_id}, filename={filename}")
+            
+            # Initialize MinIO client
+            minio_client = Minio(
+                'minio:9000',
+                access_key='minioadmin',
+                secret_key='minioadmin123',
+                secure=False
+            )
+            
+            # Get file from MinIO
+            bucket_name = 'audio-files'
+            object_key = f"{session_id}_{filename}"
+            
+            print(f"Looking for object: {bucket_name}/{object_key}")
+            
+            # List objects in bucket to debug
+            try:
+                objects = list(minio_client.list_objects(bucket_name, prefix=session_id))
+                print(f"Found {len(objects)} objects with prefix {session_id}:")
+                for obj in objects:
+                    print(f"  - {obj.object_name} ({obj.size} bytes)")
+            except Exception as list_error:
+                print(f"Error listing objects: {list_error}")
+            
+            # Get object data
+            response = minio_client.get_object(bucket_name, object_key)
+            data = response.read()
+            print(f"Successfully read {len(data)} bytes from {object_key}")
+            return data
+            
+        except Exception as e:
+            print(f"Exception getting audio file: {e}")
+            raise Exception(f"Failed to get audio file: {str(e)}")
+
+    def get_messages(self, session_id: str) -> List[Dict[str, Any]]:
+        """Get all messages for a session"""
+        try:
+            from app.models import Message
+            messages = self.db.query(Message).filter(
+                Message.session_id == session_id
+            ).order_by(Message.timestamp.asc()).all()
+            
+            return [
+                {
+                    "id": msg.id,
+                    "session_id": msg.session_id,
+                    "text": msg.text,
+                    "message_type": msg.message_type,
+                    "audio_url": msg.audio_url,
+                    "transcription_confidence": msg.transcription_confidence,
+                    "tone_analysis": msg.tone_analysis,
+                    "timestamp": msg.timestamp.isoformat() if msg.timestamp else None,
+                    "created_at": msg.created_at.isoformat() if msg.created_at else None
+                }
+                for msg in messages
+            ]
+        except Exception as e:
+            raise Exception(f"Failed to get messages: {str(e)}")
+
     async def _transcribe_audio(self, audio_url: str) -> Dict[str, Any]:
         """Transcribe audio using STT service"""
         try:
@@ -270,7 +383,7 @@ class SessionService:
         answer_text: str, 
         criteria: List[Criteria]
     ) -> Dict[str, Any]:
-        """Score answer using scoring service"""
+        """Score answer using LLM service"""
         try:
             criteria_data = [{
                 "id": c.id,
@@ -281,7 +394,7 @@ class SessionService:
             
             async with httpx.AsyncClient() as client:
                 response = await client.post(
-                    f"{settings.SCORING_SERVICE_URL}/api/v1/score",
+                    f"{settings.LLM_SERVICE_URL}/api/v1/llm/score",
                     json={
                         "question": question,
                         "answer_text": answer_text,
@@ -293,9 +406,38 @@ class SessionService:
                 response.raise_for_status()
                 return response.json()
         except Exception as e:
-            raise Exception(f"Scoring failed: {str(e)}")
+            raise Exception(f"LLM scoring failed: {str(e)}")
 
-    async def aggregate_session_results(self, session_id: str) -> Dict[str, Any]:
+    def save_message(self, session_id: str, message_id: str, text: str, message_type: str, timestamp: str, audio_url: str = None, transcription_confidence: int = None, tone_analysis: str = None) -> Dict[str, Any]:
+        """Save a chat message to database"""
+        try:
+            from app.models import Message
+            
+            # Create a new message record
+            message = Message(
+                id=message_id,
+                session_id=session_id,
+                text=text,
+                message_type=message_type,
+                audio_url=audio_url,
+                transcription_confidence=transcription_confidence,
+                tone_analysis=tone_analysis,
+                timestamp=datetime.fromisoformat(timestamp.replace('Z', '+00:00')) if timestamp else datetime.utcnow()
+            )
+            
+            self.db.add(message)
+            self.db.commit()
+            self.db.refresh(message)
+            
+            print(f"Message saved to database: {message_id}")
+            
+            return {"status": "success", "message_id": message_id}
+            
+        except Exception as e:
+            self.db.rollback()
+            raise Exception(f"Failed to save message: {str(e)}")
+
+    def aggregate_session_results(self, session_id: str) -> Dict[str, Any]:
         """Aggregate all results for a session"""
         try:
             session = self.db.query(SessionModel).filter(

@@ -5,15 +5,15 @@
       <el-card class="overview-card">
         <template #header>
           <div class="card-header">
-            <span>Session Overview</span>
+            <span>Обзор сессии</span>
             <div class="header-actions">
               <el-button size="small" @click="exportSession">
                 <el-icon><Download /></el-icon>
-                Export
+                Экспорт
               </el-button>
               <el-button size="small" type="primary" @click="refreshData">
                 <el-icon><Refresh /></el-icon>
-                Refresh
+                Обновить
               </el-button>
             </div>
           </div>
@@ -22,46 +22,46 @@
         <el-row :gutter="20" v-if="sessionData">
           <el-col :span="8">
             <div class="info-item">
-              <label>Session ID:</label>
+              <label>ID Сессии:</label>
               <span>{{ sessionData.session_id }}</span>
             </div>
             <div class="info-item">
-              <label>Status:</label>
+              <label>Статус:</label>
               <el-tag :type="getStatusType(sessionData.status)">
                 {{ getStatusLabel(sessionData.status) }}
               </el-tag>
             </div>
             <div class="info-item">
-              <label>Progress:</label>
+              <label>Прогресс:</label>
               <span>{{ sessionData.current_step }}/{{ sessionData.qa_records?.length || 0 }}</span>
             </div>
           </el-col>
           <el-col :span="8">
             <div class="info-item">
-              <label>Completion Rate:</label>
+              <label>Процент завершения:</label>
               <span>{{ sessionData.qa_records ? ((sessionData.qa_records.length / sessionData.current_step) * 100).toFixed(1) : 0 }}%</span>
             </div>
             <div class="info-item">
-              <label>Total Score:</label>
+              <label>Общий балл:</label>
               <span>{{ sessionData.total_score ? (sessionData.total_score * 100).toFixed(1) : 0 }}%</span>
             </div>
             <div class="info-item">
-              <label>Pass Rate:</label>
+              <label>Процент прохождения:</label>
               <span>{{ sessionData.qa_records ? ((sessionData.qa_records.filter(q => q.passed).length / sessionData.qa_records.length) * 100).toFixed(1) : 0 }}%</span>
             </div>
           </el-col>
           <el-col :span="8">
             <div class="info-item">
-              <label>Started:</label>
+              <label>Начато:</label>
               <span>{{ formatDate(sessionData.started_at) }}</span>
             </div>
             <div class="info-item">
-              <label>Completed:</label>
-              <span>{{ formatDate(sessionData.finished_at) || 'In Progress' }}</span>
+              <label>Завершено:</label>
+              <span>{{ formatDate(sessionData.finished_at) || 'В процессе' }}</span>
             </div>
             <div class="info-item">
-              <label>Duration:</label>
-              <span>{{ sessionData.started_at && sessionData.finished_at ? formatDuration(sessionData.started_at, sessionData.finished_at) : 'N/A' }}</span>
+              <label>Длительность:</label>
+              <span>{{ sessionData.started_at && sessionData.finished_at ? formatDuration(sessionData.started_at, sessionData.finished_at) : 'Н/Д' }}</span>
             </div>
           </el-col>
         </el-row>
@@ -70,7 +70,7 @@
       <!-- Questions and Answers -->
       <el-card class="questions-card">
         <template #header>
-          <span>Questions & Answers</span>
+          <span>Вопросы и ответы</span>
         </template>
         
         <div v-if="sessionData && sessionData.qa_records && sessionData.qa_records.length > 0">
@@ -80,48 +80,48 @@
             class="question-item"
           >
             <div class="question-header">
-              <h3>Question {{ qa.step_no }}</h3>
+              <h3>Вопрос {{ qa.step_no }}</h3>
               <div class="question-score">
-                <span class="score-label">Score:</span>
+                <span class="score-label">Балл:</span>
                 <span class="score-value">{{ qa.scores && qa.scores.length > 0 ? (qa.scores.reduce((sum, s) => sum + s.score, 0) / qa.scores.length * 100).toFixed(1) : 0 }}%</span>
               </div>
             </div>
             
             <div class="question-content">
               <div class="question-text">
-                <strong>Question:</strong> {{ qa.question_text }}
+                <strong>Вопрос:</strong> {{ qa.question_text }}
               </div>
               
               <div class="answer-section">
                 <div class="answer-text">
-                  <strong>Answer:</strong> {{ qa.answer_text }}
+                  <strong>Ответ:</strong> {{ qa.answer_text }}
                 </div>
                 
                 <div class="answer-metrics">
                   <el-row :gutter="20">
                     <el-col :span="6">
                       <div class="metric">
-                        <label>Tone:</label>
-                        <span>{{ qa.tone || 'N/A' }}</span>
+                        <label>Тон:</label>
+                        <span>{{ qa.tone || 'Н/Д' }}</span>
                       </div>
                     </el-col>
                     <el-col :span="6">
                       <div class="metric">
-                        <label>Passed:</label>
+                        <label>Пройдено:</label>
                         <el-tag :type="qa.passed ? 'success' : 'danger'">
-                          {{ qa.passed ? 'Yes' : 'No' }}
+                          {{ qa.passed ? 'Да' : 'Нет' }}
                         </el-tag>
                       </div>
                     </el-col>
                     <el-col :span="6">
                       <div class="metric">
-                        <label>Created:</label>
+                        <label>Создано:</label>
                         <span>{{ formatDate(qa.created_at) }}</span>
                       </div>
                     </el-col>
                     <el-col :span="6">
                       <div class="metric">
-                        <label>Audio:</label>
+                        <label>Аудио:</label>
                         <el-button 
                           size="small" 
                           type="primary" 
@@ -129,7 +129,7 @@
                           :disabled="!qa.audio_url"
                         >
                           <el-icon><VideoPlay /></el-icon>
-                          Play
+                          Воспроизвести
                         </el-button>
                       </div>
                     </el-col>
@@ -164,6 +164,64 @@
         
         <div v-else class="no-questions">
           <el-empty description="No questions answered yet" />
+        </div>
+      </el-card>
+
+      <!-- Chat Messages -->
+      <el-card class="messages-card">
+        <template #header>
+          <span>Сообщения чата</span>
+        </template>
+        
+        <div v-if="messages && messages.length > 0">
+          <div 
+            v-for="message in messages" 
+            :key="message.id"
+            class="message-item"
+          >
+            <div class="message-header">
+              <span class="message-type">{{ message.message_type === 'user' ? '👤 Кандидат' : '🤖 Аватар' }}</span>
+              <span class="message-time">{{ formatDate(message.timestamp) }}</span>
+            </div>
+            
+            <div class="message-content">
+              <div class="message-text">{{ message.text }}</div>
+              
+              <div class="message-metrics" v-if="message.audio_url || message.transcription_confidence">
+                <el-row :gutter="20">
+                  <el-col :span="6" v-if="message.audio_url">
+                    <div class="metric">
+                      <label>Аудио:</label>
+                      <el-button 
+                        size="small" 
+                        type="primary" 
+                        @click="playAudio(message.audio_url)"
+                      >
+                        <el-icon><VideoPlay /></el-icon>
+                        Воспроизвести
+                      </el-button>
+                    </div>
+                  </el-col>
+                  <el-col :span="6" v-if="message.transcription_confidence">
+                    <div class="metric">
+                      <label>Уверенность STT:</label>
+                      <span>{{ (message.transcription_confidence * 100).toFixed(1) }}%</span>
+                    </div>
+                  </el-col>
+                  <el-col :span="6" v-if="message.tone_analysis">
+                    <div class="metric">
+                      <label>Тон голоса:</label>
+                      <span>{{ getToneLabel(message.tone_analysis) }}</span>
+                    </div>
+                  </el-col>
+                </el-row>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div v-else class="no-messages">
+          <el-empty description="Сообщений пока нет" />
         </div>
       </el-card>
 
@@ -215,6 +273,7 @@ const emit = defineEmits(['close'])
 const hrStore = useHRStore()
 const loading = ref(false)
 const sessionData = ref(null)
+const messages = ref([])
 
 // Methods
 const loadSessionData = async () => {
@@ -222,6 +281,9 @@ const loadSessionData = async () => {
     loading.value = true
     const response = await hrStore.fetchSessionResults(props.sessionId)
     sessionData.value = response
+    
+    // Load messages
+    await loadMessages()
   } catch (error) {
     ElMessage.error('Failed to load session data')
     console.error('Error loading session data:', error)
@@ -230,18 +292,35 @@ const loadSessionData = async () => {
   }
 }
 
+const loadMessages = async () => {
+  try {
+    console.log('Loading messages for session:', props.sessionId)
+    const response = await fetch(`/api/v1/sessions/messages?session_id=${props.sessionId}`)
+    if (response.ok) {
+      const data = await response.json()
+      messages.value = data.messages || []
+      console.log('Loaded messages:', messages.value.length, 'messages')
+    } else {
+      console.error('Failed to load messages:', response.status, response.statusText)
+    }
+  } catch (error) {
+    console.error('Error loading messages:', error)
+  }
+}
+
 const refreshData = async () => {
   await loadSessionData()
-  ElMessage.success('Data refreshed')
+  await loadMessages()
+  ElMessage.success('Данные обновлены')
 }
 
 const exportSession = async () => {
   try {
     const response = await hrStore.exportSession(props.sessionId, 'csv')
     downloadFile(response.content, response.filename)
-    ElMessage.success('Session exported successfully')
+    ElMessage.success('Сессия успешно экспортирована')
   } catch (error) {
-    ElMessage.error('Failed to export session')
+    ElMessage.error('Не удалось экспортировать сессию')
     console.error('Error exporting session:', error)
   }
 }
@@ -260,10 +339,33 @@ const downloadFile = (content, filename) => {
 
 const playAudio = (audioUrl) => {
   if (audioUrl) {
-    const audio = new Audio(audioUrl)
+    // Extract filename from MinIO URL (format: minio://audio-files/session_id_filename)
+    const urlParts = audioUrl.split('/')
+    const fullFilename = urlParts[urlParts.length - 1]
+    
+    // Remove session_id prefix from filename and clean up the filename
+    const sessionId = props.sessionId
+    let filename = fullFilename.replace(`${sessionId}_`, '')
+    
+    // Remove the codecs part from filename if present
+    if (filename.includes(';codecs=')) {
+      filename = filename.split(';codecs=')[0]
+    }
+    
+    // Create proper audio URL
+    const audioEndpoint = `/api/v1/sessions/audio/${sessionId}/${filename}`
+    console.log('Playing audio from:', audioEndpoint)
+    console.log('Original audioUrl:', audioUrl)
+    console.log('Extracted filename:', filename)
+    
+    const audio = new Audio(audioEndpoint)
     audio.play().catch(error => {
       console.error('Error playing audio:', error)
-      ElMessage.error('Failed to play audio')
+      if (error.name === 'NotSupportedError' || error.message.includes('404')) {
+        ElMessage.warning('Аудио запись недоступна (файл не найден)')
+      } else {
+        ElMessage.error('Не удалось воспроизвести аудио')
+      }
     })
   }
 }
@@ -280,10 +382,10 @@ const getStatusType = (status) => {
 
 const getStatusLabel = (status) => {
   const labels = {
-    created: 'Created',
-    in_progress: 'In Progress',
-    completed: 'Completed',
-    failed: 'Failed'
+    created: 'Создана',
+    in_progress: 'В процессе',
+    completed: 'Завершена',
+    failed: 'Ошибка'
   }
   return labels[status] || status
 }
@@ -301,6 +403,18 @@ const formatDuration = (startDate, endDate) => {
   const diffMins = Math.floor(diffMs / 60000)
   const diffSecs = Math.floor((diffMs % 60000) / 1000)
   return `${diffMins}m ${diffSecs}s`
+}
+
+const getToneLabel = (tone) => {
+  const labels = {
+    positive: '😊 Позитивный',
+    neutral: '😐 Нейтральный',
+    concerned: '😟 Обеспокоенный',
+    excited: '🤩 Восторженный',
+    confused: '😕 Растерянный',
+    confident: '😎 Уверенный'
+  }
+  return labels[tone] || tone
 }
 
 // Watchers
@@ -477,6 +591,59 @@ onMounted(() => {
 
 .summary-card {
   margin-bottom: 20px;
+}
+
+.messages-card {
+  margin-bottom: 20px;
+}
+
+.message-item {
+  background-color: white;
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  border: 1px solid #ebeef5;
+}
+
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.message-type {
+  font-weight: 600;
+  color: #303133;
+}
+
+.message-time {
+  font-size: 0.9rem;
+  color: #909399;
+}
+
+.message-content {
+  margin-bottom: 10px;
+}
+
+.message-text {
+  padding: 10px;
+  background-color: #f5f7fa;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.message-metrics {
+  margin-top: 10px;
+}
+
+.no-messages {
+  text-align: center;
+  padding: 40px;
+  color: #909399;
 }
 
 .summary-list {

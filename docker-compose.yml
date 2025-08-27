@@ -1,4 +1,4 @@
-version: '3.8'
+# Docker Compose configuration for Interview AI system
 
 services:
   # База данных
@@ -36,6 +36,8 @@ services:
       interval: 30s
       timeout: 20s
       retries: 3
+
+
 
   # Orchestrator (FastAPI)
   orchestrator:
@@ -75,6 +77,8 @@ services:
       - MINIO_SECRET_KEY=${MINIO_ROOT_PASSWORD:-minioadmin123}
     ports:
       - "8001:8001"
+    volumes:
+      - whisper_cache:/root/.cache/whisper
     depends_on:
       db:
         condition: service_healthy
@@ -86,22 +90,42 @@ services:
       timeout: 10s
       retries: 3
 
-  # Text-to-Speech Service
-  tts:
+  # LLM Service (Azure GPT-4o)
+  llm:
     build:
-      context: ./tts
+      context: ./llm
+      dockerfile: Dockerfile
+    environment:
+      - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
+      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+      - AZURE_OPENAI_API_VERSION=${AZURE_OPENAI_API_VERSION:-2024-02-15-preview}
+      - AZURE_OPENAI_DEPLOYMENT_NAME=${AZURE_OPENAI_DEPLOYMENT_NAME:-gpt-4o}
+      - LLM_TEMPERATURE=${LLM_TEMPERATURE:-0.1}
+      - LLM_MAX_TOKENS=${LLM_MAX_TOKENS:-2000}
+    ports:
+      - "8004:8004"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8004/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Avatar Service
+  avatar:
+    build:
+      context: ./avatar
       dockerfile: Dockerfile
     environment:
       - MINIO_ENDPOINT=minio:9000
       - MINIO_ACCESS_KEY=${MINIO_ROOT_USER:-minioadmin}
       - MINIO_SECRET_KEY=${MINIO_ROOT_PASSWORD:-minioadmin123}
     ports:
-      - "8002:8002"
+      - "8005:8005"
     depends_on:
       minio:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8002/healthz"]
+      test: ["CMD", "curl", "-f", "http://localhost:8005/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -113,8 +137,10 @@ services:
       dockerfile: Dockerfile
     environment:
       - DATABASE_URL=postgresql://interview_user:${DB_PASSWORD:-interview_pass}@db:5432/interview_ai
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
+      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+      - AZURE_OPENAI_API_VERSION=${AZURE_OPENAI_API_VERSION:-2024-02-15-preview}
+      - AZURE_OPENAI_DEPLOYMENT_NAME=${AZURE_OPENAI_DEPLOYMENT_NAME:-gpt-4o}
     ports:
       - "8003:8003"
     depends_on:
@@ -146,3 +172,4 @@ services:
 volumes:
   postgres_data:
   minio_data:
+  whisper_cache:

@@ -50,8 +50,10 @@ test:
 	cd orchestrator && make test
 	@echo "Running tests for stt..."
 	cd stt && make test
-	@echo "Running tests for tts..."
-	cd tts && make test
+	@echo "Running tests for llm..."
+	cd llm && make test
+	@echo "Running tests for avatar..."
+	cd avatar && make test
 	@echo "Running tests for scoring..."
 	cd scoring && make test
 	@echo "Running tests for frontend..."
@@ -63,8 +65,10 @@ lint:
 	cd orchestrator && make lint
 	@echo "Running linters for stt..."
 	cd stt && make lint
-	@echo "Running linters for tts..."
-	cd tts && make lint
+	@echo "Running linters for llm..."
+	cd llm && make lint
+	@echo "Running linters for avatar..."
+	cd avatar && make lint
 	@echo "Running linters for scoring..."
 	cd scoring && make lint
 	@echo "Running linters for frontend..."
@@ -104,8 +108,10 @@ health:
 	@curl -s http://localhost:8000/healthz > /dev/null && echo "  ✓ Orchestrator" || echo "  ✗ Orchestrator"
 	@echo "STT Service:"
 	@curl -s http://localhost:8001/healthz > /dev/null && echo "  ✓ STT" || echo "  ✗ STT"
-	@echo "TTS Service:"
-	@curl -s http://localhost:8002/healthz > /dev/null && echo "  ✓ TTS" || echo "  ✗ TTS"
+	@echo "LLM Service:"
+	@curl -s http://localhost:8004/healthz > /dev/null && echo "  ✓ LLM" || echo "  ✗ LLM"
+	@echo "Avatar Service:"
+	@curl -s http://localhost:8005/healthz > /dev/null && echo "  ✓ Avatar" || echo "  ✗ Avatar"
 	@echo "Scoring Service:"
 	@curl -s http://localhost:8003/healthz > /dev/null && echo "  ✓ Scoring" || echo "  ✗ Scoring"
 	@echo "Frontend:"
@@ -156,8 +162,11 @@ logs-orchestrator:
 logs-stt:
 	docker compose logs -f stt
 
-logs-tts:
-	docker compose logs -f tts
+logs-llm:
+	docker compose logs -f llm
+
+logs-avatar:
+	docker compose logs -f avatar
 
 logs-scoring:
 	docker compose logs -f scoring

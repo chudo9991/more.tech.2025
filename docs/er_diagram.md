@@ -43,13 +43,28 @@ erDiagram
         string id PK
         int candidate_id FK
         string vacancy_id FK
+        string phone
+        string email
         string status
         datetime started_at
         datetime finished_at
         decimal total_score
+        decimal pass_rate
         int current_step
+        int total_steps
         datetime created_at
         datetime updated_at
+    }
+
+    MESSAGES {
+        string id PK
+        string session_id FK
+        text text
+        string message_type
+        string audio_url
+        int transcription_confidence
+        datetime timestamp
+        datetime created_at
     }
 
     QA {
@@ -107,6 +122,7 @@ erDiagram
 
     CANDIDATES ||--o{ SESSIONS : "has"
     VACANCIES ||--o{ SESSIONS : "has"
+    SESSIONS ||--o{ MESSAGES : "contains"
     SESSIONS ||--o{ QA : "contains"
     SESSIONS ||--o{ MEDIA : "has"
     QUESTIONS ||--o{ QA : "asked_in"
@@ -130,6 +146,7 @@ erDiagram
 ### Interview Process
 
 - **SESSIONS**: Individual interview sessions linking candidates to vacancies
+- **MESSAGES**: Chat messages within a session (both user and avatar messages)
 - **QA**: Question-Answer pairs within a session
 - **QA_SCORES**: Detailed scoring of answers against criteria
 - **MEDIA**: Audio files for questions and answers
@@ -146,3 +163,5 @@ erDiagram
 3. **Audio Support**: Full audio file management for questions and answers
 4. **Session Tracking**: Complete interview session lifecycle management
 5. **Detailed Scoring**: Granular scoring with evidence and red flags
+6. **Chat Messages**: Support for storing conversation messages with audio URLs and transcription confidence
+7. **Session Metadata**: Direct phone and email storage in sessions for quick access

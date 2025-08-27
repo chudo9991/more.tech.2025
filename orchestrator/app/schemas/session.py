@@ -24,7 +24,7 @@ class SessionResponse(BaseModel):
     pass_rate: Optional[float] = None
     qa_count: Optional[int] = None
     created_at: Optional[datetime]
-    completed_at: Optional[datetime]
+    finished_at: Optional[datetime]
 
     class Config:
         from_attributes = True

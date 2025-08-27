@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
     
     # Database
-    DATABASE_URL: str = "postgresql://interview_user:interview_pass@db:5432/interview_ai"
+    DATABASE_URL: str = "postgresql://interview_user:interview_pass_secure@db:5432/interview_ai"
     
     # MinIO
     MINIO_ENDPOINT: str = "minio:9000"
@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     
     # Service URLs
     STT_SERVICE_URL: str = "http://stt:8001"
-    TTS_SERVICE_URL: str = "http://tts:8002"
+    LLM_SERVICE_URL: str = "http://llm:8004"
     SCORING_SERVICE_URL: str = "http://scoring:8003"
     
     # CORS

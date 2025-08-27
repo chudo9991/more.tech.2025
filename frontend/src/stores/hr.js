@@ -219,6 +219,25 @@ export const useHRStore = defineStore('hr', {
       }
     },
 
+    async deleteSession(sessionId) {
+      try {
+        this.loading = true
+        this.error = null
+        
+        const response = await axios.delete(`${API_BASE_URL}/api/v1/sessions/${sessionId}`)
+        
+        // Remove the session from local state
+        this.sessions = this.sessions.filter(s => s.id !== sessionId)
+        
+        return response.data
+      } catch (error) {
+        this.error = error.response?.data?.detail || 'Failed to delete session'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
     clearError() {
       this.error = null
     },
