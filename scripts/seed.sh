@@ -9,7 +9,7 @@ echo "Waiting for database to be ready..."
 sleep 5
 
 # Load seed data
-docker-compose exec -T db psql -U interview_user -d interview_ai < seeds/seed.sql
+docker compose exec -T db psql -U interview_user -d interview_ai < seeds/seed.sql
 
 echo "Seed data loaded successfully!"
 echo "Demo data includes:"

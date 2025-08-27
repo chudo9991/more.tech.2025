@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.schemas.hr import SessionListResponse, SessionDetailResponse
+from app.schemas.hr import SessionListResponse, SessionDetailResponse, VacancyResponse
 from app.services.hr_service import HRService
 from app.services.export_service import ExportService
 
