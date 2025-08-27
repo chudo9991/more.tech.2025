@@ -1,198 +1,136 @@
-.PHONY: help up down build logs clean test lint seed demo health test-sip test-interview demo-full
+# Makefile for Interview AI Project
+
+.PHONY: help build test deploy clean logs health
 
 # Default target
 help:
 	@echo "Available commands:"
-	@echo "  up      - Start all services"
-	@echo "  down    - Stop all services"
-	@echo "  build   - Build all Docker images"
-	@echo "  logs    - Show logs from all services"
-	@echo "  clean   - Remove containers, volumes, and images"
-	@echo "  test    - Run tests for all services"
-	@echo "  lint    - Run linters for all services"
-	@echo "  seed    - Load seed data into database"
-	@echo "  demo    - Run demo script"
-	@echo "  health  - Check health of all services"
-	@echo "  test-sip - Test SIP simulator (call flow)"
-	@echo "  test-interview - Test full interview simulation"
-	@echo "  demo-full - Run complete system demo"
+	@echo "  build     - Build all Docker images"
+	@echo "  test      - Run tests"
+	@echo "  up        - Start development environment"
+	@echo "  up-prod   - Start production environment"
+	@echo "  down      - Stop all services"
+	@echo "  logs      - Show logs for all services"
+	@echo "  health    - Check health of all services"
+	@echo "  clean     - Clean up containers and images"
+	@echo "  deploy    - Deploy to production"
 
-# Start all services
+# Development environment
 up:
-	@echo "Starting all services..."
 	docker compose up -d
-	@echo "Waiting for services to be ready..."
-	@make health
+	@echo "Development environment started!"
+	@echo "Frontend: http://localhost:3000"
+	@echo "HR Panel: http://localhost:3000/hr"
+	@echo "API Docs: http://localhost:8000/docs"
+	@echo "MinIO Console: http://localhost:9001"
+
+# Production environment
+up-prod:
+	@if [ ! -f .env.prod ]; then \
+		echo "Error: .env.prod file not found!"; \
+		echo "Please copy env.prod.sample to .env.prod and configure it."; \
+		exit 1; \
+	fi
+	docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
+	@echo "Production environment started!"
 
 # Stop all services
 down:
-	@echo "Stopping all services..."
 	docker compose down
+	docker compose -f docker-compose.prod.yml down 2>/dev/null || true
 
-# Build all Docker images
+# Build all images
 build:
-	@echo "Building all Docker images..."
-	docker compose build --no-cache
+	docker compose build
+	@echo "All images built successfully!"
 
-# Show logs from all services
+# Run tests
+test:
+	docker compose -f docker-compose.test.yml up --abort-on-container-exit
+	@echo "Tests completed!"
+
+# Show logs
 logs:
 	docker compose logs -f
 
-# Clean up everything
-clean:
-	@echo "Cleaning up containers, volumes, and images..."
-	docker compose down -v --rmi all
-	docker system prune -f
-
-# Run tests for all services
-test:
-	@echo "Running tests for orchestrator..."
-	cd orchestrator && make test
-	@echo "Running tests for stt..."
-	cd stt && make test
-	@echo "Running tests for llm..."
-	cd llm && make test
-	@echo "Running tests for avatar..."
-	cd avatar && make test
-	@echo "Running tests for scoring..."
-	cd scoring && make test
-	@echo "Running tests for frontend..."
-	cd frontend && make test
-
-# Run linters for all services
-lint:
-	@echo "Running linters for orchestrator..."
-	cd orchestrator && make lint
-	@echo "Running linters for stt..."
-	cd stt && make lint
-	@echo "Running linters for llm..."
-	cd llm && make lint
-	@echo "Running linters for avatar..."
-	cd avatar && make lint
-	@echo "Running linters for scoring..."
-	cd scoring && make lint
-	@echo "Running linters for frontend..."
-	cd frontend && make lint
-
-# Load seed data
-seed:
-	@echo "Loading seed data..."
-	@if [ -f "scripts/seed.sh" ]; then \
-		./scripts/seed.sh; \
-	else \
-		docker compose exec db psql -U interview_user -d interview_ai -f /docker-entrypoint-initdb.d/seed.sql; \
-	fi
-
-# Run demo script
-demo:
-	@echo "Running demo script..."
-	@if [ -f "scripts/demo.sh" ]; then \
-		chmod +x scripts/demo.sh && ./scripts/demo.sh; \
-	else \
-		echo "Demo script not found. Creating basic demo..."; \
-		curl -f http://localhost:8000/healthz && echo "Orchestrator: OK"; \
-		curl -f http://localhost:8001/healthz && echo "STT: OK"; \
-		curl -f http://localhost:8002/healthz && echo "TTS: OK"; \
-		curl -f http://localhost:8003/healthz && echo "Scoring: OK"; \
-		curl -f http://localhost:3000 && echo "Frontend: OK"; \
-	fi
-
-# Check health of all services
+# Check health
 health:
 	@echo "Checking service health..."
-	@echo "Database:"
-	@curl -s http://localhost:5432 > /dev/null && echo "  ✓ PostgreSQL" || echo "  ✗ PostgreSQL"
-	@echo "MinIO:"
-	@curl -s http://localhost:9000/minio/health/live > /dev/null && echo "  ✓ MinIO" || echo "  ✗ MinIO"
-	@echo "Orchestrator:"
-	@curl -s http://localhost:8000/healthz > /dev/null && echo "  ✓ Orchestrator" || echo "  ✗ Orchestrator"
-	@echo "STT Service:"
-	@curl -s http://localhost:8001/healthz > /dev/null && echo "  ✓ STT" || echo "  ✗ STT"
-	@echo "LLM Service:"
-	@curl -s http://localhost:8004/healthz > /dev/null && echo "  ✓ LLM" || echo "  ✗ LLM"
-	@echo "Avatar Service:"
-	@curl -s http://localhost:8005/healthz > /dev/null && echo "  ✓ Avatar" || echo "  ✗ Avatar"
-	@echo "Scoring Service:"
-	@curl -s http://localhost:8003/healthz > /dev/null && echo "  ✓ Scoring" || echo "  ✗ Scoring"
-	@echo "Frontend:"
-	@curl -s http://localhost:3000 > /dev/null && echo "  ✓ Frontend" || echo "  ✗ Frontend"
+	@curl -f http://localhost:8000/healthz && echo "✓ Orchestrator" || echo "✗ Orchestrator"
+	@curl -f http://localhost:8001/healthz && echo "✓ STT" || echo "✗ STT"
+	@curl -f http://localhost:8004/healthz && echo "✓ LLM" || echo "✗ LLM"
+	@curl -f http://localhost:8005/healthz && echo "✓ Avatar" || echo "✗ Avatar"
+	@curl -f http://localhost:8003/healthz && echo "✓ Scoring" || echo "✗ Scoring"
+	@curl -f http://localhost:3000 && echo "✓ Frontend" || echo "✗ Frontend"
 
-# Development helpers
-dev-up:
-	@echo "Starting development environment..."
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+# Clean up
+clean:
+	docker compose down -v --remove-orphans
+	docker compose -f docker-compose.prod.yml down -v --remove-orphans 2>/dev/null || true
+	docker system prune -f
+	@echo "Cleanup completed!"
 
-dev-down:
-	@echo "Stopping development environment..."
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml down
-
-# Database helpers
-db-migrate:
-	@echo "Running database migrations..."
-	docker compose exec orchestrator alembic upgrade head
-
-db-rollback:
-	@echo "Rolling back last migration..."
-	docker compose exec orchestrator alembic downgrade -1
+# Database operations
+db-shell:
+	docker compose exec db psql -U postgres -d interview_ai
 
 db-reset:
-	@echo "Resetting database..."
 	docker compose down -v
 	docker compose up -d db
-	@sleep 10
-	@make db-migrate
-	@make seed
+	@echo "Database reset completed!"
 
-db-init:
-	@echo "Initializing database with migrations..."
-	docker compose exec orchestrator alembic upgrade head
+# MinIO operations
+minio-shell:
+	docker compose exec minio mc
 
-db-status:
-	@echo "Checking migration status..."
-	docker compose exec orchestrator alembic current
+minio-init:
+	docker compose exec minio mc mb minio/audio-files --ignore-existing
+	@echo "MinIO buckets initialized!"
 
-db-history:
-	@echo "Migration history..."
-	docker compose exec orchestrator alembic history
+# Development helpers
+dev-logs:
+	docker compose logs -f orchestrator stt llm avatar scoring
 
-# Logs for specific services
-logs-orchestrator:
-	docker compose logs -f orchestrator
-
-logs-stt:
-	docker compose logs -f stt
-
-logs-llm:
-	docker compose logs -f llm
-
-logs-avatar:
-	docker compose logs -f avatar
-
-logs-scoring:
-	docker compose logs -f scoring
-
-logs-frontend:
+frontend-logs:
 	docker compose logs -f frontend
 
-# Shell access to services
-shell-orchestrator:
-	docker compose exec orchestrator /bin/bash
+# Production deployment
+deploy:
+	@if [ ! -f .env.prod ]; then \
+		echo "Error: .env.prod file not found!"; \
+		echo "Please copy env.prod.sample to .env.prod and configure it."; \
+		exit 1; \
+	fi
+	@echo "Deploying to production..."
+	docker compose -f docker-compose.prod.yml --env-file .env.prod pull
+	docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
+	@echo "Production deployment completed!"
 
-shell-db:
-	docker compose exec db psql -U interview_user -d interview_ai
+# CI/CD helpers
+ci-build:
+	docker compose build --no-cache
+	@echo "CI build completed!"
 
-shell-minio:
-	docker compose exec minio /bin/sh
+ci-test:
+	docker compose -f docker-compose.test.yml up --abort-on-container-exit --exit-code-from test
+	@echo "CI tests completed!"
 
-# Testing commands
-test-sip:
-	@echo "Testing SIP simulator..."
-	@python scripts/sip_simulator.py http://localhost:8000 call
+# Monitoring
+status:
+	@echo "Service Status:"
+	@docker compose ps
 
-test-interview:
-	@echo "Testing full interview simulation..."
-	@python scripts/sip_simulator.py http://localhost:8000 interview
+# Backup and restore
+backup:
+	@echo "Creating backup..."
+	docker compose exec db pg_dump -U postgres interview_ai > backup_$(date +%Y%m%d_%H%M%S).sql
+	@echo "Backup created!"
 
-demo-full:
-	@echo "Running complete system demo..."
-	@python scripts/demo.py http://localhost:8000
+restore:
+	@if [ -z "$(BACKUP_FILE)" ]; then \
+		echo "Error: Please specify BACKUP_FILE=filename.sql"; \
+		exit 1; \
+	fi
+	@echo "Restoring from $(BACKUP_FILE)..."
+	docker compose exec -T db psql -U postgres interview_ai < $(BACKUP_FILE)
+	@echo "Restore completed!"

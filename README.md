@@ -195,6 +195,8 @@
 
 ## Быстрый старт
 
+### Development
+
 1. **Клонируйте репозиторий:**
    ```bash
    git clone <repository-url>
@@ -209,12 +211,12 @@
 
 3. **Запустите все сервисы:**
    ```bash
-   docker compose up -d
+   make up
    ```
 
-4. **Создайте bucket в MinIO:**
+4. **Проверьте статус:**
    ```bash
-   docker compose exec minio mc mb minio/audio-files --ignore-existing
+   make health
    ```
 
 5. **Откройте приложение:**
@@ -224,20 +226,66 @@
    - API документация: http://localhost:8000/docs
    - MinIO консоль: http://localhost:9001
 
+### Production
+
+1. **Настройте production переменные:**
+   ```bash
+   cp env.prod.sample .env.prod
+   # Отредактируйте .env.prod файл
+   ```
+
+2. **Деплой:**
+   ```bash
+   make deploy
+   ```
+
+## CI/CD
+
+Проект использует GitHub Actions для автоматизации. Подробная документация: [docs/CI_CD.md](docs/CI_CD.md)
+
+### Настройка CI/CD
+
+1. **Настройте GitHub Secrets:**
+   - `AZURE_OPENAI_API_KEY`
+   - `AZURE_OPENAI_ENDPOINT`
+   - `POSTGRES_PASSWORD` (опционально)
+   - `MINIO_SECRET_KEY` (опционально)
+
+2. **Pipeline автоматически запускается при:**
+   - Создании Pull Request в `main`
+   - Merge Pull Request в `main`
+
 ## Полезные команды
 
 ```bash
 # Управление сервисами
-docker compose up -d          # Запустить все сервисы
-docker compose down           # Остановить все сервисы
-docker compose build          # Пересобрать образы
-docker compose logs           # Показать логи всех сервисов
+make up              # Запустить development окружение
+make up-prod         # Запустить production окружение
+make down            # Остановить все сервисы
+make build           # Пересобрать образы
+make logs            # Показать логи всех сервисов
+make health          # Проверить здоровье сервисов
+make status          # Показать статус сервисов
 
 # База данных
-docker compose exec db psql -U postgres -d interview_ai  # Подключиться к БД
+make db-shell        # Подключиться к БД
+make db-reset        # Сбросить базу данных
+make backup          # Создать бэкап
+make restore BACKUP_FILE=file.sql  # Восстановить из бэкапа
+
+# MinIO
+make minio-shell     # Подключиться к MinIO
+make minio-init      # Инициализировать bucket'ы
 
 # Разработка
-docker compose logs -f [service]  # Следить за логами конкретного сервиса
+make dev-logs        # Логи backend сервисов
+make frontend-logs   # Логи frontend
+make clean           # Очистить контейнеры и образы
+
+# CI/CD
+make ci-build        # Сборка для CI
+make ci-test         # Тестирование для CI
+make deploy          # Деплой в production
 ```
 
 ## Структура проекта

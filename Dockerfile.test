@@ -1,0 +1,45 @@
+FROM python:3.11-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements files
+COPY orchestrator/requirements.txt ./orchestrator-requirements.txt
+COPY stt/requirements.txt ./stt-requirements.txt
+COPY llm/requirements.txt ./llm-requirements.txt
+COPY avatar/requirements.txt ./avatar-requirements.txt
+COPY scoring/requirements.txt ./scoring-requirements.txt
+
+# Install Python dependencies
+RUN pip install --no-cache-dir \
+    pytest \
+    pytest-asyncio \
+    httpx \
+    && pip install --no-cache-dir -r orchestrator-requirements.txt \
+    && pip install --no-cache-dir -r stt-requirements.txt \
+    && pip install --no-cache-dir -r llm-requirements.txt \
+    && pip install --no-cache-dir -r avatar-requirements.txt \
+    && pip install --no-cache-dir -r scoring-requirements.txt
+
+# Copy application code
+COPY orchestrator/ ./orchestrator/
+COPY stt/ ./stt/
+COPY llm/ ./llm/
+COPY avatar/ ./avatar/
+COPY scoring/ ./scoring/
+
+# Copy tests
+COPY tests/ ./tests/
+
+# Set Python path
+ENV PYTHONPATH=/app
+
+# Default command
+CMD ["python", "-m", "pytest", "tests/", "-v"]
