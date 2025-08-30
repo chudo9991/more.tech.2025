@@ -6,6 +6,9 @@ import VacanciesList from '../views/VacanciesList.vue'
 import VacancyForm from '../views/VacancyForm.vue'
 import VacancyDetail from '../views/VacancyDetail.vue'
 import ModelStatus from '../views/ModelStatus.vue'
+import ResumesList from '../views/ResumesList.vue'
+import ResumeDetail from '../views/ResumeDetail.vue'
+import ResumeUpload from '../views/ResumeUpload.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -49,6 +52,21 @@ const router = createRouter({
       path: '/model-status',
       name: 'model-status',
       component: ModelStatus
+    },
+    {
+      path: '/resumes',
+      name: 'resumes-list',
+      component: ResumesList
+    },
+    {
+      path: '/resumes/upload',
+      name: 'resume-upload',
+      component: ResumeUpload
+    },
+    {
+      path: '/resumes/:id',
+      name: 'resume-detail',
+      component: ResumeDetail
     }
   ]
 })

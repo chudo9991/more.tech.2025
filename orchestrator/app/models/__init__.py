@@ -15,6 +15,9 @@ from .interview_scenario import InterviewScenario
 from .scenario_node import ScenarioNode
 from .scenario_transition import ScenarioTransition
 from .session_context import SessionContext
+from .resume import Resume
+from .resume_block import ResumeBlock
+from .resume_skill import ResumeSkill
 
 __all__ = [
     "Candidate",
@@ -31,5 +34,8 @@ __all__ = [
     "InterviewScenario",
     "ScenarioNode",
     "ScenarioTransition",
-    "SessionContext"
+    "SessionContext",
+    "Resume",
+    "ResumeBlock",
+    "ResumeSkill"
 ]

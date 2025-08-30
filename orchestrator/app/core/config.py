@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     MINIO_ACCESS_KEY: str = "minioadmin"
     MINIO_SECRET_KEY: str = "minioadmin123"
     MINIO_BUCKET_NAME: str = "interview-audio"
+    MINIO_USE_SSL: bool = False
     
     # Service URLs
     STT_SERVICE_URL: str = "http://stt:8001"

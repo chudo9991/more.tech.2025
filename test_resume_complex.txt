@@ -1,0 +1,45 @@
+Иван Петров
+Email: ivan.petrov@email.com
+Телефон: +7 (999) 123-45-67
+
+ОПЫТ РАБОТЫ
+2020-2023 - Senior Python Developer, ООО "Технологии"
+- Разработка микросервисов на Python/Django
+- Работа с PostgreSQL, Redis, Docker
+- CI/CD с Jenkins, GitLab
+
+2018-2020 - Python Developer, ИП "Стартап"
+- Backend разработка на Flask
+- REST API, интеграция с внешними сервисами
+- Работа с MongoDB, AWS
+
+ОБРАЗОВАНИЕ
+2014-2018 - МГУ им. Ломоносова
+Специальность: Прикладная математика и информатика
+Диплом: Бакалавр
+
+НАВЫКИ
+Языки программирования: Python, JavaScript, SQL
+Фреймворки: Django, Flask, FastAPI, React
+Базы данных: PostgreSQL, MongoDB, Redis
+Инструменты: Git, Docker, Kubernetes, AWS
+Методологии: Agile, Scrum, DevOps
+
+ПРОЕКТЫ
+E-commerce платформа (2022)
+- Микросервисная архитектура
+- Python, Django, PostgreSQL
+- Docker, Kubernetes
+
+API Gateway (2021)
+- FastAPI, Redis
+- Аутентификация, авторизация
+- Мониторинг и логирование
+
+СЕРТИФИКАТЫ
+AWS Certified Developer Associate (2023)
+Docker Certified Associate (2022)
+
+ЯЗЫКИ
+Русский - родной
+Английский - B2 (Upper Intermediate)

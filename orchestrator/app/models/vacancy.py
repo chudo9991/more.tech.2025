@@ -55,3 +55,4 @@ class Vacancy(Base):
     sessions = relationship("Session", back_populates="vacancy")
     vacancy_questions = relationship("VacancyQuestion", back_populates="vacancy")
     interview_scenarios = relationship("InterviewScenario", back_populates="vacancy")
+    resumes = relationship("Resume", back_populates="vacancy")
