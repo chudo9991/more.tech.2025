@@ -1,11 +1,17 @@
 <template>
   <div class="resumes-list">
-    <div class="page-header">
-      <h1>Управление резюме</h1>
-      <el-button type="primary" @click="$router.push('/resumes/upload')" icon="Plus">
-        Загрузить резюме
-      </el-button>
-    </div>
+                    <div class="page-header">
+                  <h1>Управление резюме</h1>
+                  <div class="header-buttons">
+                    <ExportButtons @export-completed="handleExportCompleted" />
+                    <el-button type="primary" @click="$router.push('/resumes/upload')" icon="Plus">
+                      Загрузить резюме
+                    </el-button>
+                    <el-button type="success" @click="$router.push('/resumes/batch-upload')" icon="Upload">
+                      Пакетная загрузка
+                    </el-button>
+                  </div>
+                </div>
 
     <!-- Фильтры -->
     <el-card class="filter-card">
@@ -89,6 +95,17 @@
         style="width: 100%"
         @sort-change="handleSortChange"
       >
+        <!-- Debug info -->
+        <template #empty>
+          <div>
+            <p>No Data</p>
+            <p>Resumes count (in component): {{ resumes.length }}</p>
+            <p>Loading: {{ loading }}</p>
+            <p>Total from pagination: {{ pagination.total }}</p>
+            <button @click="loadResumes">Reload Resumes</button>
+          </div>
+        </template>
+
         <el-table-column prop="original_filename" label="Файл" sortable="custom">
           <template #default="{ row }">
             <div class="file-info">
@@ -207,9 +224,10 @@
 </template>
 
 <script>
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted, reactive, toRaw } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Document, ArrowDown, Download, Delete, Plus, Search, Refresh, View, VideoPlay, TrendCharts } from '@element-plus/icons-vue'
+import ExportButtons from '@/components/ExportButtons.vue'
 
 export default {
   name: 'ResumesList',
@@ -223,7 +241,8 @@ export default {
     Refresh,
     View,
     VideoPlay,
-    TrendCharts
+    TrendCharts,
+    ExportButtons
   },
   setup() {
     const resumes = ref([])
@@ -251,22 +270,49 @@ export default {
     })
     
     const loadResumes = async () => {
+      console.log('🔍 loadResumes called')
       loading.value = true
       try {
         const params = {
           skip: (pagination.page - 1) * pagination.limit,
-          limit: pagination.limit,
-          ...filters
+          limit: pagination.limit
         }
         
-        const response = await fetch(`/api/v1/resumes/?${new URLSearchParams(params)}`)
-        const data = await response.json()
+        // Добавляем фильтры только если они не null
+        if (filters.vacancy_id) {
+          params.vacancy_id = filters.vacancy_id
+        }
+        if (filters.status) {
+          params.status = filters.status
+        }
         
-        resumes.value = data
-        pagination.total = data.length // В реальном API будет общее количество
+        console.log('📤 Request params:', toRaw(params))
+        const url = `/api/v1/resumes/?${new URLSearchParams(params)}`
+        console.log('🌐 Request URL:', url)
+        
+        const response = await fetch(url)
+        console.log('📥 Response status:', response.status)
+        console.log('📥 Response headers:', toRaw(Object.fromEntries(response.headers.entries())))
+        
+        if (!response.ok) {
+          const errorText = await response.text()
+          throw new Error(`HTTP error! status: ${response.status}, details: ${errorText}`)
+        }
+        
+        const data = await response.json()
+        console.log('📊 API Response (raw):', toRaw(data))
+        
+        // Правильная обработка ответа API
+        resumes.value = data.resumes || []
+        console.log('✅ Resumes after update (raw):', toRaw(resumes.value))
+        console.log('✅ Resumes after update (length):', resumes.value.length)
+        pagination.total = data.total || 0
+        pagination.page = data.page || 1
+        pagination.limit = data.size || 20
+        console.log('✅ Pagination after update:', toRaw(pagination))
       } catch (error) {
-        ElMessage.error('Ошибка загрузки резюме')
-        console.error(error)
+        ElMessage.error(`Ошибка загрузки резюме: ${error.message}`)
+        console.error('❌ Error loading resumes:', error)
       } finally {
         loading.value = false
       }
@@ -285,10 +331,15 @@ export default {
     const loadVacancies = async () => {
       try {
         const response = await fetch('/api/v1/vacancies/')
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        
         const data = await response.json()
-        vacancies.value = data
+        vacancies.value = data || []
       } catch (error) {
         console.error('Ошибка загрузки вакансий:', error)
+        ElMessage.error('Ошибка загрузки списка вакансий')
       }
     }
     
@@ -426,13 +477,14 @@ export default {
     }
     
     const getFileTypeTag = (fileType) => {
+      if (!fileType) return 'info'
       const types = {
         pdf: 'danger',
         docx: 'primary',
         rtf: 'warning',
         txt: 'info'
       }
-      return types[fileType] || 'info'
+      return types[fileType.toLowerCase()] || 'info'
     }
     
     const getScoreColor = (score) => {
@@ -442,13 +494,24 @@ export default {
     }
     
     const formatDate = (dateString) => {
-      return new Date(dateString).toLocaleDateString('ru-RU', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      })
+      if (!dateString) return 'Не указано'
+      try {
+        return new Date(dateString).toLocaleDateString('ru-RU', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+      } catch (error) {
+        console.error('Date formatting error:', error, 'for date:', dateString)
+        return 'Некорректная дата'
+      }
+    }
+    
+    const handleExportCompleted = (exportInfo) => {
+      console.log('Export completed:', exportInfo)
+      // Можно добавить дополнительную логику после экспорта
     }
     
     onMounted(() => {
@@ -479,7 +542,8 @@ export default {
       getStatusLabel,
       getFileTypeTag,
       getScoreColor,
-      formatDate
+      formatDate,
+      handleExportCompleted
     }
   }
 }
@@ -500,6 +564,12 @@ export default {
 .page-header h1 {
   margin: 0;
   color: #303133;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
 .filter-card {

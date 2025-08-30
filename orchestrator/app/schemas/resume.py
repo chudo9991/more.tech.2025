@@ -125,3 +125,35 @@ class ResumeStatisticsResponse(BaseModel):
     average_score: float
     score_distribution: Dict[str, int]
     top_vacancies: List[Dict[str, Any]]
+
+
+class BatchFileData(BaseModel):
+    filename: str
+    content: bytes
+    file_type: str = "pdf"
+
+
+class BatchUploadRequest(BaseModel):
+    files: List[BatchFileData]
+    vacancy_id: Optional[str] = None
+    max_concurrent: int = 3
+
+
+class BatchResult(BaseModel):
+    file_index: int
+    filename: str
+    status: str
+    resume_id: Optional[str] = None
+    sections_found: Optional[int] = None
+    skills_found: Optional[int] = None
+    error: Optional[str] = None
+
+
+class BatchUploadResponse(BaseModel):
+    batch_id: str
+    status: str
+    total_files: int
+    successful: int
+    failed: int
+    processing_time_seconds: float
+    results: List[BatchResult]

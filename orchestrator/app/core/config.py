@@ -23,6 +23,11 @@ class Settings(BaseSettings):
     MINIO_BUCKET_NAME: str = "interview-audio"
     MINIO_USE_SSL: bool = False
     
+    # Redis configuration
+    REDIS_HOST: str = "redis"
+    REDIS_PORT: int = 6379
+    REDIS_DB: int = 0
+    
     # Service URLs
     STT_SERVICE_URL: str = "http://stt:8001"
     LLM_SERVICE_URL: str = "http://llm:8004"

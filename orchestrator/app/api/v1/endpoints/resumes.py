@@ -16,19 +16,21 @@ from app.utils.file_storage import file_storage
 router = APIRouter()
 
 
-@router.get("/", response_model=List[ResumeListResponse])
+@router.get("/")
 async def get_resumes(
     skip: int = Query(0, ge=0),
-    limit: int = Query(100, ge=1, le=1000),
+    limit: int = Query(25, ge=1, le=100),
     vacancy_id: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
     db: Session = Depends(get_db)
-) -> List[ResumeListResponse]:
-    """Get list of resumes with filters"""
+) -> Dict[str, Any]:
+    """Get list of resumes with filters and pagination"""
     try:
         resume_service = ResumeService(db)
-        resumes = resume_service.get_resumes(skip, limit, vacancy_id, status)
-        return resumes
+        result = resume_service.get_resumes(skip, limit, vacancy_id, status)
+        
+        # Возвращаем результат напрямую
+        return result
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

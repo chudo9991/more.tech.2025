@@ -169,7 +169,23 @@ services:
       timeout: 10s
       retries: 3
 
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: moretech2025-redis-1
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
 volumes:
   postgres_data:
   minio_data:
   whisper_cache:
+  redis_data:

@@ -13,6 +13,7 @@ from app.utils.file_storage import file_storage
 from app.services.text_extraction_service import text_extractor
 from app.services.resume_parser_service import resume_parser
 from app.services.relevance_scoring_service import relevance_scorer
+from app.services.cache_service import cache_service
 
 
 class ResumeService:
@@ -49,11 +50,11 @@ class ResumeService:
     def get_resumes(
         self, 
         skip: int = 0, 
-        limit: int = 100,
+        limit: int = 25,
         vacancy_id: Optional[str] = None,
         status: Optional[str] = None
-    ) -> List[ResumeListResponse]:
-        """Get list of resumes with filters"""
+    ) -> Dict[str, Any]:
+        """Get list of resumes with filters and pagination"""
         query = self.db.query(Resume)
         
         if vacancy_id:
@@ -62,6 +63,10 @@ class ResumeService:
         if status:
             query = query.filter(Resume.status == status)
         
+        # Get total count for pagination
+        total = query.count()
+        
+        # Get resumes with pagination
         resumes = query.order_by(desc(Resume.created_at)).offset(skip).limit(limit).all()
         
         # Get vacancy titles
@@ -71,14 +76,25 @@ class ResumeService:
             vacancy_models = self.db.query(Vacancy).filter(Vacancy.id.in_(vacancy_ids)).all()
             vacancies = {v.id: {'title': v.title, 'code': v.vacancy_code} for v in vacancy_models}
         
-        result = []
+        # Convert to response format
+        resume_list = []
         for resume in resumes:
             resume_data = ResumeListResponse.from_orm(resume)
             vacancy_info = vacancies.get(resume.vacancy_id, {})
             resume_data.vacancy_title = vacancy_info.get('title')
-            result.append(resume_data)
+            resume_list.append(resume_data)
         
-        return result
+        # Calculate pagination info
+        page = (skip // limit) + 1
+        total_pages = (total + limit - 1) // limit
+        
+        return {
+            "resumes": resume_list,
+            "total": total,
+            "page": page,
+            "size": limit,
+            "total_pages": total_pages
+        }
 
     def update_resume(self, resume_id: str, resume_data: ResumeUpdate) -> Optional[Resume]:
         """Update resume record"""
@@ -128,7 +144,12 @@ class ResumeService:
         return resume_data
 
     def get_resume_statistics(self) -> Dict[str, Any]:
-        """Get resume statistics"""
+        """Get resume statistics with caching"""
+        # Try to get from cache first
+        cached_stats = cache_service.get_statistics("resume_overview")
+        if cached_stats:
+            return cached_stats
+        
         total_resumes = self.db.query(Resume).count()
         processed_resumes = self.db.query(Resume).filter(Resume.status == "analyzed").count()
         error_resumes = self.db.query(Resume).filter(Resume.status == "error").count()
@@ -181,7 +202,7 @@ class ResumeService:
                 "count": count
             })
         
-        return {
+        stats = {
             "total_resumes": total_resumes,
             "processed_resumes": processed_resumes,
             "error_resumes": error_resumes,
@@ -189,6 +210,11 @@ class ResumeService:
             "score_distribution": score_distribution,
             "top_vacancies": top_vacancies_data
         }
+        
+        # Cache the statistics
+        cache_service.set_statistics("resume_overview", stats)
+        
+        return stats
     
     async def process_resume(self, resume_id: str) -> Dict[str, Any]:
         """Process resume file and extract structured data"""
@@ -235,6 +261,9 @@ class ResumeService:
             # Calculate relevance score if vacancy is specified
             if resume.vacancy_id:
                 await self._calculate_relevance_score(resume)
+            
+            # Invalidate cache for this resume
+            cache_service.invalidate_resume_cache(resume.id)
             
             return {
                 "success": True,
@@ -286,8 +315,19 @@ class ResumeService:
             print(f"Error calculating relevance score: {str(e)}")
     
     async def calculate_resume_score(self, resume_id: str) -> Dict[str, Any]:
-        """Calculate relevance score for resume"""
+        """Calculate relevance score for resume with caching"""
         try:
+            # Try to get from cache first
+            cached_score = cache_service.get_resume_score(resume_id)
+            if cached_score:
+                return {
+                    "success": True,
+                    "resume_id": resume_id,
+                    "total_score": cached_score.get("total_score"),
+                    "confidence_score": cached_score.get("confidence_score"),
+                    "cached": True
+                }
+            
             resume = self.get_resume(resume_id)
             if not resume:
                 raise Exception("Resume not found")
@@ -297,11 +337,19 @@ class ResumeService:
             
             await self._calculate_relevance_score(resume)
             
+            # Cache the score
+            score_data = {
+                "total_score": resume.total_score,
+                "confidence_score": resume.confidence_score
+            }
+            cache_service.set_resume_score(resume_id, score_data)
+            
             return {
                 "success": True,
                 "resume_id": resume.id,
                 "total_score": resume.total_score,
-                "confidence_score": resume.confidence_score
+                "confidence_score": resume.confidence_score,
+                "cached": False
             }
             
         except Exception as e:

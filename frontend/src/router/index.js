@@ -9,6 +9,7 @@ import ModelStatus from '../views/ModelStatus.vue'
 import ResumesList from '../views/ResumesList.vue'
 import ResumeDetail from '../views/ResumeDetail.vue'
 import ResumeUpload from '../views/ResumeUpload.vue'
+import BatchUpload from '../views/BatchUpload.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -67,6 +68,11 @@ const router = createRouter({
       path: '/resumes/:id',
       name: 'resume-detail',
       component: ResumeDetail
+    },
+    {
+      path: '/resumes/batch-upload',
+      name: 'batch-upload',
+      component: BatchUpload
     }
   ]
 })

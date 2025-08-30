@@ -34,6 +34,9 @@ PyPDF2==3.0.1
 python-docx==1.1.0
 striprtf==0.0.26
 
+# Caching
+redis==5.0.1
+
 # Logging and monitoring
 structlog==23.2.0
 sentry-sdk[fastapi]==1.38.0
