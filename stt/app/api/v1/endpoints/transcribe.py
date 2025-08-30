@@ -68,3 +68,38 @@ async def transcribe_audio_file(
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/model-status")
+async def get_model_status() -> Dict[str, Any]:
+    """Get Whisper model loading status and information"""
+    try:
+        transcribe_service = TranscribeService()
+        status = transcribe_service.get_model_status()
+        return status
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/reload-model")
+async def reload_model() -> Dict[str, Any]:
+    """Force reload Whisper model"""
+    try:
+        transcribe_service = TranscribeService()
+        # Reset the loaded flag to force reload
+        transcribe_service._models_loaded = False
+        transcribe_service._load_models()
+        return {"message": "Model reloaded successfully", "status": transcribe_service.get_model_status()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/clear-cache")
+async def clear_model_cache() -> Dict[str, Any]:
+    """Clear Whisper model cache"""
+    try:
+        transcribe_service = TranscribeService()
+        result = transcribe_service.clear_model_cache()
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

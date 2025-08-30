@@ -78,7 +78,8 @@ export const useHRStore = defineStore('hr', {
         this.loading = true
         this.error = null
         
-        const response = await axios.get(`${API_BASE_URL}/api/v1/hr/vacancies`)
+        // Используем новый API вакансий
+        const response = await axios.get(`${API_BASE_URL}/api/v1/vacancies/`)
         this.vacancies = response.data
         return response.data
       } catch (error) {
@@ -213,6 +214,25 @@ export const useHRStore = defineStore('hr', {
         }
       } catch (error) {
         this.error = error.response?.data?.detail || 'Failed to export all sessions'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async createSession(sessionData) {
+      try {
+        this.loading = true
+        this.error = null
+        
+        const response = await axios.post(`${API_BASE_URL}/api/v1/sessions/`, sessionData)
+        
+        // Add the new session to local state
+        this.sessions.unshift(response.data)
+        
+        return response.data
+      } catch (error) {
+        this.error = error.response?.data?.detail || 'Failed to create session'
         throw error
       } finally {
         this.loading = false

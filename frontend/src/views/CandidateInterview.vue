@@ -14,7 +14,7 @@
       <el-main>
         <el-row :gutter="20">
           <!-- Avatar Section -->
-          <el-col :span="8">
+          <el-col :span="6">
             <el-card class="avatar-card">
               <template #header>
                 <span>Аватар интервьюера</span>
@@ -30,11 +30,45 @@
             </el-card>
           </el-col>
           
+          <!-- Vacancy Info Section -->
+          <el-col :span="6" v-if="currentQuestion?.vacancy_context">
+            <el-card class="vacancy-info-card">
+              <template #header>
+                <span>Информация о вакансии</span>
+              </template>
+              
+              <div class="vacancy-info">
+                <div class="vacancy-title">
+                  <h4>{{ currentQuestion.vacancy_context.title }}</h4>
+                  <el-tag v-if="currentQuestion.vacancy_context.vacancy_code" type="info" size="small">
+                    {{ currentQuestion.vacancy_context.vacancy_code }}
+                  </el-tag>
+                </div>
+                
+                <div class="vacancy-details">
+                  <div v-if="currentQuestion.vacancy_context.requirements" class="detail-item">
+                    <strong>Требования:</strong>
+                    <p>{{ currentQuestion.vacancy_context.requirements }}</p>
+                  </div>
+                  
+                  <div v-if="currentQuestion.vacancy_context.experience_required" class="detail-item">
+                    <strong>Опыт:</strong>
+                    <p>{{ currentQuestion.vacancy_context.experience_required }}</p>
+                  </div>
+                  
+                  <div v-if="currentQuestion.vacancy_context.education_level" class="detail-item">
+                    <strong>Образование:</strong>
+                    <p>{{ currentQuestion.vacancy_context.education_level }}</p>
+                  </div>
+                </div>
+              </div>
+            </el-card>
+          </el-col>
+          
           <!-- Chat Section -->
-          <el-col :span="16">
+          <el-col :span="currentQuestion?.vacancy_context ? 12 : 18">
             <el-card class="chat-card">
               <template #header>
-                <span>Диалог интервью</span>
                 <div class="chat-controls">
                   <el-button 
                     type="success" 
@@ -180,6 +214,7 @@ const vadStatus = ref('listening') // 'listening', 'speaking', 'silence'
 const availableMicrophones = ref([])
 const selectedMicrophone = ref('')
 const lastVadChange = ref(0) // For debouncing
+const currentQuestion = ref(null)
 
 // Recording state
 let recordingInterval = null
@@ -258,10 +293,42 @@ const startInterview = async () => {
       `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
     )
     
+    // Get first question
+    await getNextQuestion()
+    
     ElMessage.success('Интервью началось')
   } catch (error) {
     ElMessage.error('Не удалось начать интервью')
     console.error('Error starting interview:', error)
+  }
+}
+
+const getNextQuestion = async () => {
+  try {
+    if (!sessionId.value) return
+    
+    const response = await fetch(`/api/v1/sessions/${sessionId.value}/next-question`)
+    if (response.ok) {
+      const questionData = await response.json()
+      currentQuestion.value = questionData
+      
+      // Add question to chat
+      addMessage({
+        id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        type: 'avatar',
+        text: questionData.question_text,
+        timestamp: new Date()
+      })
+      
+      // Save question to database
+      await saveMessageToDatabase(
+        questionData.question_text,
+        'avatar',
+        `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      )
+    }
+  } catch (error) {
+    console.error('Error getting next question:', error)
   }
 }
 
@@ -426,6 +493,11 @@ const processAudioMessage = async (audioBlob) => {
     
     // Get avatar response
     await getAvatarResponse(transcribedText)
+    
+    // Get next question after a short delay
+    setTimeout(async () => {
+      await getNextQuestion()
+    }, 2000)
     
   } catch (error) {
     ElMessage.error('Failed to process audio message')
@@ -906,6 +978,56 @@ const getAvailableMicrophones = async () => {
 
 .progress-item label {
   font-weight: 600;
+  color: #606266;
+}
+
+.vacancy-info-card {
+  height: 600px;
+}
+
+.vacancy-info {
+  height: 100%;
+  overflow-y: auto;
+}
+
+.vacancy-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.vacancy-title h4 {
+  margin: 0;
+  color: #303133;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.vacancy-details {
+  font-size: 14px;
+  color: #606266;
+}
+
+.detail-item {
+  margin-bottom: 12px;
+}
+
+.detail-item:last-child {
+  margin-bottom: 0;
+}
+
+.detail-item strong {
+  color: #303133;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.detail-item p {
+  margin: 0;
+  line-height: 1.4;
   color: #606266;
 }
 </style>

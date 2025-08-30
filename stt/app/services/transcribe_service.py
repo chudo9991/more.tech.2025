@@ -18,18 +18,34 @@ from app.core.config import settings
 
 
 class TranscribeService:
+    _instance = None
+    _initialized = False
+    
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(TranscribeService, cls).__new__(cls)
+        return cls._instance
+    
     def __init__(self):
-        print("Initializing TranscribeService...")
-        self.model = None
-        self.vad = None
-        self.minio_client = None
-        print("Calling _init_minio...")
-        self._init_minio()
-        print("TranscribeService initialized")
-        # Lazy load models on first use
+        if not self._initialized:
+            print("Initializing TranscribeService...")
+            self.model = None
+            self.vad = None
+            self.minio_client = None
+            self._models_loaded = False
+            print("Calling _init_minio...")
+            self._init_minio()
+            print("TranscribeService initialized")
+            # Load models immediately to avoid download on first request
+            self._load_models()
+            self._initialized = True
 
     def _load_models(self):
         """Load Whisper and VAD models"""
+        if self._models_loaded:
+            print("Models already loaded, skipping...")
+            return
+            
         try:
             print(f"Loading Whisper model: {settings.WHISPER_MODEL}")
             
@@ -40,25 +56,41 @@ class TranscribeService:
             
             if os.path.exists(model_path):
                 print(f"Model found in cache: {model_path}")
+                model_size = os.path.getsize(model_path)
+                model_size_mb = model_size / (1024 * 1024)
+                print(f"Model size: {model_size_mb:.1f} MB")
             else:
                 print(f"Model not found in cache, downloading: {settings.WHISPER_MODEL}")
+                print("This may take a few minutes on first run...")
             
             # Load Whisper model (will download if not cached)
             self.model = whisper.load_model(settings.WHISPER_MODEL)
             
-            # Get model info
-            model_size = os.path.getsize(model_path) if os.path.exists(model_path) else 0
-            model_size_mb = model_size / (1024 * 1024)
-            print(f"Whisper model loaded successfully: {settings.WHISPER_MODEL} ({model_size_mb:.1f} MB)")
+            # Verify model was loaded
+            if self.model is None:
+                raise Exception("Failed to load Whisper model")
+            
+            # Get final model info
+            if os.path.exists(model_path):
+                model_size = os.path.getsize(model_path)
+                model_size_mb = model_size / (1024 * 1024)
+                print(f"Whisper model loaded successfully: {settings.WHISPER_MODEL} ({model_size_mb:.1f} MB)")
+            else:
+                print(f"Whisper model loaded successfully: {settings.WHISPER_MODEL}")
             
             # Initialize VAD
             self.vad = webrtcvad.Vad(settings.VAD_AGGRESSIVENESS)
             print(f"VAD initialized with aggressiveness: {settings.VAD_AGGRESSIVENESS}")
             
+            # Mark models as loaded
+            self._models_loaded = True
+            print("All models loaded successfully!")
+            
         except Exception as e:
             print(f"Error loading models: {e}")
             import traceback
             traceback.print_exc()
+            raise Exception(f"Failed to load models: {str(e)}")
 
     def _init_minio(self):
         """Initialize MinIO client"""
@@ -93,8 +125,8 @@ class TranscribeService:
     ) -> Dict[str, Any]:
         """Transcribe audio file to text with VAD"""
         try:
-            # Lazy load models if not loaded
-            if self.model is None:
+            # Ensure models are loaded
+            if not self._models_loaded or self.model is None:
                 self._load_models()
             
             print(f"Starting transcription for {audio_url}")
@@ -385,3 +417,73 @@ class TranscribeService:
             return np.mean(confidences)
         else:
             return 0.8  # Default confidence
+
+    def get_model_status(self) -> Dict[str, Any]:
+        """Get model loading status and information"""
+        import os
+        
+        try:
+            cache_dir = os.path.expanduser("~/.cache/whisper")
+            model_path = os.path.join(cache_dir, f"{settings.WHISPER_MODEL}.pt")
+            
+            status = {
+                "whisper_model": settings.WHISPER_MODEL,
+                "model_loaded": self._models_loaded,
+                "model_exists": os.path.exists(model_path),
+                "vad_loaded": self.vad is not None,
+                "minio_connected": self.minio_client is not None
+            }
+            
+            if os.path.exists(model_path):
+                model_size = os.path.getsize(model_path)
+                status["model_size_mb"] = round(model_size / (1024 * 1024), 1)
+                status["model_path"] = model_path
+            else:
+                status["model_size_mb"] = 0
+                status["model_path"] = None
+            
+            return status
+            
+        except Exception as e:
+            return {
+                "error": str(e),
+                "whisper_model": settings.WHISPER_MODEL,
+                "model_loaded": False,
+                "model_exists": False,
+                "vad_loaded": False,
+                "minio_connected": False
+            }
+
+    def clear_model_cache(self) -> Dict[str, Any]:
+        """Clear Whisper model cache"""
+        import os
+        import shutil
+        
+        try:
+            cache_dir = os.path.expanduser("~/.cache/whisper")
+            model_path = os.path.join(cache_dir, f"{settings.WHISPER_MODEL}.pt")
+            
+            if os.path.exists(model_path):
+                os.remove(model_path)
+                print(f"Removed cached model: {model_path}")
+                
+                # Reset loaded flag
+                self._models_loaded = False
+                self.model = None
+                
+                return {
+                    "message": "Model cache cleared successfully",
+                    "removed_file": model_path,
+                    "model_loaded": False
+                }
+            else:
+                return {
+                    "message": "No cached model found",
+                    "model_loaded": False
+                }
+                
+        except Exception as e:
+            return {
+                "error": str(e),
+                "message": "Failed to clear model cache"
+            }

@@ -26,6 +26,19 @@ async def get_vacancies(
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.get("/statistics")
+async def get_statistics(
+    db: Session = Depends(get_db)
+) -> Dict[str, Any]:
+    """Get HR panel statistics"""
+    try:
+        hr_service = HRService(db)
+        statistics = await hr_service.get_statistics()
+        return statistics
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @router.get("/sessions", response_model=List[SessionListResponse])
 async def get_sessions(
     skip: int = Query(0, ge=0),

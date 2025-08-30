@@ -18,5 +18,5 @@ class VacancyQuestion(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships
-    vacancy = relationship("Vacancy")
-    question = relationship("Question")
+    vacancy = relationship("Vacancy", back_populates="vacancy_questions")
+    question = relationship("Question", back_populates="vacancy_questions")

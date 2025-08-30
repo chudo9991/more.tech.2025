@@ -22,6 +22,7 @@ class SessionListResponse(BaseModel):
     candidate_id: Optional[int]
     vacancy_id: Optional[str]
     vacancy_title: Optional[str] = None
+    vacancy_code: Optional[str] = None
     phone: Optional[str] = None
     status: str
     started_at: Optional[datetime]
@@ -65,6 +66,8 @@ class SessionDetailResponse(BaseModel):
     id: str
     candidate_id: Optional[int]
     vacancy_id: Optional[str]
+    vacancy_title: Optional[str] = None
+    vacancy_code: Optional[str] = None
     status: str
     started_at: Optional[datetime]
     finished_at: Optional[datetime]

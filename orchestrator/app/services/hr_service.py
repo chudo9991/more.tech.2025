@@ -19,6 +19,51 @@ class HRService:
         vacancies = self.db.query(Vacancy).all()
         return [VacancyResponse.from_orm(vacancy) for vacancy in vacancies]
 
+    async def get_statistics(self) -> Dict[str, Any]:
+        """Get HR panel statistics"""
+        try:
+            # Total sessions
+            total_sessions = self.db.query(SessionModel).count()
+            
+            # Completed sessions
+            completed_sessions = self.db.query(SessionModel).filter(
+                SessionModel.status == "completed"
+            ).count()
+            
+            # In progress sessions
+            in_progress_sessions = self.db.query(SessionModel).filter(
+                SessionModel.status == "in_progress"
+            ).count()
+            
+            # Created sessions
+            created_sessions = self.db.query(SessionModel).filter(
+                SessionModel.status == "created"
+            ).count()
+            
+            # Average score
+            completed_with_score = self.db.query(SessionModel).filter(
+                and_(
+                    SessionModel.status == "completed",
+                    SessionModel.total_score.isnot(None)
+                )
+            ).all()
+            
+            avg_score = 0.0
+            if completed_with_score:
+                total_score = sum(float(s.total_score) for s in completed_with_score)
+                avg_score = total_score / len(completed_with_score)
+            
+            return {
+                "total_sessions": total_sessions,
+                "completed_sessions": completed_sessions,
+                "in_progress_sessions": in_progress_sessions,
+                "created_sessions": created_sessions,
+                "avg_score": round(avg_score * 100, 1),  # Convert to percentage
+                "completion_rate": round((completed_sessions / total_sessions * 100) if total_sessions > 0 else 0, 1)
+            }
+        except Exception as e:
+            raise Exception(f"Ошибка загрузки статистики: {str(e)}")
+
     async def get_sessions(
         self, 
         skip: int = 0, 
@@ -45,7 +90,7 @@ class HRService:
         if vacancy_ids:
             from app.models import Vacancy
             vacancy_models = self.db.query(Vacancy).filter(Vacancy.id.in_(vacancy_ids)).all()
-            vacancies = {v.id: v.title for v in vacancy_models}
+            vacancies = {v.id: {'title': v.title, 'code': v.vacancy_code} for v in vacancy_models}
         
         candidates = {}
         if candidate_ids:
@@ -62,7 +107,9 @@ class HRService:
         result = []
         for session in sessions:
             session_data = SessionListResponse.from_orm(session)
-            session_data.vacancy_title = vacancies.get(session.vacancy_id)
+            vacancy_info = vacancies.get(session.vacancy_id, {})
+            session_data.vacancy_title = vacancy_info.get('title')
+            session_data.vacancy_code = vacancy_info.get('code')
             session_data.phone = candidates.get(session.candidate_id)
             session_data.total_steps = session_steps.get(session.id, 0)
             result.append(session_data)
@@ -107,10 +154,23 @@ class HRService:
                 created_at=qa_record.created_at
             ))
 
+        # Get vacancy info
+        vacancy_info = {}
+        if session.vacancy_id:
+            from app.models import Vacancy
+            vacancy = self.db.query(Vacancy).filter(Vacancy.id == session.vacancy_id).first()
+            if vacancy:
+                vacancy_info = {
+                    'title': vacancy.title,
+                    'code': vacancy.vacancy_code
+                }
+
         return SessionDetailResponse(
             id=session.id,
             candidate_id=session.candidate_id,
             vacancy_id=session.vacancy_id,
+            vacancy_title=vacancy_info.get('title'),
+            vacancy_code=vacancy_info.get('code'),
             status=session.status,
             started_at=session.started_at,
             finished_at=session.finished_at,

@@ -15,12 +15,17 @@
         <el-row :gutter="20">
           <!-- Statistics Cards -->
           <el-col :span="6" v-for="stat in statistics" :key="stat.title">
-            <el-card class="stat-card">
+            <el-card class="stat-card" shadow="hover">
               <div class="stat-content">
-                <div class="stat-value">{{ stat.value }}</div>
-                <div class="stat-title">{{ stat.title }}</div>
-                <div class="stat-change" :class="stat.trend">
-                  {{ stat.change }}
+                <div class="stat-icon" :class="stat.type">
+                  <el-icon><component :is="stat.icon" /></el-icon>
+                </div>
+                <div class="stat-info">
+                  <div class="stat-value">{{ stat.value }}</div>
+                  <div class="stat-title">{{ stat.title }}</div>
+                  <div class="stat-change" :class="stat.trend">
+                    {{ stat.change }}
+                  </div>
                 </div>
               </div>
             </el-card>
@@ -28,42 +33,63 @@
         </el-row>
 
         <!-- Filters -->
-        <el-card class="filter-card">
+        <el-card class="filter-card" shadow="never">
           <el-form :model="filters" inline>
-            <el-form-item label="Vacancy">
-              <el-select v-model="filters.vacancy_id" placeholder="All vacancies" clearable>
+            <el-form-item label="Вакансия">
+              <el-select v-model="filters.vacancy_id" placeholder="Все вакансии" clearable style="width: 250px">
                 <el-option
                   v-for="vacancy in vacancies"
                   :key="vacancy.id"
                   :label="vacancy.title"
                   :value="vacancy.id"
-                />
+                >
+                  <div class="vacancy-option">
+                    <div class="vacancy-title">{{ vacancy.title }}</div>
+                    <div class="vacancy-code" v-if="vacancy.vacancy_code">{{ vacancy.vacancy_code }}</div>
+                  </div>
+                </el-option>
               </el-select>
             </el-form-item>
-            <el-form-item label="Status">
-              <el-select v-model="filters.status" placeholder="All statuses" clearable>
-                <el-option label="Created" value="created" />
-                <el-option label="In Progress" value="in_progress" />
-                <el-option label="Completed" value="completed" />
-                <el-option label="Failed" value="failed" />
+            <el-form-item label="Статус">
+              <el-select v-model="filters.status" placeholder="Все статусы" clearable style="width: 150px">
+                <el-option label="Создано" value="created" />
+                <el-option label="В процессе" value="in_progress" />
+                <el-option label="Завершено" value="completed" />
+                <el-option label="Неудачно" value="failed" />
               </el-select>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" @click="applyFilters">Apply Filters</el-button>
-              <el-button @click="clearFilters">Clear</el-button>
+              <el-button type="primary" @click="applyFilters" :loading="loading">
+                <el-icon><Search /></el-icon>
+                Применить
+              </el-button>
+              <el-button @click="clearFilters">
+                <el-icon><Refresh /></el-icon>
+                Очистить
+              </el-button>
             </el-form-item>
           </el-form>
         </el-card>
 
         <!-- Sessions Table -->
-        <el-card>
+        <el-card shadow="never">
           <template #header>
             <div class="table-header">
-              <span>Interview Sessions</span>
-              <el-button type="success" @click="exportAllSessions">
-                <el-icon><Download /></el-icon>
-                Export All
-              </el-button>
+              <span>Сессии интервью</span>
+              <div class="table-actions">
+                <el-button type="primary" @click="showCreateSession" size="small">
+                  <el-icon><Plus /></el-icon>
+                  Новая сессия
+                </el-button>
+                <el-button @click="refreshData" :loading="loading" size="small">
+                  <el-icon><Refresh /></el-icon>
+                  Обновить
+                </el-button>
+                <el-button type="success" @click="exportAllSessions" size="small">
+                  <el-icon><Download /></el-icon>
+                  Экспорт всех
+                </el-button>
+              </div>
             </div>
           </template>
           
@@ -74,7 +100,14 @@
             class="sessions-table"
           >
             <el-table-column prop="id" label="ID Сессии" width="200" />
-            <el-table-column prop="vacancy_title" label="Вакансия" />
+            <el-table-column prop="vacancy_title" label="Вакансия" min-width="200">
+              <template #default="{ row }">
+                <div class="vacancy-info">
+                  <div class="vacancy-title">{{ row.vacancy_title || '—' }}</div>
+                  <div class="vacancy-code" v-if="row.vacancy_code">{{ row.vacancy_code }}</div>
+                </div>
+              </template>
+            </el-table-column>
             <el-table-column prop="phone" label="Телефон" width="150" />
             <el-table-column prop="status" label="Статус" width="120">
               <template #default="{ row }">
@@ -153,14 +186,21 @@
         @close="closeSessionDialog"
       />
     </el-dialog>
+
+    <!-- Create Session Dialog -->
+    <CreateSession
+      v-model:visible="createSessionDialog"
+      @created="handleSessionCreated"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Refresh, Download, Delete } from '@element-plus/icons-vue'
+import { Refresh, Download, Delete, Search, Document, Check, Clock, Star, Plus } from '@element-plus/icons-vue'
 import SessionDetail from '@/components/SessionDetail.vue'
+import CreateSession from '@/components/CreateSession.vue'
 import { useHRStore } from '@/stores/hr'
 
 const hrStore = useHRStore()
@@ -168,10 +208,10 @@ const hrStore = useHRStore()
 // Reactive data
 const loading = ref(false)
 const statistics = ref([
-  { title: 'Всего сессий', value: 0, change: '+0%', trend: 'neutral' },
-  { title: 'Завершено', value: 0, change: '+0%', trend: 'positive' },
-  { title: 'В процессе', value: 0, change: '+0%', trend: 'neutral' },
-  { title: 'Средний балл', value: '0%', change: '+0%', trend: 'positive' }
+  { title: 'Всего сессий', value: 0, change: '+0%', trend: 'neutral', icon: 'Document', type: 'primary' },
+  { title: 'Завершено', value: 0, change: '+0%', trend: 'positive', icon: 'Check', type: 'success' },
+  { title: 'В процессе', value: 0, change: '+0%', trend: 'neutral', icon: 'Clock', type: 'warning' },
+  { title: 'Средний балл', value: '0%', change: '+0%', trend: 'positive', icon: 'Star', type: 'info' }
 ])
 
 // Use store data
@@ -193,6 +233,8 @@ const sessionDialog = reactive({
   visible: false,
   sessionId: null
 })
+
+const createSessionDialog = ref(false)
 
 // Computed
 const queryParams = computed(() => ({
@@ -275,6 +317,17 @@ const viewSession = (session) => {
 const closeSessionDialog = () => {
   sessionDialog.visible = false
   sessionDialog.sessionId = null
+}
+
+const showCreateSession = () => {
+  createSessionDialog.value = true
+}
+
+const handleSessionCreated = (session) => {
+  // Refresh sessions list
+  loadSessions()
+  loadStatistics()
+  ElMessage.success('Сессия успешно создана')
 }
 
 const exportSession = async (session) => {
@@ -393,6 +446,32 @@ onMounted(async () => {
 }
 
 .stat-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+}
+
+.stat-icon.primary { background-color: #409eff; }
+.stat-icon.success { background-color: #67c23a; }
+.stat-icon.warning { background-color: #e6a23c; }
+.stat-icon.info { background-color: #909399; }
+
+.stat-info {
+  flex: 1;
+}
+
+.stat-content {
   text-align: center;
 }
 
@@ -452,5 +531,42 @@ onMounted(async () => {
 
 :deep(.el-table__row:hover) {
   background-color: #f5f7fa;
+}
+
+.vacancy-option {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.vacancy-option .vacancy-title {
+  font-weight: 500;
+  color: #303133;
+}
+
+.vacancy-option .vacancy-code {
+  font-size: 12px;
+  color: #909399;
+}
+
+.vacancy-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.vacancy-info .vacancy-title {
+  font-weight: 500;
+  color: #303133;
+}
+
+.vacancy-info .vacancy-code {
+  font-size: 12px;
+  color: #909399;
+}
+
+.table-actions {
+  display: flex;
+  gap: 8px;
 }
 </style>

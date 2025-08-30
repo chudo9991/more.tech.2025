@@ -35,9 +35,12 @@ class SessionNextResponse(BaseModel):
     question_id: str
     question_text: str
     question_type: str
+    vacancy_context: Optional[dict] = None
     criteria: List[dict]
     current_step: int
     total_steps: int
+    question_weight: Optional[float] = 1.0
+    must_have: Optional[bool] = False
 
     class Config:
         from_attributes = True

@@ -13,6 +13,7 @@ class Session(Base):
     id = Column(String(50), primary_key=True, index=True)
     candidate_id = Column(Integer, ForeignKey("candidates.id"), nullable=True)
     vacancy_id = Column(String(50), ForeignKey("vacancies.id"), nullable=True)
+    vacancy_code = Column(String(50), nullable=True, index=True)
     phone = Column(String(20), nullable=True)
     email = Column(String(100), nullable=True)
     status = Column(String(50), default="created")
@@ -31,3 +32,4 @@ class Session(Base):
     qa_records = relationship("QA", back_populates="session", cascade="all, delete-orphan")
     media_files = relationship("Media", back_populates="session", cascade="all, delete-orphan")
     messages = relationship("Message", back_populates="session", cascade="all, delete-orphan")
+    session_context = relationship("SessionContext", back_populates="session", uselist=False, cascade="all, delete-orphan")

@@ -7,7 +7,7 @@ from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session as DBSession
 from sqlalchemy import and_, func
 
-from app.models import Session as SessionModel, QA, QAScore, Media, Question, Criteria
+from app.models import Session as SessionModel, QA, QAScore, Media, Question, Criteria, VacancyQuestion, QuestionCriterion
 from app.schemas.session import SessionCreate, SessionResponse, SessionNextResponse
 from app.core.config import settings
 import httpx
@@ -20,9 +20,18 @@ class SessionService:
     def create_session(self, session_data: SessionCreate) -> SessionResponse:
         """Create a new interview session"""
         try:
+            # Get vacancy info to set vacancy_code
+            vacancy_code = None
+            if session_data.vacancy_id:
+                from app.models import Vacancy
+                vacancy = self.db.query(Vacancy).filter(Vacancy.id == session_data.vacancy_id).first()
+                if vacancy:
+                    vacancy_code = vacancy.vacancy_code
+            
             session = SessionModel(
                 id=str(uuid.uuid4()),
                 vacancy_id=session_data.vacancy_id,
+                vacancy_code=vacancy_code,
                 phone=session_data.phone,
                 email=session_data.email,
                 status="created",
@@ -40,7 +49,7 @@ class SessionService:
             raise Exception(f"Failed to create session: {str(e)}")
 
     def get_next_question(self, session_id: str) -> SessionNextResponse:
-        """Get the next question for the session"""
+        """Get the next question for the session with vacancy context"""
         try:
             session = self.db.query(SessionModel).filter(
                 SessionModel.id == session_id
@@ -52,43 +61,74 @@ class SessionService:
             if session.status == "completed":
                 raise Exception("Session already completed")
             
-            # Get questions for this vacancy
-            questions = self.db.query(Question).join(
-                Question.vacancy_questions
-            ).filter(
-                Question.vacancy_questions.any(vacancy_id=session.vacancy_id)
-            ).order_by(Question.order_index).all()
+            # Get vacancy information for context
+            vacancy_info = None
+            if session.vacancy_id:
+                from app.models import Vacancy
+                vacancy = self.db.query(Vacancy).filter(Vacancy.id == session.vacancy_id).first()
+                if vacancy:
+                    vacancy_info = {
+                        "id": vacancy.id,
+                        "title": vacancy.title,
+                        "vacancy_code": vacancy.vacancy_code,
+                        "requirements": vacancy.requirements,
+                        "responsibilities": vacancy.responsibilities,
+                        "experience_required": vacancy.experience_required,
+                        "education_level": vacancy.education_level
+                    }
             
-            if session.current_step >= len(questions):
+            # Get questions for this vacancy with proper ordering
+            vacancy_questions = self.db.query(VacancyQuestion).filter(
+                VacancyQuestion.vacancy_id == session.vacancy_id
+            ).order_by(VacancyQuestion.step_no).all()
+            
+            if session.current_step >= len(vacancy_questions):
                 # Session completed
                 session.status = "completed"
-                session.completed_at = datetime.utcnow()
+                session.finished_at = datetime.utcnow()
                 self.db.commit()
                 raise Exception("No more questions available")
             
-            current_question = questions[session.current_step]
+            current_vacancy_question = vacancy_questions[session.current_step]
+            current_question = current_vacancy_question.question
             
-            # Get criteria for this question
-            criteria = self.db.query(Criteria).join(
-                Criteria.question_criteria
+            # Get criteria for this question with weights
+            criteria_data = self.db.query(Criteria, QuestionCriterion).join(
+                QuestionCriterion, Criteria.id == QuestionCriterion.criterion_id
             ).filter(
-                Criteria.question_criteria.any(question_id=current_question.id)
+                QuestionCriterion.question_id == current_question.id
             ).all()
+            
+            # Enhance question text with vacancy context if needed
+            question_text = current_question.text
+            if vacancy_info and current_question.is_vacancy_specific:
+                # Add vacancy context to question
+                context_parts = []
+                if vacancy_info.get("requirements"):
+                    context_parts.append(f"Требования к позиции: {vacancy_info['requirements']}")
+                if vacancy_info.get("responsibilities"):
+                    context_parts.append(f"Обязанности: {vacancy_info['responsibilities']}")
+                
+                if context_parts:
+                    question_text = f"{question_text}\n\nКонтекст вакансии:\n" + "\n".join(context_parts)
             
             return SessionNextResponse(
                 session_id=session_id,
                 question_id=current_question.id,
-                question_text=current_question.text,
+                question_text=question_text,
                 question_type=current_question.type,
+                vacancy_context=vacancy_info,
                 criteria=[{
                     "id": c.id,
                     "name": c.name,
-                    "weight": c.weight,
-                    "must_have": c.must_have,
-                    "min_score": c.min_score
-                } for c in criteria],
+                    "weight": float(qc.weight),
+                    "must_have": qc.must_have,
+                    "min_score": float(qc.min_score)
+                } for c, qc in criteria_data],
                 current_step=session.current_step + 1,
-                total_steps=session.total_steps
+                total_steps=len(vacancy_questions),
+                question_weight=float(current_vacancy_question.question_weight),
+                must_have=current_vacancy_question.must_have
             )
         except Exception as e:
             raise Exception(f"Failed to get next question: {str(e)}")
@@ -116,17 +156,17 @@ class SessionService:
                 Question.id == question_id
             ).first()
             
-            criteria = self.db.query(Criteria).join(
-                Criteria.question_criteria
+            criteria_data = self.db.query(Criteria, QuestionCriterion).join(
+                QuestionCriterion, Criteria.id == QuestionCriterion.criterion_id
             ).filter(
-                Criteria.question_criteria.any(question_id=question_id)
+                QuestionCriterion.question_id == question_id
             ).all()
             
             # 3. Score answer using LLM service
             scoring_result = await self._score_answer(
                 question.text,
                 transcription["text"],
-                criteria
+                criteria_data
             )
             
             # 4. Save QA record
@@ -171,9 +211,15 @@ class SessionService:
             
             # 7. Update session progress
             session.current_step += 1
-            if session.current_step >= session.total_steps:
+            
+            # Get total steps from vacancy questions
+            total_steps = self.db.query(VacancyQuestion).filter(
+                VacancyQuestion.vacancy_id == session.vacancy_id
+            ).count()
+            
+            if session.current_step >= total_steps:
                 session.status = "completed"
-                session.completed_at = datetime.utcnow()
+                session.finished_at = datetime.utcnow()
             
             self.db.commit()
             
@@ -381,16 +427,16 @@ class SessionService:
         self, 
         question: str, 
         answer_text: str, 
-        criteria: List[Criteria]
+        criteria_data: List[tuple]
     ) -> Dict[str, Any]:
         """Score answer using LLM service"""
         try:
             criteria_data = [{
                 "id": c.id,
-                "weight": c.weight,
-                "must_have": c.must_have,
-                "min_score": c.min_score
-            } for c in criteria]
+                "weight": float(qc.weight),
+                "must_have": qc.must_have,
+                "min_score": float(qc.min_score)
+            } for c, qc in criteria_data]
             
             async with httpx.AsyncClient() as client:
                 response = await client.post(

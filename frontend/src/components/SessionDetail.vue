@@ -26,6 +26,15 @@
               <span>{{ sessionData.session_id }}</span>
             </div>
             <div class="info-item">
+              <label>Вакансия:</label>
+              <div class="vacancy-info">
+                <span>{{ sessionData.vacancy_title || 'Не указана' }}</span>
+                <el-tag v-if="sessionData.vacancy_code" type="info" size="small" style="margin-left: 8px;">
+                  {{ sessionData.vacancy_code }}
+                </el-tag>
+              </div>
+            </div>
+            <div class="info-item">
               <label>Статус:</label>
               <el-tag :type="getStatusType(sessionData.status)">
                 {{ getStatusLabel(sessionData.status) }}

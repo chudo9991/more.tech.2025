@@ -102,6 +102,20 @@ async def get_session(
         raise HTTPException(status_code=404, detail="Session not found")
 
 
+@router.get("/{session_id}/next-question", response_model=SessionNextResponse)
+async def get_next_question(
+    session_id: str,
+    db: Session = Depends(get_db)
+) -> Dict[str, Any]:
+    """Get the next question for the session"""
+    try:
+        session_service = SessionService(db)
+        question = session_service.get_next_question(session_id)
+        return question
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @router.patch("/{session_id}")
 async def update_session(
     session_id: str,

@@ -11,6 +11,10 @@ from .media import Media
 from .vacancy_question import VacancyQuestion
 from .question_criterion import QuestionCriterion
 from .message import Message
+from .interview_scenario import InterviewScenario
+from .scenario_node import ScenarioNode
+from .scenario_transition import ScenarioTransition
+from .session_context import SessionContext
 
 __all__ = [
     "Candidate",
@@ -23,5 +27,9 @@ __all__ = [
     "Media",
     "VacancyQuestion",
     "QuestionCriterion",
-    "Message"
+    "Message",
+    "InterviewScenario",
+    "ScenarioNode",
+    "ScenarioTransition",
+    "SessionContext"
 ]
