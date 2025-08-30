@@ -92,6 +92,25 @@ class LLMService:
         except Exception as e:
             raise Exception(f"Chat failed: {str(e)}")
 
+    async def generate(self, prompt: str, max_tokens: int = 2000, temperature: float = 0.7, system_message: str = None) -> str:
+        """Generate text using Azure GPT-4o"""
+        try:
+            # Prepare messages
+            messages = []
+            
+            if system_message:
+                messages.append({"role": "system", "content": system_message})
+            
+            messages.append({"role": "user", "content": prompt})
+            
+            # Call Azure GPT-4o
+            response = await self._call_azure_gpt4o_messages(messages, max_tokens, temperature)
+            
+            return response
+            
+        except Exception as e:
+            raise Exception(f"Generation failed: {str(e)}")
+
     async def analyze_tone(self, text: str, session_id: str) -> Dict[str, Any]:
         """Analyze tone of voice from text"""
         try:
@@ -250,6 +269,24 @@ Rules:
             print(f"Azure GPT-4o call failed: {e}")
             return self._get_fallback_response(prompt)
 
+    async def _call_azure_gpt4o_messages(self, messages: List[Dict[str, str]], max_tokens: int = 2000, temperature: float = 0.7) -> str:
+        """Call Azure GPT-4o API with custom messages"""
+        if not self.client:
+            # Fallback response for skills extraction
+            return self._get_skills_fallback_response()
+        
+        try:
+            response = self.client.chat.completions.create(
+                model=settings.AZURE_OPENAI_DEPLOYMENT_NAME,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            print(f"Azure GPT-4o call failed: {e}")
+            return self._get_skills_fallback_response()
+
     def _parse_llm_response(self, response: str) -> Dict[str, Any]:
         """Parse LLM response as JSON"""
         try:
@@ -351,3 +388,46 @@ Please provide a corrected version with the same structure but valid JSON syntax
                 "emotion": "neutral",
                 "confidence": 0.5
             })
+
+    def _get_skills_fallback_response(self) -> str:
+        """Get fallback response for skills extraction"""
+        return json.dumps({
+            "skills": [
+                {
+                    "skill_name": "Python",
+                    "category": "programming",
+                    "importance": 0.9,
+                    "required_level": "intermediate",
+                    "is_mandatory": True,
+                    "alternatives": ["Python 3", "Python3"],
+                    "description": "Основной язык программирования для бэкенд разработки"
+                },
+                {
+                    "skill_name": "FastAPI",
+                    "category": "frameworks",
+                    "importance": 0.8,
+                    "required_level": "intermediate",
+                    "is_mandatory": True,
+                    "alternatives": ["Fast API", "FastAPI framework"],
+                    "description": "Современный веб-фреймворк для создания API"
+                },
+                {
+                    "skill_name": "PostgreSQL",
+                    "category": "database",
+                    "importance": 0.7,
+                    "required_level": "intermediate",
+                    "is_mandatory": False,
+                    "alternatives": ["Postgres", "PostgreSQL DB"],
+                    "description": "Реляционная база данных"
+                },
+                {
+                    "skill_name": "Docker",
+                    "category": "devops",
+                    "importance": 0.6,
+                    "required_level": "intermediate",
+                    "is_mandatory": False,
+                    "alternatives": ["Docker containers", "Containerization"],
+                    "description": "Контейнеризация приложений"
+                }
+            ]
+        })

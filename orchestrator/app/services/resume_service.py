@@ -6,14 +6,19 @@ from sqlalchemy.orm import Session as DBSession
 from sqlalchemy import and_, desc, func
 from datetime import datetime
 import uuid
+import logging
 
 from app.models import Resume, ResumeBlock, ResumeSkill, Vacancy
 from app.schemas.resume import ResumeCreate, ResumeUpdate, ResumeListResponse, ResumeResponse
+from app.schemas.vacancy_skills import ResumeSkillsAnalysisResponse
 from app.utils.file_storage import file_storage
 from app.services.text_extraction_service import text_extractor
 from app.services.resume_parser_service import resume_parser
 from app.services.relevance_scoring_service import relevance_scorer
 from app.services.cache_service import cache_service
+from app.services.vacancy_skills_extractor import vacancy_skills_extractor
+
+logger = logging.getLogger(__name__)
 
 
 class ResumeService:
@@ -312,7 +317,7 @@ class ResumeService:
                 self.db.commit()
                 
         except Exception as e:
-            print(f"Error calculating relevance score: {str(e)}")
+            logger.error(f"Error calculating relevance score: {str(e)}")
     
     async def calculate_resume_score(self, resume_id: str) -> Dict[str, Any]:
         """Calculate relevance score for resume with caching"""
@@ -357,6 +362,173 @@ class ResumeService:
                 "success": False,
                 "error": str(e)
             }
+    
+    async def analyze_resume_with_dynamic_skills(
+        self, 
+        resume_id: str, 
+        vacancy_id: str,
+        force_reload: bool = False
+    ) -> ResumeSkillsAnalysisResponse:
+        """
+        Analyze resume using dynamic skills from VacancySkillsExtractor
+        
+        Args:
+            resume_id: ID of the resume to analyze
+            vacancy_id: ID of the vacancy
+            force_reload: Force reload skills from LLM
+            
+        Returns:
+            ResumeSkillsAnalysisResponse with detailed analysis
+        """
+        try:
+            logger.info(f"Starting analysis for resume {resume_id} and vacancy {vacancy_id}")
+            
+            # Get resume
+            resume = self.get_resume(resume_id)
+            if not resume:
+                logger.warning(f"Resume {resume_id} not found")
+                return ResumeSkillsAnalysisResponse(
+                    success=False,
+                    resume_id=resume_id,
+                    vacancy_id=vacancy_id,
+                    skill_matches=[],
+                    overall_score=0.0,
+                    mandatory_skills_covered=0,
+                    total_mandatory_skills=0,
+                    analysis_time=0.0,
+                    strengths=[],
+                    weaknesses=[],
+                    recommendations=[],
+                    error="Resume not found"
+                )
+            
+            logger.info(f"Found resume: {resume.id}, status: {resume.status}")
+            
+            # Get vacancy
+            vacancy = self.db.query(Vacancy).filter(Vacancy.id == vacancy_id).first()
+            if not vacancy:
+                logger.warning(f"Vacancy {vacancy_id} not found")
+                return ResumeSkillsAnalysisResponse(
+                    success=False,
+                    resume_id=resume_id,
+                    vacancy_id=vacancy_id,
+                    skill_matches=[],
+                    overall_score=0.0,
+                    mandatory_skills_covered=0,
+                    total_mandatory_skills=0,
+                    analysis_time=0.0,
+                    strengths=[],
+                    weaknesses=[],
+                    recommendations=[],
+                    error="Vacancy not found"
+                )
+            
+            logger.info(f"Found vacancy: {vacancy.id}, title: {vacancy.title}")
+            
+            # Extract skills from vacancy
+            logger.info("Extracting skills from vacancy...")
+            skills_result = await vacancy_skills_extractor.extract_skills_from_vacancy(
+                vacancy=vacancy,
+                force_reload=force_reload
+            )
+            
+            if not skills_result.success:
+                logger.warning(f"Failed to extract skills: {skills_result.error}")
+                return ResumeSkillsAnalysisResponse(
+                    success=False,
+                    resume_id=resume_id,
+                    vacancy_id=vacancy_id,
+                    skill_matches=[],
+                    overall_score=0.0,
+                    mandatory_skills_covered=0,
+                    total_mandatory_skills=0,
+                    analysis_time=0.0,
+                    strengths=[],
+                    weaknesses=[],
+                    recommendations=[],
+                    error="Failed to extract skills from vacancy"
+                )
+            
+            logger.info(f"Extracted {len(skills_result.skills)} skills from vacancy")
+            
+            # Analyze resume with dynamic skills
+            logger.info("Analyzing resume with dynamic skills...")
+            analysis_result = await relevance_scorer.calculate_resume_score_with_dynamic_skills(
+                resume=resume,
+                vacancy=vacancy,
+                vacancy_skills=skills_result.skills
+            )
+            
+            logger.info(f"Analysis result success: {analysis_result.get('success')}")
+            if not analysis_result["success"]:
+                logger.warning(f"Analysis failed: {analysis_result.get('error')}")
+                return ResumeSkillsAnalysisResponse(
+                    success=False,
+                    resume_id=resume_id,
+                    vacancy_id=vacancy_id,
+                    skill_matches=[],
+                    overall_score=0.0,
+                    mandatory_skills_covered=0,
+                    total_mandatory_skills=0,
+                    analysis_time=0.0,
+                    strengths=[],
+                    weaknesses=[],
+                    recommendations=[],
+                    error="Failed to analyze resume"
+                )
+            
+            # Extract skills analysis from the result
+            skills_analysis = analysis_result.get("skills_analysis")
+            if skills_analysis:
+                logger.info("Skills analysis found in result")
+                return ResumeSkillsAnalysisResponse(
+                    success=True,
+                    resume_id=resume_id,
+                    vacancy_id=vacancy_id,
+                    skill_matches=skills_analysis.get("skill_matches", []),
+                    overall_score=skills_analysis.get("overall_score", 0.0),
+                    mandatory_skills_covered=skills_analysis.get("mandatory_skills_covered", 0),
+                    total_mandatory_skills=skills_analysis.get("total_mandatory_skills", 0),
+                    analysis_time=0.0,
+                    strengths=[],
+                    weaknesses=[],
+                    recommendations=[]
+                )
+            else:
+                logger.warning("No skills analysis in result")
+                return ResumeSkillsAnalysisResponse(
+                    success=False,
+                    resume_id=resume_id,
+                    vacancy_id=vacancy_id,
+                    skill_matches=[],
+                    overall_score=0.0,
+                    mandatory_skills_covered=0,
+                    total_mandatory_skills=0,
+                    analysis_time=0.0,
+                    strengths=[],
+                    weaknesses=[],
+                    recommendations=[],
+                    error="No skills analysis available"
+                )
+                
+        except Exception as e:
+            logger.error(f"Exception in analyze_resume_with_dynamic_skills: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return ResumeSkillsAnalysisResponse(
+                success=False,
+                resume_id=resume_id,
+                vacancy_id=vacancy_id,
+                skill_matches=[],
+                overall_score=0.0,
+                mandatory_skills_covered=0,
+                total_mandatory_skills=0,
+                analysis_time=0.0,
+                strengths=[],
+                weaknesses=[],
+                recommendations=[],
+                error=str(e)
+            )
     
     def _create_resume_blocks(self, resume: Resume, sections: Dict[str, str]):
         """Create resume blocks from parsed sections"""

@@ -63,6 +63,24 @@ async def analyze_tone(
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.post("/generate")
+async def generate_text(
+    request: Dict[str, Any]
+) -> Dict[str, Any]:
+    """Generate text using LLM"""
+    try:
+        llm_service = LLMService()
+        result = await llm_service.generate(
+            prompt=request.get("prompt", ""),
+            max_tokens=request.get("max_tokens", 2000),
+            temperature=request.get("temperature", 0.7),
+            system_message=request.get("system_message")
+        )
+        return {"response": result}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @router.get("/healthz")
 async def health_check() -> Dict[str, str]:
     """Health check endpoint"""

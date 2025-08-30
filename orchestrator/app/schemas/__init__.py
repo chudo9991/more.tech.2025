@@ -6,3 +6,9 @@ from .resume import (
     ResumeSkillCreate, ResumeSkillResponse,
     ResumeUploadRequest, ResumeAnalysisResponse, ResumeStatisticsResponse
 )
+from .vacancy_skills import (
+    VacancySkill, SkillCategory, SkillLevel,
+    VacancySkillsExtractionRequest, VacancySkillsExtractionResponse,
+    SkillAnalysisRequest, SkillMatch, ResumeSkillsAnalysisResponse,
+    SemanticMatchingRequest, SemanticMatch, SemanticMatchingResponse
+)

@@ -5,6 +5,7 @@ from typing import Dict, List, Any, Optional
 from decimal import Decimal
 from app.models import Resume, ResumeBlock, ResumeSkill, Vacancy
 from app.services.llm_resume_analyzer import llm_analyzer
+from app.schemas.vacancy_skills import VacancySkill, ResumeSkillsAnalysisResponse
 
 
 class RelevanceScoringService:
@@ -33,7 +34,7 @@ class RelevanceScoringService:
         try:
             # Get resume blocks and skills
             resume_blocks = resume.resume_blocks
-            resume_skills = resume.reskills
+            resume_skills = resume.resume_skills
             
             # Extract vacancy requirements
             vacancy_requirements = self._extract_vacancy_requirements(vacancy)
@@ -77,6 +78,107 @@ class RelevanceScoringService:
             }
             
         except Exception as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "total_score": 0,
+                "confidence_score": 0
+            }
+    
+    async def calculate_resume_score_with_dynamic_skills(
+        self, 
+        resume: Resume, 
+        vacancy: Vacancy,
+        vacancy_skills: List[VacancySkill]
+    ) -> Dict[str, Any]:
+        """
+        Calculate overall relevance score using dynamic skills from VacancySkillsExtractor
+        
+        Args:
+            resume: Resume object
+            vacancy: Vacancy object
+            vacancy_skills: List of skills extracted from vacancy
+            
+        Returns:
+            Dict with scoring results including dynamic skills analysis
+        """
+        try:
+            print(f"Starting calculate_resume_score_with_dynamic_skills for resume {resume.id}")
+            
+            # Get resume blocks and skills
+            resume_blocks = resume.resume_blocks
+            resume_skills = resume.resume_skills
+            
+            print(f"Resume blocks: {len(resume_blocks)}, skills: {len(resume_skills)}")
+            
+            # Extract vacancy requirements
+            vacancy_requirements = self._extract_vacancy_requirements(vacancy)
+            
+            # Calculate component scores
+            experience_score = await self._calculate_experience_score(resume_blocks, vacancy_requirements)
+            education_score = await self._calculate_education_score(resume_blocks, vacancy_requirements)
+            projects_score = await self._calculate_projects_score(resume_blocks, vacancy_requirements)
+            
+            print("Calculated component scores")
+            
+            # Calculate skills score using dynamic skills
+            print("Calculating dynamic skills score...")
+            skills_analysis = await self._calculate_dynamic_skills_score(resume, vacancy_skills, vacancy.id)
+            
+            print(f"Skills analysis success: {skills_analysis.success}")
+            
+            skills_score = {
+                "score": skills_analysis.overall_score,
+                "confidence": self._calculate_skills_confidence(skills_analysis.skill_matches),
+                "details": {
+                    "total_skills": len(vacancy_skills),
+                    "matched_skills": len([m for m in skills_analysis.skill_matches if m.match_score > 0]),
+                    "mandatory_skills_covered": skills_analysis.mandatory_skills_covered,
+                    "total_mandatory_skills": skills_analysis.total_mandatory_skills,
+                    "skill_matches": skills_analysis.skill_matches
+                }
+            }
+            
+            # Calculate weighted total score
+            total_score = (
+                experience_score["score"] * self.weights["experience"] +
+                skills_score["score"] * self.weights["skills"] +
+                education_score["score"] * self.weights["education"] +
+                projects_score["score"] * self.weights["projects"]
+            )
+            
+            # Calculate confidence score
+            confidence_score = self._calculate_confidence_score([
+                experience_score["confidence"],
+                skills_score["confidence"],
+                education_score["confidence"],
+                projects_score["confidence"]
+            ])
+            
+            result = {
+                "success": True,
+                "total_score": round(total_score, 2),
+                "confidence_score": round(confidence_score, 2),
+                "component_scores": {
+                    "experience": experience_score,
+                    "skills": skills_score,
+                    "education": education_score,
+                    "projects": projects_score
+                },
+                "weights": self.weights,
+                "recommendation": self._get_recommendation(total_score),
+                "strengths": self._identify_strengths(experience_score, skills_score, education_score, projects_score),
+                "weaknesses": self._identify_weaknesses(experience_score, skills_score, education_score, projects_score),
+                "skills_analysis": skills_analysis.dict() if skills_analysis.success else None
+            }
+            
+            print(f"Returning result with success: {result['success']}")
+            return result
+            
+        except Exception as e:
+            print(f"Exception in calculate_resume_score_with_dynamic_skills: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return {
                 "success": False,
                 "error": str(e),
@@ -313,6 +415,70 @@ class RelevanceScoringService:
             
         except Exception as e:
             return {"score": 0, "confidence": 0, "details": f"Error: {str(e)}"}
+    
+    async def _calculate_dynamic_skills_score(
+        self, 
+        resume: Resume, 
+        vacancy_skills: List[VacancySkill],
+        vacancy_id: str
+    ) -> ResumeSkillsAnalysisResponse:
+        """Calculate skills score using dynamic skills from VacancySkillsExtractor"""
+        try:
+            print(f"Starting _calculate_dynamic_skills_score for resume {resume.id}")
+            
+            # Get resume text from blocks
+            resume_text = self._extract_resume_text(resume.resume_blocks)
+            print(f"Extracted resume text length: {len(resume_text)}")
+            
+            # Analyze resume with dynamic skills
+            print("Calling llm_analyzer.analyze_resume_with_dynamic_skills...")
+            analysis_result = await llm_analyzer.analyze_resume_with_dynamic_skills(
+                resume_text=resume_text,
+                vacancy_skills=vacancy_skills,
+                vacancy_id=vacancy_id
+            )
+            
+            print(f"Analysis result success: {analysis_result.success}")
+            
+            # Set resume_id
+            analysis_result.resume_id = resume.id
+            
+            return analysis_result
+            
+        except Exception as e:
+            print(f"Exception in _calculate_dynamic_skills_score: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return ResumeSkillsAnalysisResponse(
+                success=False,
+                resume_id=resume.id,
+                vacancy_id=vacancy_id,
+                skill_matches=[],
+                overall_score=0.0,
+                mandatory_skills_covered=0,
+                total_mandatory_skills=0,
+                analysis_time=0.0,
+                strengths=[],
+                weaknesses=[],
+                recommendations=[],
+                error="Analysis failed"
+            )
+    
+    def _extract_resume_text(self, resume_blocks: List[ResumeBlock]) -> str:
+        """Extract text from resume blocks"""
+        text_parts = []
+        for block in resume_blocks:
+            if block.extracted_text:
+                text_parts.append(f"{block.block_type}: {block.extracted_text}")
+        return "\n\n".join(text_parts)
+    
+    def _calculate_skills_confidence(self, skill_matches: List[Any]) -> float:
+        """Calculate confidence score for skills analysis"""
+        if not skill_matches:
+            return 0.0
+        
+        total_confidence = sum(match.confidence for match in skill_matches)
+        return total_confidence / len(skill_matches)
     
     def _simple_experience_scoring(self, experience_text: str, requirements: Dict[str, Any]) -> float:
         """Simple experience scoring fallback"""

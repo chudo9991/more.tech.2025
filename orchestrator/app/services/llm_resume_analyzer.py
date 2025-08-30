@@ -6,6 +6,7 @@ import asyncio
 from typing import Dict, List, Any, Optional
 import httpx
 from app.core.config import settings
+from app.schemas.vacancy_skills import VacancySkill, SkillMatch, ResumeSkillsAnalysisResponse
 
 
 class LLMResumeAnalyzer:
@@ -335,6 +336,197 @@ class LLMResumeAnalyzer:
                 "error": str(e),
                 "questions": {}
             }
+    
+    async def analyze_resume_with_dynamic_skills(
+        self, 
+        resume_text: str, 
+        vacancy_skills: List[VacancySkill],
+        vacancy_id: str
+    ) -> ResumeSkillsAnalysisResponse:
+        """
+        Analyze resume using dynamic skills from VacancySkillsExtractor
+        
+        Args:
+            resume_text: Raw resume text
+            vacancy_skills: List of skills extracted from vacancy
+            vacancy_id: ID of the vacancy
+            
+        Returns:
+            ResumeSkillsAnalysisResponse with detailed skill matching
+        """
+        try:
+            # Create analysis prompt with dynamic skills
+            prompt = self._create_dynamic_skills_prompt(resume_text, vacancy_skills)
+            
+            # Send request to LLM service
+            response = await self._call_llm_service(prompt)
+            
+            # Parse and validate response
+            skill_matches = self._parse_skills_analysis_response(response, vacancy_skills)
+            
+            # Calculate overall metrics
+            overall_score = self._calculate_overall_score(skill_matches)
+            mandatory_skills_covered = self._count_mandatory_skills_covered(skill_matches)
+            total_mandatory_skills = self._count_total_mandatory_skills(vacancy_skills)
+            
+            return ResumeSkillsAnalysisResponse(
+                success=True,
+                resume_id="",  # Will be set by caller
+                vacancy_id=vacancy_id,
+                skill_matches=skill_matches,
+                overall_score=overall_score,
+                mandatory_skills_covered=mandatory_skills_covered,
+                total_mandatory_skills=total_mandatory_skills
+            )
+            
+        except Exception as e:
+            return ResumeSkillsAnalysisResponse(
+                success=False,
+                resume_id="",
+                vacancy_id=vacancy_id,
+                skill_matches=[],
+                overall_score=0.0,
+                mandatory_skills_covered=0,
+                total_mandatory_skills=0,
+                analysis_time=0.0,
+                strengths=[],
+                weaknesses=[],
+                recommendations=[],
+                error="Analysis failed"
+            )
+    
+    def _create_dynamic_skills_prompt(self, resume_text: str, vacancy_skills: List[VacancySkill]) -> str:
+        """Create prompt for dynamic skills analysis"""
+        
+        # Format skills for prompt
+        skills_info = []
+        for skill in vacancy_skills:
+            alternatives_text = f" (альтернативы: {', '.join(skill.alternatives)})" if skill.alternatives else ""
+            mandatory_text = " [ОБЯЗАТЕЛЬНЫЙ]" if skill.is_mandatory else ""
+            skills_info.append(
+                f"- {skill.skill_name}{alternatives_text}{mandatory_text}\n"
+                f"  Категория: {skill.category}\n"
+                f"  Важность: {skill.importance}\n"
+                f"  Требуемый уровень: {skill.required_level}\n"
+                f"  Описание: {skill.description or 'Не указано'}"
+            )
+        
+        skills_text = "\n".join(skills_info)
+        
+        prompt = f"""
+Ты - эксперт по анализу резюме и оценке соответствия навыков кандидата требованиям вакансии.
+
+АНАЛИЗИРУЙ РЕЗЮМЕ:
+{resume_text}
+
+ТРЕБУЕМЫЕ НАВЫКИ ДЛЯ ВАКАНСИИ:
+{skills_text}
+
+ИНСТРУКЦИИ:
+1. Проанализируй резюме и найди упоминания каждого требуемого навыка
+2. Оцени уровень владения каждым навыком (beginner/intermediate/expert)
+3. Рассчитай оценку соответствия (0.0-1.0) на основе:
+   - Наличия навыка в резюме
+   - Уровня владения
+   - Соответствия требуемому уровню
+   - Важности навыка
+4. Предоставь доказательства из резюме
+5. Учти альтернативные названия навыков
+
+ВЕРНИ РЕЗУЛЬТАТ В ФОРМАТЕ JSON:
+{{
+    "skill_matches": [
+        {{
+            "skill_name": "название навыка",
+            "category": "категория",
+            "required_level": "требуемый уровень",
+            "candidate_level": "уровень кандидата (beginner/intermediate/expert)",
+            "match_score": 0.85,
+            "confidence": 0.9,
+            "evidence": ["доказательства из резюме"],
+            "is_mandatory": true/false,
+            "importance": 0.8
+        }}
+    ]
+}}
+
+ВАЖНО: 
+- Отвечай ТОЛЬКО в формате JSON
+- Не добавляй дополнительный текст
+- Оценивай объективно на основе содержимого резюме
+- Если навык не найден, установи match_score = 0.0
+- Учитывай альтернативные названия навыков
+"""
+        
+        return prompt
+    
+    def _parse_skills_analysis_response(self, response: str, vacancy_skills: List[VacancySkill]) -> List[SkillMatch]:
+        """Parse LLM response for skills analysis"""
+        try:
+            # Try to extract JSON from response
+            json_start = response.find('{')
+            json_end = response.rfind('}') + 1
+            
+            if json_start == -1 or json_end == 0:
+                raise ValueError("No JSON found in response")
+            
+            json_str = response[json_start:json_end]
+            parsed = json.loads(json_str)
+            
+            skill_matches = []
+            llm_matches = parsed.get("skill_matches", [])
+            
+            # Create SkillMatch objects
+            for llm_match in llm_matches:
+                # Find corresponding vacancy skill
+                vacancy_skill = next(
+                    (s for s in vacancy_skills if s.skill_name.lower() == llm_match.get("skill_name", "").lower()),
+                    None
+                )
+                
+                if vacancy_skill:
+                    skill_match = SkillMatch(
+                        skill_name=llm_match.get("skill_name", vacancy_skill.skill_name),
+                        category=llm_match.get("category", vacancy_skill.category),
+                        required_level=llm_match.get("required_level", vacancy_skill.required_level),
+                        candidate_level=llm_match.get("candidate_level"),
+                        match_score=llm_match.get("match_score", 0.0),
+                        confidence=llm_match.get("confidence", 0.5),
+                        evidence=llm_match.get("evidence", []),
+                        is_mandatory=llm_match.get("is_mandatory", vacancy_skill.is_mandatory),
+                        importance=llm_match.get("importance", vacancy_skill.importance)
+                    )
+                    skill_matches.append(skill_match)
+            
+            return skill_matches
+            
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON response: {str(e)}")
+        except Exception as e:
+            raise ValueError(f"Failed to parse response: {str(e)}")
+    
+    def _calculate_overall_score(self, skill_matches: List[SkillMatch]) -> float:
+        """Calculate overall match score"""
+        if not skill_matches:
+            return 0.0
+        
+        total_weighted_score = 0.0
+        total_weight = 0.0
+        
+        for match in skill_matches:
+            weight = match.importance
+            total_weighted_score += match.match_score * weight
+            total_weight += weight
+        
+        return total_weighted_score / total_weight if total_weight > 0 else 0.0
+    
+    def _count_mandatory_skills_covered(self, skill_matches: List[SkillMatch]) -> int:
+        """Count mandatory skills that are covered"""
+        return sum(1 for match in skill_matches if match.is_mandatory and match.match_score >= 0.5)
+    
+    def _count_total_mandatory_skills(self, vacancy_skills: List[VacancySkill]) -> int:
+        """Count total mandatory skills"""
+        return sum(1 for skill in vacancy_skills if skill.is_mandatory)
     
     async def close(self):
         """Close HTTP client"""
