@@ -98,7 +98,44 @@ async def get_vacancy(
         vacancy = vacancy_service.get_vacancy(vacancy_id)
         if not vacancy:
             raise HTTPException(status_code=404, detail="Вакансия не найдена")
-        return vacancy
+        
+        # Получаем ключевые слова для вакансии
+        keywords = vacancy_service.get_vacancy_keywords(vacancy_id)
+        
+        # Создаем ответ с ключевыми словами
+        vacancy_dict = {
+            "id": vacancy.id,
+            "vacancy_code": vacancy.vacancy_code,
+            "title": vacancy.title,
+            "status": vacancy.status,
+            "region": vacancy.region,
+            "city": vacancy.city,
+            "address": vacancy.address,
+            "employment_type": vacancy.employment_type,
+            "contract_type": vacancy.contract_type,
+            "work_schedule": vacancy.work_schedule,
+            "business_trips": vacancy.business_trips,
+            "salary_min": vacancy.salary_min,
+            "salary_max": vacancy.salary_max,
+            "total_income": vacancy.total_income,
+            "annual_bonus_percent": vacancy.annual_bonus_percent,
+            "bonus_description": vacancy.bonus_description,
+            "responsibilities": vacancy.responsibilities,
+            "requirements": vacancy.requirements,
+            "education_level": vacancy.education_level,
+            "experience_required": vacancy.experience_required,
+            "special_programs": vacancy.special_programs,
+            "computer_skills": vacancy.computer_skills,
+            "foreign_languages": vacancy.foreign_languages,
+            "language_level": vacancy.language_level,
+            "additional_info": vacancy.additional_info,
+            "description": vacancy.description,
+            "created_at": vacancy.created_at,
+            "updated_at": vacancy.updated_at,
+            "section_keywords": keywords
+        }
+        
+        return vacancy_dict
     except HTTPException:
         raise
     except Exception as e:
@@ -116,7 +153,44 @@ async def get_vacancy_by_code(
         vacancy = vacancy_service.get_vacancy_by_code(vacancy_code)
         if not vacancy:
             raise HTTPException(status_code=404, detail="Вакансия не найдена")
-        return vacancy
+        
+        # Получаем ключевые слова для вакансии
+        keywords = vacancy_service.get_vacancy_keywords(vacancy.id)
+        
+        # Создаем ответ с ключевыми словами
+        vacancy_dict = {
+            "id": vacancy.id,
+            "vacancy_code": vacancy.vacancy_code,
+            "title": vacancy.title,
+            "status": vacancy.status,
+            "region": vacancy.region,
+            "city": vacancy.city,
+            "address": vacancy.address,
+            "employment_type": vacancy.employment_type,
+            "contract_type": vacancy.contract_type,
+            "work_schedule": vacancy.work_schedule,
+            "business_trips": vacancy.business_trips,
+            "salary_min": vacancy.salary_min,
+            "salary_max": vacancy.salary_max,
+            "total_income": vacancy.total_income,
+            "annual_bonus_percent": vacancy.annual_bonus_percent,
+            "bonus_description": vacancy.bonus_description,
+            "responsibilities": vacancy.responsibilities,
+            "requirements": vacancy.requirements,
+            "education_level": vacancy.education_level,
+            "experience_required": vacancy.experience_required,
+            "special_programs": vacancy.special_programs,
+            "computer_skills": vacancy.computer_skills,
+            "foreign_languages": vacancy.foreign_languages,
+            "language_level": vacancy.language_level,
+            "additional_info": vacancy.additional_info,
+            "description": vacancy.description,
+            "created_at": vacancy.created_at,
+            "updated_at": vacancy.updated_at,
+            "section_keywords": keywords
+        }
+        
+        return vacancy_dict
     except HTTPException:
         raise
     except Exception as e:

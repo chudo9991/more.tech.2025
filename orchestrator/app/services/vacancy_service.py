@@ -8,7 +8,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 
 from app.models.vacancy import Vacancy
+from app.models.vacancy_section_keywords import VacancySectionKeywords
 from app.schemas.vacancy import VacancyCreate, VacancyUpdate
+from app.schemas.vacancy_keywords import VacancySectionKeywordsResponse
 
 
 class VacancyService:
@@ -103,6 +105,26 @@ class VacancyService:
             query = query.filter(search_filter)
         
         return query.offset(skip).limit(limit).all()
+    
+    def get_vacancy_keywords(self, vacancy_id: str) -> List[VacancySectionKeywordsResponse]:
+        """Получает ключевые слова для вакансии"""
+        keywords_records = self.db.query(VacancySectionKeywords).filter(
+            VacancySectionKeywords.vacancy_id == vacancy_id
+        ).all()
+        
+        return [
+            VacancySectionKeywordsResponse(
+                id=record.id,
+                vacancy_id=record.vacancy_id,
+                section_type=record.section_type,
+                keywords=record.keywords,
+                confidence_score=record.confidence_score,
+                extraction_date=record.extraction_date,
+                created_at=record.created_at,
+                updated_at=record.updated_at
+            )
+            for record in keywords_records
+        ]
     
     def get_vacancy(self, vacancy_id: str) -> Optional[Vacancy]:
         """Получает вакансию по ID"""

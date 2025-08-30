@@ -5,9 +5,6 @@
         <div class="header-content">
           <div class="header-left">
             <h1>{{ isEdit ? 'Редактирование вакансии' : 'Создание вакансии' }}</h1>
-            <p class="header-subtitle">
-              {{ isEdit ? 'Обновите информацию о вакансии' : 'Заполните информацию о новой вакансии' }}
-            </p>
           </div>
           <div class="header-actions">
             <el-button @click="goBack" size="large">
@@ -219,6 +216,15 @@
                 maxlength="2000"
                 show-word-limit
               />
+              <!-- Keywords Section for Responsibilities -->
+              <KeywordsSection
+                v-if="isEdit && hasVacancyId"
+                :vacancy-id="vacancyId"
+                section-type="responsibilities"
+                section-title="Обязанности"
+                :section-text="form.responsibilities"
+                @keywords-updated="handleKeywordsUpdated"
+              />
             </el-form-item>
             
             <el-form-item label="Требования" prop="requirements">
@@ -229,6 +235,15 @@
                 placeholder="Опишите требования к кандидату"
                 maxlength="2000"
                 show-word-limit
+              />
+              <!-- Keywords Section for Requirements -->
+              <KeywordsSection
+                v-if="isEdit && hasVacancyId"
+                :vacancy-id="vacancyId"
+                section-type="requirements"
+                section-title="Требования"
+                :section-text="form.requirements"
+                @keywords-updated="handleKeywordsUpdated"
               />
             </el-form-item>
             
@@ -264,6 +279,15 @@
                 :rows="3"
                 placeholder="Укажите требуемые программы"
               />
+              <!-- Keywords Section for Special Programs -->
+              <KeywordsSection
+                v-if="isEdit && hasVacancyId"
+                :vacancy-id="vacancyId"
+                section-type="programs"
+                section-title="Специальные программы"
+                :section-text="form.special_programs"
+                @keywords-updated="handleKeywordsUpdated"
+              />
             </el-form-item>
             
             <el-form-item label="Компьютерные навыки" prop="computer_skills">
@@ -273,12 +297,30 @@
                 :rows="3"
                 placeholder="Опишите требуемые компьютерные навыки"
               />
+              <!-- Keywords Section for Computer Skills -->
+              <KeywordsSection
+                v-if="isEdit && hasVacancyId"
+                :vacancy-id="vacancyId"
+                section-type="skills"
+                section-title="Компьютерные навыки"
+                :section-text="form.computer_skills"
+                @keywords-updated="handleKeywordsUpdated"
+              />
             </el-form-item>
             
             <el-row :gutter="20">
               <el-col :span="12">
                 <el-form-item label="Иностранные языки" prop="foreign_languages">
                   <el-input v-model="form.foreign_languages" placeholder="Укажите языки" />
+                  <!-- Keywords Section for Languages -->
+                  <KeywordsSection
+                    v-if="isEdit && hasVacancyId"
+                    :vacancy-id="vacancyId"
+                    section-type="languages"
+                    section-title="Иностранные языки"
+                    :section-text="form.foreign_languages"
+                    @keywords-updated="handleKeywordsUpdated"
+                  />
                 </el-form-item>
               </el-col>
               <el-col :span="12">
@@ -312,6 +354,15 @@
                 maxlength="1000"
                 show-word-limit
               />
+              <!-- Keywords Section for Description -->
+              <KeywordsSection
+                v-if="isEdit && hasVacancyId"
+                :vacancy-id="vacancyId"
+                section-type="description"
+                section-title="Описание вакансии"
+                :section-text="form.description"
+                @keywords-updated="handleKeywordsUpdated"
+              />
             </el-form-item>
             
             <el-form-item label="Дополнительная информация" prop="additional_info">
@@ -320,6 +371,15 @@
                 type="textarea"
                 :rows="4"
                 placeholder="Любая дополнительная информация"
+              />
+              <!-- Keywords Section for Additional Info -->
+              <KeywordsSection
+                v-if="isEdit && hasVacancyId"
+                :vacancy-id="vacancyId"
+                section-type="additional"
+                section-title="Дополнительная информация"
+                :section-text="form.additional_info"
+                @keywords-updated="handleKeywordsUpdated"
               />
             </el-form-item>
           </el-card>
@@ -330,17 +390,19 @@
 </template>
 
 <script>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { 
   ArrowLeft, Check, Document, Briefcase, Money, User, InfoFilled
 } from '@element-plus/icons-vue'
+import KeywordsSection from '@/components/KeywordsSection.vue'
 
 export default {
   name: 'VacancyForm',
   components: {
-    ArrowLeft, Check, Document, Briefcase, Money, User, InfoFilled
+    ArrowLeft, Check, Document, Briefcase, Money, User, InfoFilled,
+    KeywordsSection
   },
   setup() {
     const route = useRoute()
@@ -348,6 +410,16 @@ export default {
     const formRef = ref()
     const saving = ref(false)
     const isEdit = ref(false)
+    
+    // Computed properties для безопасного доступа к route.params
+    const vacancyId = computed(() => route?.params?.id || null)
+    const hasVacancyId = computed(() => !!vacancyId.value)
+    
+    // Проверяем, что route доступен
+    if (!route) {
+      console.error('Route is not available')
+      return {}
+    }
     
     const form = reactive({
       title: '',
@@ -404,8 +476,8 @@ export default {
         await formRef.value.validate()
         saving.value = true
         
-        const url = isEdit.value 
-          ? `/api/v1/vacancies/${route.params.id}`
+        const url = isEdit.value && vacancyId.value
+          ? `/api/v1/vacancies/${vacancyId.value}`
           : '/api/v1/vacancies/'
         
         const method = isEdit.value ? 'PUT' : 'POST'
@@ -441,10 +513,15 @@ export default {
       router.push('/vacancies')
     }
 
+    const handleKeywordsUpdated = (data) => {
+      console.log('Keywords updated:', data)
+      // Можно добавить дополнительную логику обработки обновления ключевых слов
+    }
+
     onMounted(() => {
-      if (route.params.id) {
+      if (vacancyId.value) {
         isEdit.value = true
-        loadVacancy(route.params.id)
+        loadVacancy(vacancyId.value)
       }
     })
 
@@ -454,8 +531,11 @@ export default {
       rules,
       saving,
       isEdit,
+      vacancyId,
+      hasVacancyId,
       saveVacancy,
-      goBack
+      goBack,
+      handleKeywordsUpdated
     }
   }
 }
@@ -467,29 +547,47 @@ export default {
   background-color: #f5f7fa;
 }
 
+:deep(.el-header) {
+  background-color: #409eff;
+  color: white;
+  height: 80px;
+}
+
 .header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
   height: 100%;
+  padding: 0 20px;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
 }
 
 .header-left h1 {
-  margin: 0 0 8px 0;
+  margin: 0;
   color: #303133;
   font-size: 28px;
   font-weight: 600;
+  line-height: 1.2;
 }
 
 .header-subtitle {
-  margin: 0;
+  margin: 8px 0 0 0;
   color: #909399;
   font-size: 14px;
 }
 
+
+
 .header-actions {
   display: flex;
   gap: 12px;
+  align-items: center;
 }
 
 .vacancy-form-content {
@@ -541,5 +639,32 @@ export default {
 
 :deep(.el-switch) {
   margin-top: 8px;
+}
+
+/* Keywords section styling */
+:deep(.keywords-section) {
+  margin-top: 12px;
+  border: 1px solid #e4e7ed;
+  border-radius: 6px;
+  background-color: #fafafa;
+}
+
+:deep(.keywords-header) {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e4e7ed;
+  background-color: #f5f7fa;
+}
+
+:deep(.keywords-content) {
+  padding: 16px;
+}
+
+:deep(.keywords-empty) {
+  padding: 20px;
+  text-align: center;
+}
+
+:deep(.keywords-loading) {
+  padding: 16px;
 }
 </style>

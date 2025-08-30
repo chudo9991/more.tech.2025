@@ -196,8 +196,6 @@ import { ElMessage } from 'element-plus'
 import { User, VideoCamera } from '@element-plus/icons-vue'
 import { uploadAudioToMinio } from '@/utils/minio'
 
-const route = useRoute()
-
 // Reactive data
 const sessionData = ref(null)
 const avatarUrl = ref('')

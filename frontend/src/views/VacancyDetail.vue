@@ -19,6 +19,10 @@
               <el-icon><ArrowLeft /></el-icon>
               Назад
             </el-button>
+            <el-button @click="openKeywordsManager" type="primary" size="large">
+              <el-icon><Star /></el-icon>
+              Ключевые слова
+            </el-button>
             <el-button @click="editVacancy" type="warning" size="large">
               <el-icon><Edit /></el-icon>
               Редактировать
@@ -294,6 +298,22 @@
         </div>
       </el-main>
     </el-container>
+
+    <!-- Keywords Manager Modal -->
+    <el-dialog
+      v-model="keywordsManagerVisible"
+      title="Управление ключевыми словами"
+      width="90%"
+      :fullscreen="true"
+      :before-close="closeKeywordsManager"
+    >
+      <KeywordsManager
+        v-if="route.params.id"
+        :vacancy-id="route.params.id"
+        :vacancy-data="vacancy"
+        @keywords-updated="handleKeywordsUpdated"
+      />
+    </el-dialog>
   </div>
 </template>
 
@@ -302,21 +322,36 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { 
-  ArrowLeft, Edit, Download, Document, Briefcase, Money, User, InfoFilled, Setting
+  ArrowLeft, Edit, Download, Document, Briefcase, Money, User, InfoFilled, Setting, Star
 } from '@element-plus/icons-vue'
+import KeywordsManager from '@/components/KeywordsManager.vue'
 
 export default {
   name: 'VacancyDetail',
   components: {
-    ArrowLeft, Edit, Download, Document, Briefcase, Money, User, InfoFilled, Setting
+    ArrowLeft, Edit, Download, Document, Briefcase, Money, User, InfoFilled, Setting, Star,
+    KeywordsManager
   },
   setup() {
     const route = useRoute()
     const router = useRouter()
     const loading = ref(false)
     const vacancy = ref({})
+    const keywordsManagerVisible = ref(false)
+    
+    // Проверяем, что route доступен
+    if (!route) {
+      console.error('Route is not available')
+      return {}
+    }
 
     const loadVacancy = async () => {
+      if (!route?.params?.id) {
+        ElMessage.error('ID вакансии не найден')
+        router.push('/vacancies')
+        return
+      }
+      
       loading.value = true
       try {
         const response = await fetch(`/api/v1/vacancies/${route.params.id}`)
@@ -333,6 +368,10 @@ export default {
     }
 
     const editVacancy = () => {
+      if (!route?.params?.id) {
+        ElMessage.error('ID вакансии не найден')
+        return
+      }
       router.push(`/vacancies/${route.params.id}/edit`)
     }
 
@@ -342,6 +381,19 @@ export default {
 
     const goBack = () => {
       router.push('/vacancies')
+    }
+
+    const openKeywordsManager = () => {
+      keywordsManagerVisible.value = true
+    }
+
+    const closeKeywordsManager = () => {
+      keywordsManagerVisible.value = false
+    }
+
+    const handleKeywordsUpdated = (data) => {
+      console.log('Keywords updated:', data)
+      // Можно добавить дополнительную логику обработки обновления ключевых слов
     }
 
     const getStatusType = (status) => {
@@ -433,9 +485,13 @@ export default {
     return {
       loading,
       vacancy,
+      keywordsManagerVisible,
       editVacancy,
       exportVacancy,
       goBack,
+      openKeywordsManager,
+      closeKeywordsManager,
+      handleKeywordsUpdated,
       getStatusType,
       getStatusLabel,
       getEmploymentTypeLabel,

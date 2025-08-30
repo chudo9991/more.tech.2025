@@ -15,34 +15,42 @@ class ResumeParserService:
             'experience': [
                 r'(?i)(опыт работы|work experience|experience|employment history|трудовая деятельность)',
                 r'(?i)(место работы|job|position|должность)',
-                r'(?i)(компания|company|организация|organization)'
+                r'(?i)(компания|company|организация|organization)',
+                r'(?i)(проекты на фриланс|freelance projects)',
+                r'(?i)(август|январь|февраль|март|апрель|май|июнь|июль|сентябрь|октябрь|ноябрь|декабрь)\s+\d{4}'
             ],
             'education': [
                 r'(?i)(образование|education|учебное заведение|university|college)',
                 r'(?i)(диплом|degree|специальность|specialty)',
-                r'(?i)(курсы|courses|обучение|training)'
+                r'(?i)(курсы|courses|обучение|training)',
+                r'(?i)(институт|университет|академия|техникум)'
             ],
             'skills': [
                 r'(?i)(навыки|skills|технологии|technologies|технические навыки)',
                 r'(?i)(языки программирования|programming languages)',
-                r'(?i)(инструменты|tools|фреймворки|frameworks)'
+                r'(?i)(инструменты|tools|фреймворки|frameworks)',
+                r'(?i)(windows|linux|mac|python|java|sql|git|docker)'
             ],
             'projects': [
                 r'(?i)(проекты|projects|портфолио|portfolio)',
-                r'(?i)(разработка|development|создание|creation)'
+                r'(?i)(разработка|development|создание|creation)',
+                r'(?i)(реализованные проекты|completed projects)'
             ],
             'languages': [
                 r'(?i)(языки|languages|иностранные языки|foreign languages)',
-                r'(?i)(английский|english|русский|russian)'
+                r'(?i)(английский|english|русский|russian)',
+                r'(?i)(уровень владения|proficiency level)'
             ],
             'certificates': [
                 r'(?i)(сертификаты|certificates|сертификация|certification)',
-                r'(?i)(аттестация|attestation|лицензии|licenses)'
+                r'(?i)(аттестация|attestation|лицензии|licenses)',
+                r'(?i)(полученные сертификаты|obtained certificates)'
             ],
             'personal_info': [
                 r'(?i)(личная информация|personal information|контакты|contacts)',
                 r'(?i)(имя|name|телефон|phone|email|почта)',
-                r'(?i)(адрес|address|город|city)'
+                r'(?i)(адрес|address|город|city)',
+                r'(?i)(дата рождения|birth date|возраст|age)'
             ]
         }
         
@@ -70,12 +78,13 @@ class ResumeParserService:
             ]
         }
     
-    def parse_resume(self, text: str) -> Dict[str, Any]:
+    async def parse_resume(self, text: str, vacancy_requirements: Dict[str, Any] = None) -> Dict[str, Any]:
         """
         Parse resume text and extract structured information
         
         Args:
             text: Raw resume text
+            vacancy_requirements: Vacancy requirements for context-aware parsing
             
         Returns:
             Dict with structured resume data
@@ -84,8 +93,20 @@ class ResumeParserService:
             # Clean and normalize text
             cleaned_text = self._clean_text(text)
             
-            # Extract sections
-            sections = self._extract_sections(cleaned_text)
+            # Use LLM for intelligent parsing if vacancy requirements are provided
+            if vacancy_requirements:
+                try:
+                    sections = await self._extract_sections_with_llm(cleaned_text, vacancy_requirements)
+                except Exception as e:
+                    print(f"DEBUG: LLM parsing failed, using regex fallback: {str(e)}")
+                    sections = self._extract_sections(cleaned_text)
+            else:
+                sections = self._extract_sections(cleaned_text)
+            
+            # Debug logging
+            print(f"DEBUG: Found {len(sections)} sections: {list(sections.keys())}")
+            for section_name, section_text in sections.items():
+                print(f"DEBUG: Section '{section_name}' has {len(section_text)} characters")
             
             # Extract skills
             skills = self._extract_skills(cleaned_text)
@@ -125,6 +146,96 @@ class ResumeParserService:
                 "personal_info": {},
                 "summary": {}
             }
+    
+    async def _extract_sections_with_llm(self, text: str, vacancy_requirements: Dict[str, Any]) -> Dict[str, str]:
+        """Extract sections using LLM based on vacancy requirements"""
+        try:
+            # Import LLM service
+            from app.services.llm_resume_analyzer import LLMResumeAnalyzer
+            
+            llm_analyzer = LLMResumeAnalyzer()
+            
+            # Create prompt for section extraction
+            prompt = self._create_section_extraction_prompt(text, vacancy_requirements)
+            
+            # Call LLM
+            llm_result = await llm_analyzer._call_llm_service(prompt)
+            
+            # Parse LLM response
+            sections = self._parse_llm_sections_response(llm_result)
+            
+            return sections
+            
+        except Exception as e:
+            print(f"DEBUG: LLM section extraction failed: {str(e)}, falling back to regex")
+            return self._extract_sections(text)
+    
+    def _create_section_extraction_prompt(self, text: str, vacancy_requirements: Dict[str, Any]) -> str:
+        """Create prompt for LLM-based section extraction"""
+        prompt = f"""
+Ты - эксперт по анализу резюме. Проанализируй текст резюме и раздели его на секции, соответствующие требованиям вакансии.
+
+ТЕКСТ РЕЗЮМЕ:
+{text}
+
+ТРЕБОВАНИЯ ВАКАНСИИ:
+- Обязанности: {vacancy_requirements.get('responsibilities', 'Не указано')}
+- Требования: {vacancy_requirements.get('requirements', 'Не указано')}
+- Специальные программы: {vacancy_requirements.get('programs', 'Не указано')}
+- Дополнительная информация: {vacancy_requirements.get('additional', 'Не указано')}
+
+ЗАДАЧА:
+Раздели текст резюме на следующие секции, соответствующие структуре вакансии:
+
+1. **experience** - Опыт работы, соответствующий обязанностям вакансии
+2. **skills** - Навыки и технологии, соответствующие требованиям вакансии
+3. **programs** - Опыт работы со специальными программами
+4. **education** - Образование и обучение
+5. **personal_info** - Личная информация и контакты
+
+ТРЕБУЕМЫЙ ФОРМАТ ОТВЕТА (JSON):
+{{
+    "experience": "текст с опытом работы, соответствующим обязанностям вакансии",
+    "skills": "текст с навыками, соответствующими требованиям вакансии", 
+    "programs": "текст с опытом работы со специальными программами",
+    "education": "текст с образованием и обучением",
+    "personal_info": "текст с личной информацией"
+}}
+
+ВАЖНО:
+- Каждая секция должна содержать релевантную информацию из резюме
+- Если информация не найдена, оставь секцию пустой
+- Сопоставляй опыт кандидата с требованиями вакансии
+- Отвечай ТОЛЬКО в формате JSON, без дополнительного текста
+"""
+        return prompt
+    
+    def _parse_llm_sections_response(self, llm_response: str) -> Dict[str, str]:
+        """Parse LLM response for sections"""
+        try:
+            import json
+            
+            # Extract JSON from response
+            json_start = llm_response.find('{')
+            json_end = llm_response.rfind('}') + 1
+            
+            if json_start == -1 or json_end == 0:
+                raise ValueError("No JSON found in response")
+            
+            json_str = llm_response[json_start:json_end]
+            sections = json.loads(json_str)
+            
+            # Ensure all required sections exist
+            required_sections = ['experience', 'skills', 'programs', 'education', 'personal_info']
+            for section in required_sections:
+                if section not in sections:
+                    sections[section] = ""
+            
+            return sections
+            
+        except Exception as e:
+            print(f"DEBUG: Failed to parse LLM sections response: {str(e)}")
+            return {}
     
     def _clean_text(self, text: str) -> str:
         """Clean and normalize text"""
@@ -176,6 +287,84 @@ class ResumeParserService:
         # Save last section
         if current_content:
             sections[current_section] = '\n'.join(current_content)
+        
+        # Fallback: if no specific sections found, create sections based on content analysis
+        if len(sections) <= 1:
+            print(f"DEBUG: Using fallback section creation. Original sections: {list(sections.keys())}")
+            sections = self._create_fallback_sections(text)
+            print(f"DEBUG: After fallback, sections: {list(sections.keys())}")
+        
+        return sections
+    
+    def _create_fallback_sections(self, text: str) -> Dict[str, str]:
+        """Create sections based on content analysis when explicit headers are not found"""
+        sections = {}
+        
+        # Split text into lines and group by content type
+        lines = text.split('\n')
+        
+        # Analyze content and assign to sections
+        experience_content = []
+        skills_content = []
+        education_content = []
+        personal_content = []
+        
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+                
+            line_lower = line.lower()
+            
+            # Check for experience indicators
+            if any(keyword in line_lower for keyword in ['опыт работы', 'место работы', 'компания', 'должность', 'проект', 'август', 'январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь', 'настоящее время', 'фриланс']):
+                experience_content.append(line)
+            # Check for skills indicators
+            elif any(keyword in line_lower for keyword in ['навыки', 'технологии', 'windows', 'linux', 'mac', 'python', 'java', 'sql', 'git', 'docker', 'инструменты', 'dhcp', 'dns', 'gpo', 'service desk', '1c']):
+                skills_content.append(line)
+            # Check for education indicators
+            elif any(keyword in line_lower for keyword in ['образование', 'университет', 'институт', 'диплом', 'курсы', 'обучение', 'специальность']):
+                education_content.append(line)
+            # Check for personal info indicators
+            elif any(keyword in line_lower for keyword in ['имя', 'телефон', 'email', 'адрес', 'город', 'дата рождения', 'возраст']):
+                personal_content.append(line)
+            else:
+                # Default to experience if no clear category
+                experience_content.append(line)
+        
+        # Create sections
+        if experience_content:
+            sections['experience'] = '\n'.join(experience_content)
+        if skills_content:
+            sections['skills'] = '\n'.join(skills_content)
+        if education_content:
+            sections['education'] = '\n'.join(education_content)
+        if personal_content:
+            sections['personal_info'] = '\n'.join(personal_content)
+        
+        # If still no sections, force create multiple sections based on content
+        if not sections:
+            # Force split content into sections
+            text_lower = text.lower()
+            
+            # Find experience section
+            if any(keyword in text_lower for keyword in ['опыт работы', 'место работы', 'компания', 'должность']):
+                sections['experience'] = text
+            else:
+                # Split text into chunks and assign to different sections
+                lines = text.split('\n')
+                chunk_size = len(lines) // 3
+                
+                if chunk_size > 0:
+                    sections['experience'] = '\n'.join(lines[:chunk_size])
+                    sections['skills'] = '\n'.join(lines[chunk_size:chunk_size*2])
+                    sections['education'] = '\n'.join(lines[chunk_size*2:])
+                else:
+                    sections['experience'] = text
+        
+        print(f"DEBUG: Fallback created sections: {list(sections.keys())}")
+        for section_name, section_text in sections.items():
+            print(f"DEBUG: Fallback section '{section_name}' has {len(section_text)} characters")
         
         return sections
     

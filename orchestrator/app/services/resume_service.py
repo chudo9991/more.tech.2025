@@ -245,10 +245,31 @@ class ResumeService:
             if not extraction_result["success"]:
                 raise Exception(f"Text extraction failed: {extraction_result['error']}")
             
-            # Parse resume text
-            parsing_result = resume_parser.parse_resume(extraction_result["text"])
+            # Get vacancy requirements for context-aware parsing
+            vacancy_requirements = {}
+            if resume.vacancy_id:
+                vacancy = self.db.query(Vacancy).filter(Vacancy.id == resume.vacancy_id).first()
+                if vacancy:
+                    vacancy_requirements = {
+                        'responsibilities': vacancy.responsibilities or '',
+                        'requirements': vacancy.requirements or '',
+                        'programs': vacancy.special_programs or '',
+                        'additional': vacancy.additional_info or ''
+                    }
+            
+            # Parse resume text with vacancy context
+            logger.info(f"Parsing resume text with length: {len(extraction_result['text'])}")
+            logger.info(f"Vacancy requirements: {list(vacancy_requirements.keys())}")
+            
+            parsing_result = await resume_parser.parse_resume(
+                extraction_result["text"], 
+                vacancy_requirements
+            )
             if not parsing_result["success"]:
                 raise Exception(f"Resume parsing failed: {parsing_result['error']}")
+            
+            logger.info(f"Parsing result: {parsing_result['summary']}")
+            logger.info(f"Found sections: {list(parsing_result['sections'].keys())}")
             
             # Create resume blocks
             self._create_resume_blocks(resume, parsing_result["sections"])
@@ -259,7 +280,9 @@ class ResumeService:
             # Update resume with extracted data
             resume.status = "analyzed"
             resume.total_score = 0  # Will be calculated later
-            resume.confidence_score = parsing_result["summary"]["total_skills"] / 10  # Simple confidence based on skills found
+            # Calculate confidence based on skills found (0-100 scale)
+            total_skills = parsing_result["summary"]["total_skills"]
+            resume.confidence_score = min(total_skills * 2, 100.0)  # Max 2 points per skill, capped at 100%
             
             self.db.commit()
             
@@ -311,8 +334,19 @@ class ResumeService:
                 component_scores = scoring_result["component_scores"]
                 for block in resume.resume_blocks:
                     if block.block_type in component_scores:
-                        block.relevance_score = component_scores[block.block_type]["score"]
-                        block.analysis_notes = str(component_scores[block.block_type]["details"])
+                        component_score = component_scores[block.block_type]
+                        block.relevance_score = component_score["score"]
+                        block.confidence_score = component_score.get("confidence", 0)  # Добавили confidence
+                        
+                        # Convert details to human-readable text
+                        details = component_score["details"]
+                        if isinstance(details, dict):
+                            # Get analysis_text from LLM response
+                            analysis_text = details.get("analysis_text", str(details))
+                        else:
+                            analysis_text = str(details)
+                        
+                        block.analysis_notes = analysis_text
                 
                 self.db.commit()
                 
@@ -532,18 +566,28 @@ class ResumeService:
     
     def _create_resume_blocks(self, resume: Resume, sections: Dict[str, str]):
         """Create resume blocks from parsed sections"""
+        logger.info(f"Creating resume blocks for resume {resume.id}")
+        logger.info(f"Found sections: {list(sections.keys())}")
+        
         for section_name, section_text in sections.items():
+            logger.info(f"Processing section '{section_name}' with text length: {len(section_text)}")
             if section_text.strip():
                 block = ResumeBlock(
                     id=f"BLOCK_{uuid.uuid4().hex[:8].upper()}",
                     resume_id=resume.id,
                     block_type=section_name,
                     block_name=section_name.replace('_', ' ').title(),
-                    extracted_text=section_text[:1000],  # Limit text length
+                    extracted_text=section_text,  # Полный текст без ограничений
                     relevance_score=50.0,  # Default score
                     confidence_score=80.0  # Default confidence
                 )
                 self.db.add(block)
+                logger.info(f"Created block '{section_name}' with ID {block.id}")
+            else:
+                logger.warning(f"Section '{section_name}' has empty text, skipping")
+        
+        self.db.commit()
+        logger.info(f"Successfully created {len([s for s in sections.values() if s.strip()])} blocks")
     
     def _create_resume_skills(self, resume: Resume, skills: List[Dict[str, Any]]):
         """Create resume skills from parsed skills"""
@@ -555,6 +599,6 @@ class ResumeService:
                 skill_category=skill_data["category"],
                 experience_level="intermediate",  # Default level
                 confidence_score=skill_data.get("confidence", 80.0),
-                extracted_from=skill_data.get("context", "")[:500]  # Limit context length
+                extracted_from=skill_data.get("context", "")  # Полный контекст без ограничений
             )
             self.db.add(skill)

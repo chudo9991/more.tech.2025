@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || ''
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 export const useHRStore = defineStore('hr', {
   state: () => ({
@@ -272,6 +272,162 @@ export const useHRStore = defineStore('hr', {
       } catch (error) {
         console.error('Error refreshing data:', error)
         throw error
+      }
+    },
+
+    // Keywords management methods
+    async extractSectionKeywords(vacancyId, sectionType, forceReload = false) {
+      try {
+        this.loading = true
+        this.error = null
+        
+        const response = await axios.post(
+          `${API_BASE_URL}/api/v1/vacancy-keywords/vacancies/${vacancyId}/keywords/extract/${sectionType}`,
+          { force_reload: forceReload }
+        )
+        
+        return response.data
+      } catch (error) {
+        this.error = error.response?.data?.detail || 'Failed to extract keywords'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async extractAllKeywords(vacancyId, forceReload = false) {
+      try {
+        this.loading = true
+        this.error = null
+        
+        const response = await axios.post(
+          `${API_BASE_URL}/api/v1/vacancy-keywords/vacancies/${vacancyId}/keywords/extract-all`,
+          { force_reload: forceReload }
+        )
+        
+        return response.data
+      } catch (error) {
+        this.error = error.response?.data?.detail || 'Failed to extract all keywords'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async getSectionKeywords(vacancyId, sectionType) {
+      try {
+        this.loading = true
+        this.error = null
+        
+        const response = await axios.get(
+          `${API_BASE_URL}/api/v1/vacancy-keywords/vacancies/${vacancyId}/keywords/${sectionType}`
+        )
+        
+        return response.data
+      } catch (error) {
+        if (error.response?.status === 404) {
+          return null // Keywords not found
+        }
+        this.error = error.response?.data?.detail || 'Failed to get keywords'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async getAllKeywords(vacancyId) {
+      try {
+        this.loading = true
+        this.error = null
+        
+        const response = await axios.get(
+          `${API_BASE_URL}/api/v1/vacancy-keywords/vacancies/${vacancyId}/keywords`
+        )
+        
+        return response.data
+      } catch (error) {
+        this.error = error.response?.data?.detail || 'Failed to get all keywords'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async updateSectionKeywords(vacancyId, sectionType, keywords, confidenceScore = null) {
+      try {
+        this.loading = true
+        this.error = null
+        
+        const updateData = { keywords }
+        if (confidenceScore !== null) {
+          updateData.confidence_score = confidenceScore
+        }
+        
+        const response = await axios.put(
+          `${API_BASE_URL}/api/v1/vacancy-keywords/vacancies/${vacancyId}/keywords/${sectionType}`,
+          updateData
+        )
+        
+        return response.data
+      } catch (error) {
+        this.error = error.response?.data?.detail || 'Failed to update keywords'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async deleteSectionKeywords(vacancyId, sectionType) {
+      try {
+        this.loading = true
+        this.error = null
+        
+        const response = await axios.delete(
+          `${API_BASE_URL}/api/v1/vacancy-keywords/vacancies/${vacancyId}/keywords/${sectionType}`
+        )
+        
+        return response.data
+      } catch (error) {
+        this.error = error.response?.data?.detail || 'Failed to delete keywords'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async getKeywordsStats(vacancyId) {
+      try {
+        this.loading = true
+        this.error = null
+        
+        const response = await axios.get(
+          `${API_BASE_URL}/api/v1/vacancy-keywords/vacancies/${vacancyId}/keywords-stats`
+        )
+        
+        return response.data
+      } catch (error) {
+        this.error = error.response?.data?.detail || 'Failed to get keywords stats'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async clearKeywordsCache(vacancyId) {
+      try {
+        this.loading = true
+        this.error = null
+        
+        const response = await axios.delete(
+          `${API_BASE_URL}/api/v1/vacancy-keywords/vacancies/${vacancyId}/keywords-cache`
+        )
+        
+        return response.data
+      } catch (error) {
+        this.error = error.response?.data?.detail || 'Failed to clear keywords cache'
+        throw error
+      } finally {
+        this.loading = false
       }
     }
   }

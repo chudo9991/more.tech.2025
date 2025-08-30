@@ -95,7 +95,8 @@ class LLMResumeAnalyzer:
                 "duration": "период работы",
                 "relevance_score": "оценка релевантности 0-100"
             }}
-        ]
+        ],
+        "analysis_text": "Подробный текстовый анализ опыта работы кандидата, включая оценку релевантности для вакансии, сильные и слабые стороны, рекомендации"
     }},
     "skills_analysis": {{
         "matched_skills": ["найденные требуемые навыки"],
@@ -103,12 +104,14 @@ class LLMResumeAnalyzer:
         "additional_skills": ["дополнительные навыки"],
         "skill_levels": {{
             "skill_name": "уровень владения (beginner/intermediate/expert)"
-        }}
+        }},
+        "analysis_text": "Подробный текстовый анализ навыков кандидата, соответствие требованиям вакансии, оценка уровня владения"
     }},
     "education_analysis": {{
         "level": "уровень образования",
         "relevance": "релевантность образованию 0-100",
-        "institution": "учебное заведение"
+        "institution": "учебное заведение",
+        "analysis_text": "Подробный текстовый анализ образования кандидата, соответствие требованиям вакансии"
     }},
     "overall_assessment": {{
         "total_score": "общая оценка 0-100",
@@ -129,7 +132,7 @@ class LLMResumeAnalyzer:
         try:
             payload = {
                 "prompt": prompt,
-                "max_tokens": 2000,
+                "max_tokens": 4000,  # Увеличили лимит для полного анализа
                 "temperature": 0.3,
                 "system_message": "Ты - эксперт по анализу резюме. Отвечай только в формате JSON."
             }

@@ -240,7 +240,14 @@ export default {
   setup() {
     const route = useRoute()
     const router = useRouter()
-    const resumeId = route.params.id
+    
+    // Проверяем, что route доступен
+    if (!route) {
+      console.error('Route is not available')
+      return {}
+    }
+    
+    const resumeId = route?.params?.id
     
     const resume = ref(null)
     const loading = ref(true)

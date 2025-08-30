@@ -151,7 +151,7 @@ async def process_resume(
     """Process resume file and extract structured data"""
     try:
         resume_service = ResumeService(db)
-        result = resume_service.process_resume(resume_id)
+        result = await resume_service.process_resume(resume_id)
         
         if not result["success"]:
             raise HTTPException(status_code=400, detail=result["error"])

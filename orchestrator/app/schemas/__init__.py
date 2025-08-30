@@ -12,3 +12,9 @@ from .vacancy_skills import (
     SkillAnalysisRequest, SkillMatch, ResumeSkillsAnalysisResponse,
     SemanticMatchingRequest, SemanticMatch, SemanticMatchingResponse
 )
+from .vacancy_keywords import (
+    SectionType, VacancySectionKeywordsBase, VacancySectionKeywordsCreate,
+    VacancySectionKeywordsUpdate, VacancySectionKeywordsResponse,
+    SectionKeywordsRequest, SectionKeywordsResponse, AllSectionKeywordsResponse,
+    KeywordsExtractionStats
+)

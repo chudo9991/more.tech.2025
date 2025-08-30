@@ -26,7 +26,8 @@ class CacheService:
             'vacancy_requirements': 'vacancy:req:',
             'resume_score': 'resume:score:',
             'statistics': 'stats:',
-            'file_processing': 'file:proc:'
+            'file_processing': 'file:proc:',
+            'keywords': 'keywords:'
         }
         
         # Default TTL for different cache types (in seconds)
@@ -35,7 +36,8 @@ class CacheService:
             'vacancy_requirements': 3600 * 12,  # 12 hours
             'resume_score': 3600 * 6,  # 6 hours
             'statistics': 300,  # 5 minutes
-            'file_processing': 3600  # 1 hour
+            'file_processing': 3600,  # 1 hour
+            'keywords': 3600  # 1 hour
         }
     
     def _generate_key(self, prefix: str, identifier: str) -> str:

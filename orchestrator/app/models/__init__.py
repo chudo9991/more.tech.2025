@@ -18,6 +18,7 @@ from .session_context import SessionContext
 from .resume import Resume
 from .resume_block import ResumeBlock
 from .resume_skill import ResumeSkill
+from .vacancy_section_keywords import VacancySectionKeywords, SectionType
 
 __all__ = [
     "Candidate",
@@ -37,5 +38,7 @@ __all__ = [
     "SessionContext",
     "Resume",
     "ResumeBlock",
-    "ResumeSkill"
+    "ResumeSkill",
+    "VacancySectionKeywords",
+    "SectionType"
 ]

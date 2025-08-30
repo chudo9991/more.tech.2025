@@ -3,8 +3,10 @@ Vacancy schemas
 """
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, Field
+
+from .vacancy_keywords import VacancySectionKeywordsResponse
 
 
 class VacancyBase(BaseModel):
@@ -90,6 +92,7 @@ class VacancyResponse(VacancyBase):
     vacancy_code: Optional[str] = Field(None, description="Код вакансии")
     created_at: datetime = Field(..., description="Дата создания")
     updated_at: datetime = Field(..., description="Дата обновления")
+    section_keywords: Optional[List[VacancySectionKeywordsResponse]] = Field(None, description="Ключевые слова по разделам")
     
     class Config:
         from_attributes = True
