@@ -175,12 +175,12 @@
             <el-table-column prop="confidence_score" label="Уверенность" width="120">
               <template #default="{ row }">
                 <el-progress
-                  :percentage="row.confidence_score * 100"
+                  :percentage="row.confidence_score"
                   :color="getConfidenceColor(row.confidence_score)"
                   :stroke-width="8"
                   :show-text="false"
                 />
-                <span class="confidence-text">{{ (row.confidence_score * 100).toFixed(0) }}%</span>
+                <span class="confidence-text">{{ row.confidence_score.toFixed(0) }}%</span>
               </template>
             </el-table-column>
           </el-table>

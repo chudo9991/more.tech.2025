@@ -338,15 +338,19 @@ class ResumeService:
                         block.relevance_score = component_score["score"]
                         block.confidence_score = component_score.get("confidence", 0)  # Добавили confidence
                         
-                        # Convert details to human-readable text
+                        # Convert details to human-readable text and extract keywords
                         details = component_score["details"]
                         if isinstance(details, dict):
                             # Get analysis_text from LLM response
                             analysis_text = details.get("analysis_text", str(details))
+                            # Get extracted_keywords for comparison
+                            extracted_keywords = details.get("extracted_keywords", [])
                         else:
                             analysis_text = str(details)
+                            extracted_keywords = []
                         
                         block.analysis_notes = analysis_text
+                        block.extracted_keywords = extracted_keywords
                 
                 self.db.commit()
                 

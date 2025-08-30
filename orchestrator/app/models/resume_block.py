@@ -19,7 +19,8 @@ class ResumeBlock(Base):
     confidence_score = Column(DECIMAL(5, 2), nullable=True)  # уверенность в оценке
     matched_requirements = Column(ARRAY(String), nullable=True)  # какие требования вакансии покрыты
     missing_requirements = Column(ARRAY(String), nullable=True)  # какие требования не найдены
-    analysis_notes = Column(Text, nullable=True)  # заметки анализа
+    analysis_notes = Column(Text, nullable=True)  # заметки анализа (читаемый текст)
+    extracted_keywords = Column(ARRAY(String), nullable=True)  # извлеченные ключевые слова для сравнения
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships

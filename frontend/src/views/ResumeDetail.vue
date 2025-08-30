@@ -72,7 +72,7 @@
           </el-descriptions-item>
           <el-descriptions-item label="Уверенность" v-if="resume.confidence_score !== null">
             <el-progress 
-              :percentage="Math.round(resume.confidence_score * 100)" 
+              :percentage="Math.round(resume.confidence_score)" 
               :color="getConfidenceColor(resume.confidence_score)"
             />
           </el-descriptions-item>
@@ -144,7 +144,7 @@
                     type="info" 
                     size="small"
                   >
-                    Уверенность: {{ Math.round(block.confidence_score * 100) }}%
+                    Уверенность: {{ Math.round(block.confidence_score) }}%
                   </el-tag>
                 </div>
               </div>
@@ -204,7 +204,7 @@
           <el-table-column prop="confidence_score" label="Уверенность">
             <template #default="{ row }">
               <el-progress 
-                :percentage="Math.round(row.confidence_score * 100)" 
+                :percentage="Math.round(row.confidence_score)" 
                 :color="getConfidenceColor(row.confidence_score)"
               />
             </template>
