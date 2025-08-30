@@ -147,39 +147,51 @@ class BatchProcessingService:
         """Process a single file within batch"""
         async with semaphore:
             try:
+                print(f"DEBUG: Starting to process file {file_index}")
                 filename = file_data.get("filename")
                 file_content = file_data.get("content")
                 file_type = file_data.get("file_type", "pdf")
+                
+                print(f"DEBUG: File data - filename: {filename}, content size: {len(file_content) if file_content else 0}, type: {file_type}")
                 
                 if not filename or not file_content:
                     raise Exception("Missing filename or content")
                 
                 # Generate unique filename
                 unique_filename = f"{batch_id}_{file_index}_{filename}"
+                print(f"DEBUG: Unique filename: {unique_filename}")
                 
                 # Upload to MinIO
+                print(f"DEBUG: Uploading to MinIO...")
                 upload_success = file_storage.upload_file(
-                    unique_filename, 
-                    file_content, 
-                    file_type
+                    file_content,  # file_data: bytes
+                    unique_filename,  # filename: str
+                    f"application/{file_type}"  # content_type: str
                 )
                 
                 if not upload_success:
                     raise Exception("Failed to upload file to storage")
                 
+                print(f"DEBUG: File uploaded successfully to MinIO with name: {upload_success}")
+                
                 # Create resume record
                 resume_data = ResumeCreate(
-                    filename=unique_filename,
+                    filename=upload_success,  # Use the actual filename from MinIO
                     original_filename=filename,
                     file_type=file_type,
+                    file_size=len(file_content),  # Add file size
                     vacancy_id=vacancy_id,
                     status="uploaded"
                 )
                 
+                print(f"DEBUG: Creating resume record...")
                 resume = self.resume_service.create_resume(resume_data)
+                print(f"DEBUG: Resume created with ID: {resume.id}")
                 
                 # Process resume
+                print(f"DEBUG: Starting resume processing...")
                 process_result = await self.resume_service.process_resume(resume.id)
+                print(f"DEBUG: Resume processing completed: {process_result}")
                 
                 return {
                     "filename": filename,
@@ -189,6 +201,7 @@ class BatchProcessingService:
                 }
                 
             except Exception as e:
+                print(f"DEBUG: Error processing file {file_index}: {str(e)}")
                 raise Exception(f"File processing failed: {str(e)}")
     
     def get_batch_status(self, batch_id: str) -> Optional[Dict[str, Any]]:

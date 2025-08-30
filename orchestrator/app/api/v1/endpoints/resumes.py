@@ -241,3 +241,24 @@ async def upload_resume(
         raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/{resume_id}/analyze-skills", response_model=Dict[str, Any])
+async def analyze_resume_skills(
+    resume_id: str,
+    db: Session = Depends(get_db)
+) -> Dict[str, Any]:
+    """Analyze resume skills against vacancy requirements"""
+    try:
+        resume_service = ResumeService(db)
+        result = await resume_service.analyze_skills_vs_vacancy_requirements(resume_id)
+        
+        if not result["success"]:
+            raise HTTPException(status_code=400, detail=result["error"])
+        
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

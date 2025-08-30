@@ -154,55 +154,58 @@
           </template>
         </el-table-column>
         
-        <el-table-column label="Действия" width="200" fixed="right">
+        <el-table-column label="Действия" width="280" fixed="right">
           <template #default="{ row }">
-            <el-button
-              size="small"
-              @click="$router.push(`/resumes/${row.id}`)"
-              icon="View"
-            >
-              Просмотр
-            </el-button>
-            
-                          <el-button
+            <el-button-group>
+              <el-button
+                size="small"
+                @click="$router.push(`/resumes/${row.id}`)"
+                type="primary"
+                title="Просмотр"
+              >
+                <el-icon><View /></el-icon>
+              </el-button>
+              
+              <el-button
                 v-if="row.status === 'uploaded'"
                 size="small"
-                type="primary"
+                type="warning"
                 @click="processResume(row.id)"
                 :loading="processingResume === row.id"
-                icon="VideoPlay"
+                title="Обработать"
               >
-              Обработать
-            </el-button>
-            
-            <el-button
-              v-if="row.status === 'analyzed' && !row.total_score"
-              size="small"
-              type="success"
-              @click="calculateScore(row.id)"
-              :loading="calculatingScore === row.id"
-              icon="TrendCharts"
-            >
-              Оценить
-            </el-button>
-            
-            <el-dropdown>
-              <el-button size="small" icon="More">
-                <el-icon><ArrowDown /></el-icon>
+                <el-icon><VideoPlay /></el-icon>
               </el-button>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item @click="downloadResume(row.id)">
-                    <el-icon><Download /></el-icon>
-                    Скачать
-                  </el-dropdown-item>
-                  <el-dropdown-item @click="deleteResume(row.id)" divided>
-                    <el-icon><Delete /></el-icon>
-                    Удалить
-                  </el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
+              
+              <el-button
+                v-if="row.status === 'analyzed' && !row.total_score"
+                size="small"
+                type="success"
+                @click="calculateScore(row.id)"
+                :loading="calculatingScore === row.id"
+                title="Оценить"
+              >
+                <el-icon><TrendCharts /></el-icon>
+              </el-button>
+              
+              <el-button
+                size="small"
+                @click="downloadResume(row.id)"
+                type="info"
+                title="Скачать"
+              >
+                <el-icon><Download /></el-icon>
+              </el-button>
+              
+              <el-button
+                size="small"
+                @click="deleteResume(row.id)"
+                type="danger"
+                title="Удалить"
+              >
+                <el-icon><Delete /></el-icon>
+              </el-button>
+            </el-button-group>
           </template>
         </el-table-column>
       </el-table>
@@ -226,14 +229,13 @@
 <script>
 import { ref, onMounted, reactive, toRaw } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Document, ArrowDown, Download, Delete, Plus, Search, Refresh, View, VideoPlay, TrendCharts } from '@element-plus/icons-vue'
+import { Document, Download, Delete, Plus, Search, Refresh, View, VideoPlay, TrendCharts } from '@element-plus/icons-vue'
 import ExportButtons from '@/components/ExportButtons.vue'
 
 export default {
   name: 'ResumesList',
   components: {
     Document,
-    ArrowDown,
     Download,
     Delete,
     Plus,

@@ -109,7 +109,7 @@ class ResumeParserService:
                 print(f"DEBUG: Section '{section_name}' has {len(section_text)} characters")
             
             # Extract skills
-            skills = self._extract_skills(cleaned_text)
+            skills = await self._extract_skills(cleaned_text)
             
             # Extract experience
             experience = self._extract_experience(sections.get('experience', ''))
@@ -368,8 +368,79 @@ class ResumeParserService:
         
         return sections
     
-    def _extract_skills(self, text: str) -> List[Dict[str, Any]]:
-        """Extract skills from text"""
+    async def _extract_skills(self, text: str) -> List[Dict[str, Any]]:
+        """Extract skills from text using LLM analysis"""
+        try:
+            # Import LLM service
+            from app.services.llm_resume_analyzer import LLMResumeAnalyzer
+            
+            llm_analyzer = LLMResumeAnalyzer()
+            
+            # Create prompt for skills extraction
+            prompt = f"""
+Ты - эксперт по анализу резюме. Проанализируй текст резюме и извлеки все технические навыки, технологии и инструменты, которыми владеет кандидат.
+
+ТЕКСТ РЕЗЮМЕ:
+{text}
+
+ЗАДАЧА:
+Извлеки все технические навыки, технологии, языки программирования, фреймворки, инструменты, которые упоминаются в резюме.
+
+ТРЕБУЕМЫЙ ФОРМАТ ОТВЕТА (JSON):
+{{
+    "skills": [
+        {{
+            "name": "название навыка",
+            "category": "категория (programming/frameworks/tools/databases/methodologies)",
+            "confidence": 0.7,
+            "context": "контекст из резюме, где упоминается навык",
+            "experience_level": "beginner/intermediate/expert"
+        }}
+    ]
+}}
+
+ВАЖНО: 
+- Извлекай только реальные навыки, которые явно упоминаются в резюме
+- Не добавляй навыки, которых нет в тексте
+- Оценивай уровень опыта на основе контекста
+- Устанавливай confidence от 0.5 до 0.95 в зависимости от ясности упоминания навыка
+- Отвечай ТОЛЬКО в формате JSON
+
+ВАЖНО: 
+- Извлекай только реальные навыки, которые явно упоминаются в резюме
+- Не добавляй навыки, которых нет в тексте
+- Оценивай уровень опыта на основе контекста
+- Отвечай ТОЛЬКО в формате JSON
+"""
+            
+            # Call LLM
+            llm_result = await llm_analyzer._call_llm_service(prompt)
+            
+            # Parse LLM response
+            import json
+            try:
+                # Extract JSON from response
+                json_start = llm_result.find('{')
+                json_end = llm_result.rfind('}') + 1
+                
+                if json_start == -1 or json_end == 0:
+                    raise ValueError("No JSON found in response")
+                
+                json_str = llm_result[json_start:json_end]
+                result = json.loads(json_str)
+                
+                return result.get("skills", [])
+                
+            except Exception as e:
+                print(f"DEBUG: Failed to parse LLM skills response: {str(e)}")
+                return []
+                
+        except Exception as e:
+            print(f"DEBUG: LLM skills extraction failed: {str(e)}, falling back to regex")
+            return self._extract_skills_fallback(text)
+    
+    def _extract_skills_fallback(self, text: str) -> List[Dict[str, Any]]:
+        """Fallback regex-based skills extraction"""
         skills = []
         
         for category, patterns in self.skill_patterns.items():
@@ -384,8 +455,9 @@ class ResumeParserService:
                         skills.append({
                             "name": skill_name,
                             "category": category,
-                            "confidence": 0.8,
-                            "context": self._extract_context(text, match.start(), match.end())
+                            "confidence": 0.6,  # Lower confidence for regex fallback
+                            "context": self._extract_context(text, match.start(), match.end()),
+                            "experience_level": "intermediate"  # Default level
                         })
         
         return skills

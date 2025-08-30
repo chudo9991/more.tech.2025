@@ -199,7 +199,7 @@
         
         <el-table :data="resume.resume_skills" stripe>
           <el-table-column prop="skill_name" label="Навык" />
-          <el-table-column prop="category" label="Категория" />
+          <el-table-column prop="skill_category" label="Категория" />
           <el-table-column prop="experience_level" label="Уровень опыта" />
           <el-table-column prop="confidence_score" label="Уверенность">
             <template #default="{ row }">
@@ -209,7 +209,61 @@
               />
             </template>
           </el-table-column>
+          <el-table-column label="Соответствие требованиям" width="200">
+            <template #default="{ row }">
+              <el-button 
+                type="primary" 
+                size="small"
+                @click="analyzeSkill(row)"
+                :loading="analyzingSkills.includes(row.id)"
+              >
+                Анализировать
+              </el-button>
+            </template>
+          </el-table-column>
         </el-table>
+        
+        <!-- Результаты анализа навыков -->
+        <div v-if="skillsAnalysis.length > 0" class="skills-analysis">
+          <h4>Анализ соответствия требованиям вакансии:</h4>
+          <el-table :data="skillsAnalysis" stripe>
+            <el-table-column prop="skill_name" label="Навык" />
+            <el-table-column prop="relevance_score" label="Релевантность">
+              <template #default="{ row }">
+                <el-progress 
+                  :percentage="row.relevance_score" 
+                  :color="getScoreColor(row.relevance_score)"
+                />
+                <span>{{ row.relevance_score }}%</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="matches_requirements" label="Соответствие">
+              <template #default="{ row }">
+                <el-tag :type="row.matches_requirements ? 'success' : 'danger'">
+                  {{ row.matches_requirements ? 'Да' : 'Нет' }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="matched_keywords" label="Соответствующие ключевые слова">
+              <template #default="{ row }">
+                <el-tag 
+                  v-for="keyword in row.matched_keywords" 
+                  :key="keyword"
+                  type="info" 
+                  size="small"
+                  style="margin: 2px"
+                >
+                  {{ keyword }}
+                </el-tag>
+              </template>
+            </el-table-column>
+          </el-table>
+          
+          <div v-if="overallMatchScore !== null" class="overall-match">
+            <h4>Общая оценка соответствия: {{ overallMatchScore }}%</h4>
+            <p v-if="analysisSummary">{{ analysisSummary }}</p>
+          </div>
+        </div>
       </el-card>
       
       <!-- Пустое состояние -->
@@ -255,6 +309,12 @@ export default {
     const processing = ref(false)
     const calculating = ref(false)
     const activeBlocks = ref([])
+    
+    // Skills analysis
+    const skillsAnalysis = ref([])
+    const overallMatchScore = ref(null)
+    const analysisSummary = ref('')
+    const analyzingSkills = ref([])
     
     const loadResume = async () => {
       loading.value = true
@@ -395,6 +455,36 @@ export default {
       console.log('Export completed:', exportInfo)
     }
     
+    const analyzeSkill = async (skill) => {
+      analyzingSkills.value.push(skill.id)
+      try {
+        const response = await fetch(`/api/v1/resumes/${resumeId}/analyze-skills`, {
+          method: 'POST'
+        })
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        
+        const result = await response.json()
+        
+        if (result.success) {
+          skillsAnalysis.value = result.skills_analysis
+          overallMatchScore.value = result.overall_match_score
+          analysisSummary.value = result.summary
+          ElMessage.success('Анализ навыков выполнен успешно')
+        } else {
+          throw new Error(result.error || 'Ошибка анализа навыков')
+        }
+        
+      } catch (err) {
+        ElMessage.error('Ошибка анализа навыков: ' + err.message)
+        console.error('Analyze skills error:', err)
+      } finally {
+        analyzingSkills.value = analyzingSkills.value.filter(id => id !== skill.id)
+      }
+    }
+    
     // Utility functions
     const getStatusType = (status) => {
       switch (status) {
@@ -469,11 +559,16 @@ export default {
       processing,
       calculating,
       activeBlocks,
+      skillsAnalysis,
+      overallMatchScore,
+      analysisSummary,
+      analyzingSkills,
       loadResume,
       processResume,
       calculateScore,
       downloadResume,
       deleteResume,
+      analyzeSkill,
       handleExportCompleted,
       getStatusType,
       getStatusLabel,
@@ -535,6 +630,41 @@ export default {
 .analysis-blocks,
 .skills-section {
   margin-bottom: 20px;
+}
+
+.skills-analysis {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.skills-analysis h4 {
+  margin: 0 0 15px 0;
+  color: #303133;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.overall-match {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #e8f5e8;
+  border-radius: 8px;
+  border-left: 4px solid #67C23A;
+}
+
+.overall-match h4 {
+  margin: 0 0 10px 0;
+  color: #303133;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.overall-match p {
+  margin: 0;
+  color: #606266;
+  line-height: 1.5;
 }
 
 .block-header {

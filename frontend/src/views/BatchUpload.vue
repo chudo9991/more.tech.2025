@@ -56,7 +56,7 @@
                 :auto-upload="false"
                 :on-change="handleFileChange"
                 :on-remove="handleFileRemove"
-                :file-list="fileList"
+                v-model:file-list="fileList"
                 multiple
                 :limit="50"
                 accept=".pdf,.docx,.rtf,.txt"
@@ -200,7 +200,7 @@ export default {
       total_files_processed: 0
     })
     const statusInterval = ref(null)
-    const currentBatchId = ref(null)
+    const currentBatchId = ref(localStorage.getItem('currentBatchId') || null)
 
     const form = reactive({
       vacancy_id: '',
@@ -217,6 +217,8 @@ export default {
     const vacancies = ref([])
 
     const handleFileChange = (file, fileList) => {
+      console.log('File changed:', file.name, 'FileList length:', fileList.length)
+      
       // Проверка размера файла
       if (file.size > 10 * 1024 * 1024) {
         ElMessage.error(`Файл ${file.name} слишком большой (максимум 10MB)`)
@@ -230,6 +232,9 @@ export default {
         ElMessage.error(`Неподдерживаемый формат файла: ${file.name}`)
         return false
       }
+      
+      // Файл прошел проверку
+      return true
     }
 
     const handleFileRemove = (file, fileList) => {
@@ -237,6 +242,9 @@ export default {
     }
 
     const startBatchUpload = async () => {
+      console.log('Starting batch upload, fileList length:', fileList.value.length)
+      console.log('FileList:', fileList.value)
+      
       if (fileList.value.length === 0) {
         ElMessage.warning('Выберите файлы для загрузки')
         return
@@ -266,6 +274,7 @@ export default {
 
         const result = await response.json()
         currentBatchId.value = result.batch_id
+        localStorage.setItem('currentBatchId', result.batch_id)  // Сохраняем в localStorage
         batchStatus.value = result
         
         ElMessage.success(`Пакетная обработка запущена. ID: ${result.batch_id}`)
@@ -298,6 +307,7 @@ export default {
                 clearInterval(statusInterval.value)
                 statusInterval.value = null
                 currentBatchId.value = null
+                localStorage.removeItem('currentBatchId')  // Очищаем localStorage при завершении
               }
             }
           } catch (error) {
@@ -317,6 +327,7 @@ export default {
         statusInterval.value = null
       }
       currentBatchId.value = null
+      localStorage.removeItem('currentBatchId')  // Очищаем localStorage
     }
 
     const getStatusType = (status) => {
@@ -371,6 +382,11 @@ export default {
     onMounted(() => {
       loadVacancies()
       loadBatchStats()
+      
+      // Восстанавливаем статус batch, если есть сохраненный ID
+      if (currentBatchId.value) {
+        startStatusMonitoring()
+      }
     })
 
     onUnmounted(() => {

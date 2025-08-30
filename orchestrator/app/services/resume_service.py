@@ -8,7 +8,7 @@ from datetime import datetime
 import uuid
 import logging
 
-from app.models import Resume, ResumeBlock, ResumeSkill, Vacancy
+from app.models import Resume, ResumeBlock, ResumeSkill, Vacancy, VacancySectionKeywords
 from app.schemas.resume import ResumeCreate, ResumeUpdate, ResumeListResponse, ResumeResponse
 from app.schemas.vacancy_skills import ResumeSkillsAnalysisResponse
 from app.utils.file_storage import file_storage
@@ -568,6 +568,85 @@ class ResumeService:
                 error=str(e)
             )
     
+    async def create_vacancy_based_skills(self, resume_id: str) -> Dict[str, Any]:
+        """
+        Create skills based on vacancy requirements analysis
+        
+        Args:
+            resume_id: ID of the resume
+            
+        Returns:
+            Dict with result
+        """
+        try:
+            resume = self.get_resume(resume_id)
+            if not resume:
+                return {"success": False, "error": "Resume not found"}
+            
+            if not resume.vacancy_id:
+                return {"success": False, "error": "Resume not linked to vacancy"}
+            
+            # Get vacancy
+            vacancy = self.db.query(Vacancy).filter(Vacancy.id == resume.vacancy_id).first()
+            if not vacancy:
+                return {"success": False, "error": "Vacancy not found"}
+            
+            # Extract skills from vacancy
+            from app.services.vacancy_skills_extractor import VacancySkillsExtractor
+            skills_extractor = VacancySkillsExtractor()
+            vacancy_skills = await skills_extractor.extract_skills_from_vacancy(vacancy.id, force_reload=False)
+            
+            if not vacancy_skills:
+                return {"success": False, "error": "No skills found in vacancy"}
+            
+            # Analyze resume against vacancy skills
+            resume_text = self._extract_resume_text(resume.resume_blocks)
+            
+            from app.services.llm_resume_analyzer import LLMResumeAnalyzer
+            llm_analyzer = LLMResumeAnalyzer()
+            
+            analysis_result = await llm_analyzer.analyze_resume_with_dynamic_skills(
+                resume_text=resume_text,
+                vacancy_skills=vacancy_skills,
+                vacancy_id=vacancy.id
+            )
+            
+            if not analysis_result.success:
+                return {"success": False, "error": "Skills analysis failed"}
+            
+            # Clear existing skills
+            existing_skills = self.db.query(ResumeSkill).filter(ResumeSkill.resume_id == resume.id).all()
+            for existing_skill in existing_skills:
+                self.db.delete(existing_skill)
+            
+            # Create new skills based on vacancy requirements
+            skills_created = 0
+            for skill_match in analysis_result.skill_matches:
+                skill = ResumeSkill(
+                    id=f"SKILL_{uuid.uuid4().hex[:8].upper()}",
+                    resume_id=resume.id,
+                    skill_name=skill_match.skill_name,
+                    skill_category=skill_match.category or "general",
+                    experience_level=skill_match.candidate_level or "intermediate",
+                    confidence_score=skill_match.confidence or 50.0,
+                    extracted_from=skill_match.context or ""
+                )
+                self.db.add(skill)
+                skills_created += 1
+            
+            self.db.commit()
+            
+            return {
+                "success": True,
+                "skills_created": skills_created,
+                "total_vacancy_skills": len(vacancy_skills),
+                "analysis_result": analysis_result.dict()
+            }
+            
+        except Exception as e:
+            logger.error(f"Error creating vacancy-based skills: {str(e)}")
+            return {"success": False, "error": str(e)}
+    
     def _create_resume_blocks(self, resume: Resume, sections: Dict[str, str]):
         """Create resume blocks from parsed sections"""
         logger.info(f"Creating resume blocks for resume {resume.id}")
@@ -593,6 +672,112 @@ class ResumeService:
         self.db.commit()
         logger.info(f"Successfully created {len([s for s in sections.values() if s.strip()])} blocks")
     
+    async def analyze_skills_vs_vacancy_requirements(self, resume_id: str) -> Dict[str, Any]:
+        """Analyze resume skills against vacancy requirements"""
+        try:
+            resume = self.get_resume(resume_id)
+            if not resume or not resume.vacancy_id:
+                return {"success": False, "error": "Resume not found or not linked to vacancy"}
+            
+            # Get vacancy
+            vacancy = self.db.query(Vacancy).filter(Vacancy.id == resume.vacancy_id).first()
+            if not vacancy:
+                return {"success": False, "error": "Vacancy not found"}
+            
+            # Get vacancy keywords
+            vacancy_keywords = self.db.query(VacancySectionKeywords).filter(
+                VacancySectionKeywords.vacancy_id == vacancy.id
+            ).all()
+            
+            if not vacancy_keywords:
+                return {"success": False, "error": "No vacancy keywords found"}
+            
+            # Get resume skills
+            resume_skills = self.db.query(ResumeSkill).filter(ResumeSkill.resume_id == resume.id).all()
+            
+            # Analyze skills against requirements
+            from app.services.llm_resume_analyzer import LLMResumeAnalyzer
+            llm_analyzer = LLMResumeAnalyzer()
+            
+            # Prepare vacancy requirements
+            requirements_text = ""
+            for kw in vacancy_keywords:
+                if kw.keywords:
+                    requirements_text += f"{kw.section_type}: {', '.join(kw.keywords)}\n"
+            
+            # Prepare resume skills
+            skills_text = ""
+            for skill in resume_skills:
+                skills_text += f"- {skill.skill_name} ({skill.skill_category}): {skill.experience_level} level\n"
+            
+            # Create analysis prompt
+            prompt = f"""
+Ты - эксперт по оценке соответствия навыков кандидата требованиям вакансии.
+
+ТРЕБОВАНИЯ ВАКАНСИИ:
+{requirements_text}
+
+НАВЫКИ КАНДИДАТА:
+{skills_text}
+
+ЗАДАЧА:
+Оцени соответствие каждого навыка кандидата требованиям вакансии. Определи:
+1. Насколько навык релевантен для вакансии (0-100%)
+2. Есть ли прямое соответствие с требованиями
+3. Общую оценку соответствия
+
+ТРЕБУЕМЫЙ ФОРМАТ ОТВЕТА (JSON):
+{{
+    "skills_analysis": [
+        {{
+            "skill_name": "название навыка",
+            "relevance_score": 85,
+            "matches_requirements": true,
+            "matched_keywords": ["ключевое слово 1", "ключевое слово 2"],
+            "analysis": "подробный анализ соответствия"
+        }}
+    ],
+    "overall_match_score": 75,
+    "summary": "общая оценка соответствия навыков требованиям"
+}}
+
+ВАЖНО: Отвечай ТОЛЬКО в формате JSON.
+"""
+            
+            # Call LLM
+            llm_result = await llm_analyzer._call_llm_service(prompt)
+            
+            # Parse result
+            import json
+            try:
+                json_start = llm_result.find('{')
+                json_end = llm_result.rfind('}') + 1
+                json_str = llm_result[json_start:json_end]
+                result = json.loads(json_str)
+                
+                return {
+                    "success": True,
+                    "skills_analysis": result.get("skills_analysis", []),
+                    "overall_match_score": result.get("overall_match_score", 0),
+                    "summary": result.get("summary", "")
+                }
+                
+            except Exception as e:
+                logger.error(f"Failed to parse skills analysis: {str(e)}")
+                return {"success": False, "error": f"Failed to parse analysis: {str(e)}"}
+                
+        except Exception as e:
+            logger.error(f"Error in skills analysis: {str(e)}")
+            return {"success": False, "error": str(e)}
+    
+    def _extract_resume_text(self, resume_blocks: List[ResumeBlock]) -> str:
+        """Extract text from resume blocks"""
+        text_parts = []
+        for block in resume_blocks:
+            if block.extracted_text:
+                text_parts.append(f"{block.block_type}: {block.extracted_text}")
+        return "\n\n".join(text_parts)
+    
     def _create_resume_skills(self, resume: Resume, skills: List[Dict[str, Any]]):
         """Create resume skills from parsed skills"""
         for skill_data in skills:
@@ -601,8 +786,8 @@ class ResumeService:
                 resume_id=resume.id,
                 skill_name=skill_data["name"],
                 skill_category=skill_data["category"],
-                experience_level="intermediate",  # Default level
-                confidence_score=skill_data.get("confidence", 80.0),
+                experience_level=skill_data.get("experience_level", "intermediate"),
+                confidence_score=skill_data.get("confidence", 0.8) * 100,  # Convert to percentage
                 extracted_from=skill_data.get("context", "")  # Полный контекст без ограничений
             )
             self.db.add(skill)
