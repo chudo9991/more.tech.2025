@@ -199,6 +199,15 @@
               
               <el-button
                 size="small"
+                @click="generateInterviewCode(row.id)"
+                type="success"
+                title="Создать код"
+              >
+                <el-icon><Key /></el-icon>
+              </el-button>
+              
+              <el-button
+                size="small"
                 @click="deleteResume(row.id)"
                 type="danger"
                 title="Удалить"
@@ -223,13 +232,57 @@
         />
       </div>
     </el-card>
+    
+    <!-- Диалог с кодом интервью -->
+    <el-dialog
+      v-model="showCodeDialog"
+      title="Код для интервью"
+      width="500px"
+      :close-on-click-modal="false"
+    >
+      <div class="code-dialog-content">
+        <p>Код для доступа к интервью:</p>
+        <div class="code-display">
+          <span class="code-text">{{ generatedCode }}</span>
+          <el-button
+            type="primary"
+            size="small"
+            @click="copyToClipboard"
+            style="margin-left: 10px"
+          >
+            Копировать
+          </el-button>
+        </div>
+        <div class="code-instructions">
+          <h4>Инструкции для кандидата:</h4>
+          <ol>
+            <li>Перейдите на страницу <strong>Интервью</strong></li>
+            <li>Введите код: <strong>{{ generatedCode }}</strong></li>
+            <li>Начните интервью с нашим аватаром</li>
+          </ol>
+          <p class="note">
+            <strong>Важно:</strong> Код можно использовать только один раз. 
+            После использования интервью будет привязано к данному резюме.
+          </p>
+        </div>
+      </div>
+      
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="showCodeDialog = false">Закрыть</el-button>
+          <el-button type="primary" @click="showCodeDialog = false">
+            Понятно
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { ref, onMounted, reactive, toRaw } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Document, Download, Delete, Plus, Search, Refresh, View, VideoPlay, TrendCharts } from '@element-plus/icons-vue'
+import { Document, Download, Delete, Plus, Search, Refresh, View, VideoPlay, TrendCharts, Key } from '@element-plus/icons-vue'
 import ExportButtons from '@/components/ExportButtons.vue'
 
 export default {
@@ -244,6 +297,7 @@ export default {
     View,
     VideoPlay,
     TrendCharts,
+    Key,
     ExportButtons
   },
   setup() {
@@ -252,6 +306,11 @@ export default {
     const loading = ref(false)
     const processingResume = ref(null)
     const calculatingScore = ref(null)
+    
+    // Interview code variables
+    const showCodeDialog = ref(false)
+    const generatedCode = ref('')
+    const selectedResumeId = ref('')
     
     const statistics = reactive({
       total_resumes: 0,
@@ -436,6 +495,61 @@ export default {
       }
     }
     
+    const generateInterviewCode = async (resumeId) => {
+      try {
+        const response = await fetch(`/api/v1/interview-codes/generate/${resumeId}`, {
+          method: 'POST'
+        })
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        
+        const data = await response.json()
+        generatedCode.value = data.code
+        selectedResumeId.value = resumeId
+        showCodeDialog.value = true
+        
+        ElMessage.success('Код для интервью создан')
+      } catch (error) {
+        ElMessage.error('Ошибка создания кода: ' + error.message)
+        console.error('Generate code error:', error)
+      }
+    }
+    
+    const copyToClipboard = async () => {
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          // Используем современный Clipboard API
+          await navigator.clipboard.writeText(generatedCode.value)
+          ElMessage.success('Код скопирован в буфер обмена')
+        } else {
+          // Fallback для старых браузеров или небезопасного контекста
+          const textArea = document.createElement('textarea')
+          textArea.value = generatedCode.value
+          textArea.style.position = 'fixed'
+          textArea.style.left = '-999999px'
+          textArea.style.top = '-999999px'
+          document.body.appendChild(textArea)
+          textArea.focus()
+          textArea.select()
+          
+          try {
+            document.execCommand('copy')
+            ElMessage.success('Код скопирован в буфер обмена')
+          } catch (err) {
+            ElMessage.error('Не удалось скопировать код')
+            console.error('Copy failed:', err)
+          }
+          
+          document.body.removeChild(textArea)
+        }
+      } catch (error) {
+        ElMessage.error('Ошибка копирования: ' + error.message)
+        console.error('Copy to clipboard error:', error)
+      }
+    }
+    
     const clearFilters = () => {
       filters.vacancy_id = null
       filters.status = null
@@ -528,6 +642,9 @@ export default {
       loading,
       processingResume,
       calculatingScore,
+      showCodeDialog,
+      generatedCode,
+      selectedResumeId,
       statistics,
       filters,
       pagination,
@@ -536,6 +653,8 @@ export default {
       calculateScore,
       downloadResume,
       deleteResume,
+      generateInterviewCode,
+      copyToClipboard,
       clearFilters,
       handleSortChange,
       handleSizeChange,
@@ -612,6 +731,62 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.code-dialog-content {
+  text-align: center;
+}
+
+.code-display {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0;
+  padding: 20px;
+  background-color: #f5f7fa;
+  border-radius: 8px;
+}
+
+.code-text {
+  font-size: 32px;
+  font-weight: bold;
+  color: #409EFF;
+  letter-spacing: 4px;
+  font-family: 'Courier New', monospace;
+}
+
+.code-instructions {
+  text-align: left;
+  margin-top: 20px;
+}
+
+.code-instructions h4 {
+  margin-bottom: 10px;
+  color: #303133;
+}
+
+.code-instructions ol {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.code-instructions li {
+  margin: 5px 0;
+  color: #606266;
+}
+
+.note {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 4px;
+  color: #856404;
+  font-size: 14px;
+}
+
+.dialog-footer {
+  text-align: right;
 }
 
 .file-info {

@@ -29,3 +29,4 @@ class Resume(Base):
     vacancy = relationship("Vacancy", back_populates="resumes")
     resume_blocks = relationship("ResumeBlock", back_populates="resume", cascade="all, delete-orphan")
     resume_skills = relationship("ResumeSkill", back_populates="resume", cascade="all, delete-orphan")
+    interview_codes = relationship("InterviewCode", back_populates="resume", cascade="all, delete-orphan")

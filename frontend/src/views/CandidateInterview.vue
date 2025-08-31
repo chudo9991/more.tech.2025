@@ -70,10 +70,45 @@
             <el-card class="chat-card">
               <template #header>
                 <div class="chat-controls">
+                  <!-- Code Input Section -->
+                  <div v-if="!interviewStarted && !resumeLinked" class="code-input-section">
+                    <div class="code-input-wrapper">
+                      <el-input
+                        v-model="interviewCode"
+                        placeholder="Введите код интервью (6 цифр)"
+                        maxlength="6"
+                        style="width: 200px; margin-right: 10px;"
+                        @keyup.enter="validateCode"
+                      >
+                        <template #prefix>
+                          <el-icon><Key /></el-icon>
+                        </template>
+                      </el-input>
+                      <el-button 
+                        type="primary" 
+                        @click="validateCode"
+                        :loading="validatingCode"
+                      >
+                        Подтвердить код
+                      </el-button>
+                    </div>
+                    <div v-if="codeError" class="code-error">
+                      {{ codeError }}
+                    </div>
+                  </div>
+                  
+                  <!-- Resume Info -->
+                  <div v-if="resumeLinked && linkedResume" class="resume-info">
+                    <el-tag type="success" size="large">
+                      <el-icon><Document /></el-icon>
+                      Резюме привязано: {{ linkedResume.original_filename }}
+                    </el-tag>
+                  </div>
+                  
                   <el-button 
                     type="success" 
                     @click="startInterview"
-                    :disabled="interviewStarted"
+                    :disabled="interviewStarted || !resumeLinked"
                   >
                     Начать интервью
                   </el-button>
@@ -193,7 +228,7 @@
 import { ref, reactive, onMounted, nextTick, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { User, VideoCamera } from '@element-plus/icons-vue'
+import { User, VideoCamera, Key, Document } from '@element-plus/icons-vue'
 import { uploadAudioToMinio } from '@/utils/minio'
 
 // Reactive data
@@ -214,6 +249,13 @@ const selectedMicrophone = ref('')
 const lastVadChange = ref(0) // For debouncing
 const currentQuestion = ref(null)
 
+// Interview code variables
+const interviewCode = ref('')
+const validatingCode = ref(false)
+const codeError = ref('')
+const resumeLinked = ref(false)
+const linkedResume = ref(null)
+
 // Recording state
 let recordingInterval = null
 let mediaRecorder = null
@@ -231,6 +273,48 @@ const VAD_DEBOUNCE_TIME = 250 // 500ms debounce
 const sessionId = ref(null)
 
 // Methods
+const validateCode = async () => {
+  if (!interviewCode.value || interviewCode.value.length !== 6) {
+    codeError.value = 'Код должен содержать 6 цифр'
+    return
+  }
+  
+  validatingCode.value = true
+  codeError.value = ''
+  
+  try {
+    const response = await fetch('/api/v1/interview-codes/validate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        code: interviewCode.value
+      })
+    })
+    
+    const result = await response.json()
+    
+    if (result.valid) {
+      // Load resume data
+      const resumeResponse = await fetch(`/api/v1/resumes/${result.resume_id}`)
+      if (resumeResponse.ok) {
+        linkedResume.value = await resumeResponse.json()
+      }
+      
+      resumeLinked.value = true
+      ElMessage.success('Код подтвержден! Резюме привязано к интервью.')
+    } else {
+      codeError.value = result.message || 'Неверный код'
+    }
+  } catch (error) {
+    codeError.value = 'Ошибка проверки кода'
+    console.error('Code validation error:', error)
+  } finally {
+    validatingCode.value = false
+  }
+}
+
 const loadSessionData = async () => {
   try {
     // In production, this would fetch from API
@@ -253,25 +337,28 @@ const loadSessionData = async () => {
 
 const startInterview = async () => {
   try {
-    // Create session in database
+    // Create session in database with resume link
+    const sessionData = {
+      vacancy_id: linkedResume.value?.vacancy_id || 'SWE_BACK_001', // Use resume's vacancy or default
+      phone: '+7-999-999-99-99', // Default phone
+      email: 'candidate@example.com', // Default email
+      resume_id: linkedResume.value?.id // Link to resume
+    }
+    
     const sessionResponse = await fetch('/api/v1/sessions/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        vacancy_id: 'SWE_BACK_001', // Default vacancy
-        phone: '+7-999-999-99-99', // Default phone
-        email: 'candidate@example.com' // Default email
-      })
+      body: JSON.stringify(sessionData)
     })
     
     if (!sessionResponse.ok) {
       throw new Error('Failed to create session')
     }
     
-    const sessionData = await sessionResponse.json()
-    sessionId.value = sessionData.id
+    const sessionResponseData = await sessionResponse.json()
+    sessionId.value = sessionResponseData.id
     console.log('Session created with ID:', sessionId.value)
     
     interviewStarted.value = true
@@ -1011,6 +1098,35 @@ const getAvailableMicrophones = async () => {
 
 .detail-item {
   margin-bottom: 12px;
+}
+
+.code-input-section {
+  margin-bottom: 15px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.code-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.code-error {
+  color: #f56c6c;
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+.resume-info {
+  margin-bottom: 15px;
+}
+
+.resume-info .el-tag {
+  font-size: 14px;
+  padding: 8px 12px;
 }
 
 .detail-item:last-child {

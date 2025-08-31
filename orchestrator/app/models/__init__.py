@@ -19,6 +19,7 @@ from .resume import Resume
 from .resume_block import ResumeBlock
 from .resume_skill import ResumeSkill
 from .vacancy_section_keywords import VacancySectionKeywords, SectionType
+from .interview_code import InterviewCode
 
 __all__ = [
     "Candidate",
@@ -40,5 +41,6 @@ __all__ = [
     "ResumeBlock",
     "ResumeSkill",
     "VacancySectionKeywords",
-    "SectionType"
+    "SectionType",
+    "InterviewCode"
 ]
