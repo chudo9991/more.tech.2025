@@ -18,6 +18,7 @@ class SessionContext(Base):
     context_data = Column(JSON)  # Дополнительный контекст
     current_node_id = Column(String(50), nullable=True)  # Текущий узел в сценарии
     scenario_id = Column(String(50), nullable=True)  # ID используемого сценария
+    contextual_questions = Column(JSON)  # Контекстные вопросы по нодам
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 

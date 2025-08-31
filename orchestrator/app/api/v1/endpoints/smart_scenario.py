@@ -66,7 +66,9 @@ async def navigate_scenario(
             question_text=next_question.get('question_text'),
             transition_reason="Успешная навигация",
             should_terminate=next_question.get('should_terminate', False),
-            available_transitions=available_transitions
+            available_transitions=available_transitions,
+            has_contextual_questions=next_question.get('has_contextual_questions', False),
+            contextual_questions_count=next_question.get('contextual_questions_count', 0)
         )
         
     except Exception as e:

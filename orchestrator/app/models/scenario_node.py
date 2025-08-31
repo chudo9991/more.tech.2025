@@ -24,3 +24,4 @@ class ScenarioNode(Base):
     scenario = relationship("InterviewScenario", back_populates="scenario_nodes")
     outgoing_transitions = relationship("ScenarioTransition", foreign_keys="ScenarioTransition.from_node_id", back_populates="from_node")
     incoming_transitions = relationship("ScenarioTransition", foreign_keys="ScenarioTransition.to_node_id", back_populates="to_node")
+    contextual_questions = relationship("ContextualQuestion", back_populates="scenario_node", cascade="all, delete-orphan")

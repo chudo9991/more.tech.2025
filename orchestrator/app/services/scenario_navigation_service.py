@@ -10,6 +10,7 @@ from app.models import (
     ScenarioTransition, Session as SessionModel, Question
 )
 from app.services.negative_response_analyzer import NegativeResponseAnalyzer
+from app.services.contextual_question_generator import ContextualQuestionGenerator
 
 
 class ScenarioNavigationService:
@@ -18,6 +19,7 @@ class ScenarioNavigationService:
     def __init__(self, db: Session):
         self.db = db
         self.negative_analyzer = NegativeResponseAnalyzer(db)
+        self.contextual_generator = ContextualQuestionGenerator(db)
 
     def get_scenario_for_vacancy(self, vacancy_id: str) -> Optional[InterviewScenario]:
         """
@@ -52,7 +54,12 @@ class ScenarioNavigationService:
 
     def get_next_question(self, session_id: str) -> Optional[Dict[str, Any]]:
         """
-        Умный выбор следующего вопроса
+        Получает следующий вопрос (базовый или контекстный)
+        Логика:
+        1. Проверяем есть ли неиспользованные контекстные вопросы для текущей ноды
+        2. Если есть - возвращаем следующий контекстный вопрос
+        3. Если нет - возвращаем базовый вопрос из сценария
+        4. Если базовых вопросов нет - завершаем интервью
         
         Args:
             session_id: ID сессии
@@ -89,51 +96,30 @@ class ScenarioNavigationService:
                 session_context.current_node_id = current_node.id
                 self.db.commit()
         
-        # Получаем следующий узел
-        next_node = self._get_next_node(current_node, session_context)
+        # Проверяем контекстные вопросы для текущей ноды
+        current_node_id = session_context.current_node_id
+        if current_node_id:
+            contextual_questions = self.get_contextual_questions_status(session_id, current_node_id)
+        else:
+            contextual_questions = {"has_unused_questions": False}
         
-        if not next_node:
-            return None
-        
-        # Обновляем контекст
-        session_context.current_node_id = next_node.id
-        self.db.commit()
-        
-        # Если это конечный узел, завершаем сессию
-        if next_node.node_type == 'end':
-            session.status = 'completed'
-            self.db.commit()
-            return {
-                'should_terminate': True,
-                'node_type': 'end',
-                'message': 'Интервью завершено'
-            }
-        
-        # Если это узел-пропуск, получаем следующий после него
-        if next_node.node_type == 'skip':
-            next_node = self._get_next_node(next_node, session_context)
-            if next_node:
-                session_context.current_node_id = next_node.id
-                self.db.commit()
-        
-        # Получаем вопрос
-        if next_node.question_id:
-            question = self.db.query(Question).filter(
-                Question.id == next_node.question_id
-            ).first()
-            
-            if question:
+        if current_node_id and contextual_questions.get('has_unused_questions', False):
+            # Возвращаем следующий контекстный вопрос
+            next_contextual_question = self.contextual_generator.get_next_contextual_question(
+                session_id, current_node_id
+            )
+            if next_contextual_question:
                 return {
-                    'node_id': next_node.id,
-                    'question_id': question.id,
-                    'question_text': question.text,
-                    'question_type': question.type,
-                    'node_type': next_node.node_type,
-                    'node_config': next_node.node_config,
+                    'question_text': next_contextual_question.question_text,
+                    'node_id': current_node_id,
+                    'is_contextual': True,
+                    'contextual_question_id': next_contextual_question.id,
+                    'question_type': next_contextual_question.question_type,
                     'should_terminate': False
                 }
         
-        return None
+        # Возвращаем базовый вопрос из сценария
+        return self._get_basic_scenario_question(session_id, session_context)
 
     def _initialize_session_context(self, session_id: str, vacancy_id: str) -> SessionContext:
         """
@@ -443,3 +429,205 @@ class ScenarioNavigationService:
         return self.negative_analyzer.update_session_context(
             session_id, question_id, answer_text, answer_score
         )
+
+    def _get_contextual_questions_count(self, session_id: str, node_id: str) -> int:
+        """
+        Получает количество неиспользованных контекстных вопросов для ноды
+        
+        Args:
+            session_id: ID сессии
+            node_id: ID ноды
+            
+        Returns:
+            Количество неиспользованных контекстных вопросов
+        """
+        try:
+            from app.models import ContextualQuestion
+            from sqlalchemy import and_
+            
+            count = self.db.query(ContextualQuestion).filter(
+                and_(
+                    ContextualQuestion.session_id == session_id,
+                    ContextualQuestion.scenario_node_id == node_id,
+                    ContextualQuestion.is_used == False
+                )
+            ).count()
+            
+            return count
+            
+        except Exception as e:
+            print(f"Ошибка подсчета контекстных вопросов: {str(e)}")
+            return 0
+
+    async def generate_contextual_questions_for_current_node(
+        self,
+        session_id: str,
+        max_questions: int = 3
+    ) -> List[Dict[str, Any]]:
+        """
+        Генерирует контекстные вопросы для текущего узла
+        
+        Args:
+            session_id: ID сессии
+            max_questions: Максимальное количество вопросов
+            
+        Returns:
+            Список сгенерированных контекстных вопросов
+        """
+        try:
+            session_context = self.get_session_context(session_id)
+            
+            if not session_context or not session_context.current_node_id:
+                raise Exception("Текущий узел не найден")
+            
+            contextual_questions = await self.contextual_generator.generate_contextual_questions(
+                session_id=session_id,
+                scenario_node_id=session_context.current_node_id,
+                max_questions=max_questions
+            )
+            
+            return [
+                {
+                    "id": cq.id,
+                    "question_text": cq.question_text,
+                    "question_type": cq.question_type,
+                    "context_source": cq.context_source,
+                    "is_contextual": True
+                }
+                for cq in contextual_questions
+            ]
+            
+        except Exception as e:
+            raise Exception(f"Ошибка генерации контекстных вопросов: {str(e)}")
+
+    def get_contextual_questions_status(
+        self,
+        session_id: str,
+        node_id: str = None
+    ) -> Dict[str, Any]:
+        """
+        Получает статус контекстных вопросов
+        
+        Args:
+            session_id: ID сессии
+            node_id: ID ноды (если None, используется текущий узел)
+            
+        Returns:
+            Статус контекстных вопросов
+        """
+        try:
+            if not node_id:
+                session_context = self.get_session_context(session_id)
+                print(f"DEBUG: session_context = {session_context}")
+                if not session_context:
+                    return {"has_questions": False, "error": "Контекст сессии не найден"}
+                if not session_context.current_node_id:
+                    return {"has_questions": False, "error": "Текущий узел не найден"}
+                node_id = session_context.current_node_id
+                print(f"DEBUG: node_id = {node_id}")
+            
+            all_questions = self.contextual_generator.get_contextual_questions_for_node(
+                session_id, node_id
+            )
+            
+            used_questions = [q for q in all_questions if q.is_used]
+            remaining_questions = [q for q in all_questions if not q.is_used]
+            
+            return {
+                "total_questions": len(all_questions),
+                "used_questions": len(used_questions),
+                "remaining_questions": len(remaining_questions),
+                "has_questions": len(all_questions) > 0,
+                "has_remaining": len(remaining_questions) > 0,
+                "node_id": node_id
+            }
+            
+        except Exception as e:
+            return {
+                "total_questions": 0,
+                "used_questions": 0,
+                "remaining_questions": 0,
+                "has_questions": False,
+                "has_remaining": False,
+                "error": str(e)
+            }
+
+    def _get_basic_scenario_question(self, session_id: str, session_context: SessionContext) -> Optional[Dict[str, Any]]:
+        """
+        Получает базовый вопрос из сценария
+        
+        Args:
+            session_id: ID сессии
+            session_context: Контекст сессии
+            
+        Returns:
+            Информация о базовом вопросе или None
+        """
+        # Получаем сессию
+        session = self.db.query(SessionModel).filter(
+            SessionModel.id == session_id
+        ).first()
+        
+        if not session:
+            return None
+        
+        # Получаем текущий узел
+        current_node = None
+        if session_context.current_node_id:
+            current_node = self.db.query(ScenarioNode).filter(
+                ScenarioNode.id == session_context.current_node_id
+            ).first()
+        
+        # Если нет текущего узла, начинаем с начала сценария
+        if not current_node:
+            current_node = self._get_start_node(session_context.scenario_id)
+            if current_node:
+                session_context.current_node_id = current_node.id
+                self.db.commit()
+        
+        # Получаем следующий узел
+        next_node = self._get_next_node(current_node, session_context)
+        
+        if not next_node:
+            return None
+        
+        # Обновляем контекст
+        session_context.current_node_id = next_node.id
+        self.db.commit()
+        
+        # Если это конечный узел, завершаем сессию
+        if next_node.node_type == 'end':
+            session.status = 'completed'
+            self.db.commit()
+            return {
+                'should_terminate': True,
+                'node_type': 'end',
+                'message': 'Интервью завершено'
+            }
+        
+        # Если это узел-пропуск, получаем следующий после него
+        if next_node.node_type == 'skip':
+            next_node = self._get_next_node(next_node, session_context)
+            if next_node:
+                session_context.current_node_id = next_node.id
+                self.db.commit()
+        
+        # Получаем вопрос
+        if next_node.question_id:
+            question = self.db.query(Question).filter(
+                Question.id == next_node.question_id
+            ).first()
+            
+            if question:
+                return {
+                    'node_id': next_node.id,
+                    'question_id': question.id,
+                    'question_text': question.text,
+                    'question_type': question.type,
+                    'node_type': next_node.node_type,
+                    'node_config': next_node.node_config,
+                    'is_contextual': False,
+                    'should_terminate': False
+                }
+        
+        return None

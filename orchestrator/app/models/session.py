@@ -33,3 +33,4 @@ class Session(Base):
     media_files = relationship("Media", back_populates="session", cascade="all, delete-orphan")
     messages = relationship("Message", back_populates="session", cascade="all, delete-orphan")
     session_context = relationship("SessionContext", back_populates="session", uselist=False, cascade="all, delete-orphan")
+    contextual_questions = relationship("ContextualQuestion", back_populates="session", cascade="all, delete-orphan")

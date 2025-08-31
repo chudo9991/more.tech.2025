@@ -114,3 +114,5 @@ class SmartScenarioNavigationResponse(BaseModel):
     should_terminate: bool = False
     context_update: Optional[Dict[str, Any]] = None
     available_transitions: List[Dict[str, Any]] = []
+    has_contextual_questions: bool = False
+    contextual_questions_count: int = 0

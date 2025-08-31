@@ -5,8 +5,9 @@ import httpx
 import json
 from typing import Dict, List, Any, Optional
 from sqlalchemy.orm import Session
-from app.models import Vacancy, SessionContext
+from app.models import Vacancy, SessionContext, ScenarioNode
 from app.core.config import settings
+from app.services.contextual_question_generator import ContextualQuestionGenerator
 
 
 class LLMQuestionGenerator:
@@ -15,6 +16,7 @@ class LLMQuestionGenerator:
     def __init__(self, db: Session):
         self.db = db
         self.llm_service_url = settings.LLM_SERVICE_URL
+        self.contextual_generator = ContextualQuestionGenerator(db)
 
     async def generate_next_question(
         self, 
@@ -85,11 +87,17 @@ class LLMQuestionGenerator:
         
         if previous_answers:
             for i, answer in enumerate(previous_answers, 1):
-                prompt += f"""
+                if isinstance(answer, dict):
+                    prompt += f"""
 Вопрос {i}: {answer.get('question_text', 'N/A')}
 Ответ кандидата: {answer.get('answer_text', 'N/A')}
 Оценка ответа: {answer.get('score', 'N/A')}
 Анализ: {answer.get('analysis', 'N/A')}
+"""
+                else:
+                    # Если answer - это строка
+                    prompt += f"""
+Ответ {i}: {answer}
 """
         
         if session_context and session_context.skill_assessments:
@@ -302,3 +310,146 @@ class LLMQuestionGenerator:
             
         except Exception as e:
             return {"should_terminate": False, "reason": f"Ошибка анализа: {str(e)}"}
+
+    async def generate_contextual_questions_for_node(
+        self,
+        session_id: str,
+        scenario_node_id: str,
+        max_questions: int = 3
+    ) -> List[Dict[str, Any]]:
+        """
+        Генерирует контекстные вопросы для конкретной ноды
+        
+        Args:
+            session_id: ID сессии
+            scenario_node_id: ID ноды сценария
+            max_questions: Максимальное количество вопросов
+            
+        Returns:
+            Список сгенерированных контекстных вопросов
+        """
+        try:
+            contextual_questions = await self.contextual_generator.generate_contextual_questions(
+                session_id=session_id,
+                scenario_node_id=scenario_node_id,
+                max_questions=max_questions
+            )
+            
+            return [
+                {
+                    "id": cq.id,
+                    "question_text": cq.question_text,
+                    "question_type": cq.question_type,
+                    "context_source": cq.context_source,
+                    "is_contextual": True
+                }
+                for cq in contextual_questions
+            ]
+            
+        except Exception as e:
+            raise Exception(f"Ошибка генерации контекстных вопросов: {str(e)}")
+
+    async def get_next_question_with_context(
+        self,
+        session_id: str,
+        vacancy_id: str,
+        scenario_node_id: str = None,
+        previous_answers: List[Any] = None
+    ) -> Dict[str, Any]:
+        """
+        Получает следующий вопрос (базовый или контекстный)
+        
+        Args:
+            session_id: ID сессии
+            vacancy_id: ID вакансии
+            scenario_node_id: ID ноды сценария (опционально)
+            previous_answers: Предыдущие ответы
+            
+        Returns:
+            Следующий вопрос с метаданными
+        """
+        try:
+            # Если указана нода сценария, проверяем контекстные вопросы
+            if scenario_node_id:
+                # Проверяем, есть ли контекстные вопросы для этой ноды
+                if self.contextual_generator.has_contextual_questions(session_id, scenario_node_id):
+                    # Получаем следующий контекстный вопрос
+                    contextual_question = self.contextual_generator.get_next_contextual_question(
+                        session_id, scenario_node_id
+                    )
+                    
+                    if contextual_question:
+                        return {
+                            "question_text": contextual_question.question_text,
+                            "question_type": "contextual",
+                            "question_id": contextual_question.id,
+                            "context_source": contextual_question.context_source,
+                            "is_contextual": True,
+                            "node_id": scenario_node_id
+                        }
+            
+            # Если контекстных вопросов нет, генерируем базовый вопрос
+            return await self.generate_next_question(
+                session_id=session_id,
+                vacancy_id=vacancy_id,
+                previous_answers=previous_answers
+            )
+            
+        except Exception as e:
+            raise Exception(f"Ошибка получения следующего вопроса: {str(e)}")
+
+    def mark_contextual_question_as_used(
+        self,
+        question_id: str
+    ) -> bool:
+        """
+        Отмечает контекстный вопрос как использованный
+        
+        Args:
+            question_id: ID контекстного вопроса
+            
+        Returns:
+            True если успешно
+        """
+        return self.contextual_generator.mark_question_as_used(question_id)
+
+    def get_contextual_questions_status(
+        self,
+        session_id: str,
+        scenario_node_id: str
+    ) -> Dict[str, Any]:
+        """
+        Получает статус контекстных вопросов для ноды
+        
+        Args:
+            session_id: ID сессии
+            scenario_node_id: ID ноды сценария
+            
+        Returns:
+            Статус контекстных вопросов
+        """
+        try:
+            all_questions = self.contextual_generator.get_contextual_questions_for_node(
+                session_id, scenario_node_id
+            )
+            
+            used_questions = [q for q in all_questions if q.is_used]
+            remaining_questions = [q for q in all_questions if not q.is_used]
+            
+            return {
+                "total_questions": len(all_questions),
+                "used_questions": len(used_questions),
+                "remaining_questions": len(remaining_questions),
+                "has_questions": len(all_questions) > 0,
+                "has_remaining": len(remaining_questions) > 0
+            }
+            
+        except Exception as e:
+            return {
+                "total_questions": 0,
+                "used_questions": 0,
+                "remaining_questions": 0,
+                "has_questions": False,
+                "has_remaining": False,
+                "error": str(e)
+            }

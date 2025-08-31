@@ -351,6 +351,21 @@ class NegativeResponseAnalyzer:
             'timestamp': session_context.updated_at.isoformat() if session_context.updated_at else None
         })
         
+        # Обновляем контекстные вопросы в SessionContext
+        self._update_contextual_questions_context(session_context, question_id, answer_text, answer_score)
+        
+        # Если это был контекстный вопрос, обновляем его статус
+        from app.models import ContextualQuestion
+        contextual_question = self.db.query(ContextualQuestion).filter(
+            ContextualQuestion.id == question_id
+        ).first()
+        
+        if contextual_question:
+            # Отмечаем контекстный вопрос как использованный
+            contextual_question.is_used = True
+            from datetime import datetime
+            contextual_question.used_at = datetime.utcnow()
+        
         self.db.commit()
         
         return {
@@ -359,3 +374,67 @@ class NegativeResponseAnalyzer:
             'current_path': session_context.current_path,
             'analysis': analysis
         }
+
+    def _update_contextual_questions_context(
+        self,
+        session_context: SessionContext,
+        question_id: str,
+        answer_text: str,
+        answer_score: float
+    ):
+        """
+        Обновляет контекст контекстных вопросов в SessionContext
+        
+        Args:
+            session_context: Контекст сессии
+            question_id: ID вопроса
+            answer_text: Текст ответа
+            answer_score: Оценка ответа
+        """
+        try:
+            # Проверяем, является ли вопрос контекстным
+            from app.models import ContextualQuestion
+            contextual_question = self.db.query(ContextualQuestion).filter(
+                ContextualQuestion.id == question_id
+            ).first()
+            
+            if contextual_question:
+                # Если это контекстный вопрос, обновляем контекст
+                if not session_context.contextual_questions:
+                    session_context.contextual_questions = {}
+                
+                node_id = contextual_question.scenario_node_id
+                
+                if node_id not in session_context.contextual_questions:
+                    session_context.contextual_questions[node_id] = {
+                        "generated_questions": [],
+                        "asked_questions": [],
+                        "remaining_questions": []
+                    }
+                
+                # Добавляем вопрос в список использованных
+                if contextual_question.question_text not in session_context.contextual_questions[node_id]["asked_questions"]:
+                    session_context.contextual_questions[node_id]["asked_questions"].append(
+                        contextual_question.question_text
+                    )
+                
+                # Удаляем из списка оставшихся
+                if contextual_question.question_text in session_context.contextual_questions[node_id]["remaining_questions"]:
+                    session_context.contextual_questions[node_id]["remaining_questions"].remove(
+                        contextual_question.question_text
+                    )
+                
+                # Добавляем информацию об ответе
+                if "answers" not in session_context.contextual_questions[node_id]:
+                    session_context.contextual_questions[node_id]["answers"] = []
+                
+                session_context.contextual_questions[node_id]["answers"].append({
+                    "question_id": question_id,
+                    "question_text": contextual_question.question_text,
+                    "answer_text": answer_text,
+                    "answer_score": answer_score,
+                    "timestamp": session_context.updated_at.isoformat() if session_context.updated_at else None
+                })
+                
+        except Exception as e:
+            print(f"Ошибка обновления контекста контекстных вопросов: {str(e)}")

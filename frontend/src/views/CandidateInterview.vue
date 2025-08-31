@@ -392,17 +392,40 @@ const getNextQuestion = async () => {
   try {
     if (!sessionId.value) return
     
-    const response = await fetch(`/api/v1/sessions/${sessionId.value}/next-question`)
+    // Используем обновленный API endpoint с поддержкой контекстных вопросов
+    const response = await fetch(`/api/v1/llm-interview/generate-question`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        session_id: sessionId.value,
+        vacancy_id: linkedResume.value?.vacancy_id || 'SWE_BACK_001',
+        scenario_node_id: currentQuestion.value?.node_id || null,
+        previous_answers: chatMessages.value
+          .filter(msg => msg.type === 'user')
+          .map(msg => msg.text)
+      })
+    })
+    
     if (response.ok) {
-      const questionData = await response.json()
-      currentQuestion.value = questionData
+      const result = await response.json()
+      const questionData = result.question_data
       
-      // Add question to chat
+      // Сохраняем информацию о контекстном вопросе
+      currentQuestion.value = {
+        ...questionData,
+        is_contextual: result.is_contextual || false,
+        contextual_question_id: questionData.contextual_question_id || null
+      }
+      
+      // Add question to chat (без визуальных отличий для пользователя)
       addMessage({
         id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         type: 'avatar',
         text: questionData.question_text,
-        timestamp: new Date()
+        timestamp: new Date(),
+        is_contextual: result.is_contextual || false
       })
       
       // Save question to database
@@ -578,6 +601,11 @@ const processAudioMessage = async (audioBlob) => {
     
     // Get avatar response
     await getAvatarResponse(transcribedText)
+    
+    // Если это был контекстный вопрос, отмечаем его как использованный
+    if (currentQuestion.value?.is_contextual && currentQuestion.value?.contextual_question_id) {
+      await markContextualQuestionAsUsed(currentQuestion.value.contextual_question_id)
+    }
     
     // Get next question after a short delay
     setTimeout(async () => {
@@ -870,6 +898,27 @@ const getAvailableMicrophones = async () => {
     console.log('Available microphones:', audioInputs)
   } catch (error) {
     console.error('Error getting microphones:', error)
+  }
+}
+
+// Метод для отметки контекстного вопроса как использованного
+const markContextualQuestionAsUsed = async (questionId) => {
+  try {
+    const response = await fetch(`/api/v1/llm-interview/contextual-questions/${questionId}/mark-used`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        session_id: sessionId.value
+      })
+    })
+    
+    if (!response.ok) {
+      console.error('Failed to mark contextual question as used:', response.status)
+    }
+  } catch (error) {
+    console.error('Error marking contextual question as used:', error)
   }
 }
 </script>
