@@ -210,9 +210,9 @@ class InterviewDemo:
         
         services = [
             ("Orchestrator", f"{self.base_url}/healthz"),
-            ("STT", "http://localhost:8001/healthz"),
-            ("TTS", "http://localhost:8002/healthz"),
-            ("Scoring", "http://localhost:8003/healthz"),
+                    ("STT", "http://localhost:8001/healthz"),
+        ("TTS", "http://localhost:8002/healthz"),
+        ("Scoring", "http://localhost:8003/healthz"),
         ]
         
         async with aiohttp.ClientSession() as session:

@@ -32,7 +32,7 @@ services:
       - "9000:9000"
       - "9001:9001"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      test: ["CMD", "curl", "-f", "http://minio:9000/minio/health/live"]
       interval: 30s
       timeout: 20s
       retries: 3
@@ -60,7 +60,7 @@ services:
       minio:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      test: ["CMD", "curl", "-f", "http://orchestrator:8000/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -85,7 +85,7 @@ services:
       minio:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8001/healthz"]
+      test: ["CMD", "curl", "-f", "http://stt:8001/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -105,7 +105,7 @@ services:
     ports:
       - "8004:8004"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8004/healthz"]
+      test: ["CMD", "curl", "-f", "http://llm:8004/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -125,7 +125,7 @@ services:
       minio:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8005/healthz"]
+      test: ["CMD", "curl", "-f", "http://avatar:8005/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -147,7 +147,7 @@ services:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8003/healthz"]
+      test: ["CMD", "curl", "-f", "http://scoring:8003/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -164,10 +164,28 @@ services:
     depends_on:
       - orchestrator
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      test: ["CMD", "curl", "-f", "http://frontend:3000"]
       interval: 30s
       timeout: 10s
       retries: 3
+
+  # Nginx Reverse Proxy with SSL (commented out for now)
+  # nginx:
+  #   image: nginx:alpine
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - ./ssl:/etc/ssl:ro
+  #   depends_on:
+  #     - frontend
+  #     - orchestrator
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://nginx/healthz"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
 
   # Redis Cache
   redis:

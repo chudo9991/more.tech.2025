@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     
     # Service URLs
     STT_SERVICE_URL: str = "http://stt:8001"
+    TTS_SERVICE_URL: str = "http://tts:8002"
     LLM_SERVICE_URL: str = "http://llm:8004"
     SCORING_SERVICE_URL: str = "http://scoring:8003"
     

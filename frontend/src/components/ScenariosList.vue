@@ -395,7 +395,7 @@ const recreateTransitions = async (scenario) => {
     if (!confirmed) return
     
     const response = await fetch(
-      `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/scenarios/${scenario.id}/recreate-transitions`,
+              `${import.meta.env.VITE_API_URL || ''}/api/v1/scenarios/${scenario.id}/recreate-transitions`,
       {
         method: 'POST',
         headers: {

@@ -138,6 +138,25 @@
               
               <!-- Voice Input -->
               <div class="voice-input">
+                <!-- Microphone Status -->
+                <div class="microphone-status" style="margin-bottom: 10px;">
+                  <el-tag 
+                    :type="availableMicrophones.length > 0 ? 'success' : 'warning'"
+                    size="small"
+                  >
+                    {{ availableMicrophones.length > 0 ? '🎤 Микрофон доступен' : '⚠️ Микрофон недоступен' }}
+                  </el-tag>
+                  <el-button 
+                    v-if="availableMicrophones.length === 0"
+                    type="warning" 
+                    size="small"
+                    @click="requestMicrophonePermission"
+                    style="margin-left: 10px;"
+                  >
+                    🔧 Запросить доступ к микрофону
+                  </el-button>
+                </div>
+                
                 <!-- Microphone Selection -->
                 <div class="microphone-selector" v-if="availableMicrophones.length > 1">
                   <label>Микрофон:</label>
@@ -483,6 +502,11 @@ const endInterview = async () => {
 
 const startRecording = async () => {
   try {
+    // Проверяем доступность navigator.mediaDevices
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      throw new Error('MediaDevices API не поддерживается в этом браузере')
+    }
+    
     const constraints = {
       audio: {
         deviceId: selectedMicrophone.value ? { exact: selectedMicrophone.value } : undefined
@@ -928,11 +952,32 @@ const getEmotionLabel = (emotion) => {
 // Lifecycle
 onMounted(async () => {
   await loadSessionData()
+  
+  // Проверяем HTTPS для доступа к микрофону
+  if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+    ElMessage.warning('Для доступа к микрофону необходимо использовать HTTPS или localhost')
+    console.warn('MediaDevices API требует HTTPS (кроме localhost)')
+  }
+  
   await getAvailableMicrophones()
 })
 
 const getAvailableMicrophones = async () => {
   try {
+    // Проверяем доступность navigator.mediaDevices
+    if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+      throw new Error('MediaDevices API не поддерживается в этом браузере')
+    }
+    
+    // Запрашиваем разрешение на доступ к микрофону перед перечислением устройств
+    try {
+      await navigator.mediaDevices.getUserMedia({ audio: true })
+    } catch (permissionError) {
+      console.warn('Пользователь не дал разрешение на доступ к микрофону:', permissionError)
+      ElMessage.warning('Для работы с микрофоном необходимо дать разрешение на доступ к аудио')
+      return
+    }
+    
     const devices = await navigator.mediaDevices.enumerateDevices()
     const audioInputs = devices.filter(device => device.kind === 'audioinput')
     availableMicrophones.value = audioInputs
@@ -942,6 +987,40 @@ const getAvailableMicrophones = async () => {
     console.log('Available microphones:', audioInputs)
   } catch (error) {
     console.error('Error getting microphones:', error)
+    ElMessage.error(`Ошибка доступа к микрофону: ${error.message}`)
+  }
+}
+
+const requestMicrophonePermission = async () => {
+  try {
+    ElMessage.info('Запрашиваем разрешение на доступ к микрофону...')
+    
+    // Проверяем доступность navigator.mediaDevices
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      throw new Error('MediaDevices API не поддерживается в этом браузере')
+    }
+    
+    // Запрашиваем разрешение на доступ к микрофону
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    
+    // Останавливаем поток, так как нам нужно только разрешение
+    stream.getTracks().forEach(track => track.stop())
+    
+    ElMessage.success('Разрешение на микрофон получено!')
+    
+    // Перезагружаем список микрофонов
+    await getAvailableMicrophones()
+    
+  } catch (error) {
+    console.error('Error requesting microphone permission:', error)
+    
+    if (error.name === 'NotAllowedError') {
+      ElMessage.error('Доступ к микрофону запрещен. Пожалуйста, разрешите доступ в настройках браузера.')
+    } else if (error.name === 'NotFoundError') {
+      ElMessage.error('Микрофон не найден. Убедитесь, что микрофон подключен и работает.')
+    } else {
+      ElMessage.error(`Ошибка доступа к микрофону: ${error.message}`)
+    }
   }
 }
 

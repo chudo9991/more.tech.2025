@@ -93,7 +93,7 @@ const loadScenarioData = async () => {
   error.value = null
   
   try {
-    const url = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/scenarios/${props.scenarioId}`
+    const url = `${import.meta.env.VITE_API_URL || ''}/api/v1/scenarios/${props.scenarioId}`
     console.log('Загружаем данные сценария по URL:', url)
     
     const response = await fetch(url)
@@ -125,7 +125,7 @@ const loadScenarioImage = async () => {
   if (!props.scenarioId) return
   
   try {
-    const url = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/scenarios/${props.scenarioId}/image?format=png`
+    const url = `${import.meta.env.VITE_API_URL || ''}/api/v1/scenarios/${props.scenarioId}/image?format=png`
     console.log('Загружаем изображение сценария по URL:', url)
     
     const response = await fetch(url)

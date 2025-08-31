@@ -1,5 +1,5 @@
 // MinIO configuration
-const MINIO_ENDPOINT = 'localhost'
+const MINIO_ENDPOINT = 'minio'
 const MINIO_PORT = 9000
 const MINIO_ACCESS_KEY = 'minioadmin'
 const MINIO_SECRET_KEY = 'minioadmin123'

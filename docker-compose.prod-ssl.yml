@@ -1,5 +1,5 @@
-# Docker Compose configuration for Interview AI system (Production)
-# Для работы за роутером с белым IP
+# Docker Compose configuration for Interview AI system (Production with SSL)
+# Для работы с доменом и SSL сертификатом
 
 services:
   # База данных
@@ -51,8 +51,8 @@ services:
       - STT_SERVICE_URL=http://stt:8001
       - TTS_SERVICE_URL=http://tts:8002
       - SCORING_SERVICE_URL=http://scoring:8003
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
     depends_on:
       db:
         condition: service_healthy
@@ -74,8 +74,8 @@ services:
       - MINIO_ENDPOINT=minio:9000
       - MINIO_ACCESS_KEY=${MINIO_ROOT_USER:-minioadmin}
       - MINIO_SECRET_KEY=${MINIO_ROOT_PASSWORD:-minioadmin123}
-    ports:
-      - "8001:8001"
+    expose:
+      - "8001"
     volumes:
       - whisper_cache:/root/.cache/whisper
     depends_on:
@@ -101,8 +101,8 @@ services:
       - AZURE_OPENAI_DEPLOYMENT_NAME=${AZURE_OPENAI_DEPLOYMENT_NAME:-gpt-4o}
       - LLM_TEMPERATURE=${LLM_TEMPERATURE:-0.1}
       - LLM_MAX_TOKENS=${LLM_MAX_TOKENS:-2000}
-    ports:
-      - "8004:8004"
+    expose:
+      - "8004"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://llm:8004/healthz"]
       interval: 30s
@@ -118,8 +118,8 @@ services:
       - MINIO_ENDPOINT=minio:9000
       - MINIO_ACCESS_KEY=${MINIO_ROOT_USER:-minioadmin}
       - MINIO_SECRET_KEY=${MINIO_ROOT_PASSWORD:-minioadmin123}
-    ports:
-      - "8005:8005"
+    expose:
+      - "8005"
     depends_on:
       minio:
         condition: service_healthy
@@ -140,8 +140,8 @@ services:
       - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
       - AZURE_OPENAI_API_VERSION=${AZURE_OPENAI_API_VERSION:-2024-02-15-preview}
       - AZURE_OPENAI_DEPLOYMENT_NAME=${AZURE_OPENAI_DEPLOYMENT_NAME:-gpt-4o}
-    ports:
-      - "8003:8003"
+    expose:
+      - "8003"
     depends_on:
       db:
         condition: service_healthy
@@ -157,10 +157,10 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     environment:
-      # Замените YOUR_DOMAIN на ваш домен или IP
-      - VITE_API_URL=http://YOUR_DOMAIN:8000
-    ports:
-      - "3000:3000"
+      # Замените YOUR_DOMAIN на ваш домен
+      - VITE_API_URL=https://YOUR_DOMAIN
+    expose:
+      - "3000"
     depends_on:
       - orchestrator
     healthcheck:
@@ -169,12 +169,39 @@ services:
       timeout: 10s
       retries: 3
 
+  # Nginx Reverse Proxy with SSL
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx-ssl.conf:/etc/nginx/nginx.conf:ro
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    depends_on:
+      - frontend
+      - orchestrator
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://nginx/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Certbot for SSL certificates
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    command: certonly --webroot --webroot-path=/var/www/certbot --email ${CERTBOT_EMAIL} --agree-tos --no-eff-email -d ${DOMAIN_NAME}
+
   # Redis Cache
   redis:
     image: redis:7-alpine
     container_name: moretech2025-redis-1
-    ports:
-      - "6379:6379"
+    expose:
+      - "6379"
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes
