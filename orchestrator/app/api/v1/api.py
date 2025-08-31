@@ -3,7 +3,7 @@ Main API router for orchestrator service
 """
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import sessions, webhooks, hr, monitoring, vacancies, smart_scenario, llm_interview, resumes, batch, export, vacancy_skills, vacancy_keywords, interview_codes
+from app.api.v1.endpoints import sessions, webhooks, hr, monitoring, vacancies, smart_scenario, llm_interview, resumes, batch, export, vacancy_skills, vacancy_keywords, interview_codes, scenarios
 
 api_router = APIRouter()
 
@@ -21,3 +21,4 @@ api_router.include_router(llm_interview.router, prefix="/llm-interview", tags=["
 api_router.include_router(vacancy_skills.router, prefix="/vacancy-skills", tags=["vacancy-skills"])
 api_router.include_router(vacancy_keywords.router, prefix="/vacancy-keywords", tags=["vacancy-keywords"])
 api_router.include_router(interview_codes.router, prefix="/interview-codes", tags=["interview-codes"])
+api_router.include_router(scenarios.router, prefix="/scenarios", tags=["scenarios"])

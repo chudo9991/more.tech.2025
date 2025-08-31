@@ -308,8 +308,8 @@
       :before-close="closeKeywordsManager"
     >
       <KeywordsManager
-        v-if="route.params.id"
-        :vacancy-id="route.params.id"
+        v-if="route?.params?.id"
+        :vacancy-id="route?.params?.id"
         :vacancy-data="vacancy"
         @keywords-updated="handleKeywordsUpdated"
       />
@@ -354,7 +354,7 @@ export default {
       
       loading.value = true
       try {
-        const response = await fetch(`/api/v1/vacancies/${route.params.id}`)
+        const response = await fetch(`/api/v1/vacancies/${route?.params?.id}`)
         if (!response.ok) throw new Error('Вакансия не найдена')
         
         const data = await response.json()
@@ -372,7 +372,7 @@ export default {
         ElMessage.error('ID вакансии не найден')
         return
       }
-      router.push(`/vacancies/${route.params.id}/edit`)
+              router.push(`/vacancies/${route?.params?.id}/edit`)
     }
 
     const exportVacancy = () => {

@@ -57,3 +57,4 @@ class Vacancy(Base):
     interview_scenarios = relationship("InterviewScenario", back_populates="vacancy")
     resumes = relationship("Resume", back_populates="vacancy")
     section_keywords = relationship("VacancySectionKeywords", back_populates="vacancy")
+    dynamic_criteria = relationship("DynamicCriteria", back_populates="vacancy", cascade="all, delete-orphan")

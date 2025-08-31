@@ -20,6 +20,7 @@ from .resume_block import ResumeBlock
 from .resume_skill import ResumeSkill
 from .vacancy_section_keywords import VacancySectionKeywords, SectionType
 from .interview_code import InterviewCode
+from .dynamic_criteria import DynamicCriteria, ScenarioCriteriaMapping
 
 __all__ = [
     "Candidate",
@@ -42,5 +43,7 @@ __all__ = [
     "ResumeSkill",
     "VacancySectionKeywords",
     "SectionType",
-    "InterviewCode"
+    "InterviewCode",
+    "DynamicCriteria",
+    "ScenarioCriteriaMapping"
 ]

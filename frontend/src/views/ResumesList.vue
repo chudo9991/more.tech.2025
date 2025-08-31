@@ -331,7 +331,6 @@ export default {
     })
     
     const loadResumes = async () => {
-      console.log('🔍 loadResumes called')
       loading.value = true
       try {
         const params = {
@@ -347,13 +346,9 @@ export default {
           params.status = filters.status
         }
         
-        console.log('📤 Request params:', toRaw(params))
         const url = `/api/v1/resumes/?${new URLSearchParams(params)}`
-        console.log('🌐 Request URL:', url)
         
         const response = await fetch(url)
-        console.log('📥 Response status:', response.status)
-        console.log('📥 Response headers:', toRaw(Object.fromEntries(response.headers.entries())))
         
         if (!response.ok) {
           const errorText = await response.text()
@@ -361,16 +356,12 @@ export default {
         }
         
         const data = await response.json()
-        console.log('📊 API Response (raw):', toRaw(data))
         
         // Правильная обработка ответа API
         resumes.value = data.resumes || []
-        console.log('✅ Resumes after update (raw):', toRaw(resumes.value))
-        console.log('✅ Resumes after update (length):', resumes.value.length)
         pagination.total = data.total || 0
         pagination.page = data.page || 1
         pagination.limit = data.size || 20
-        console.log('✅ Pagination after update:', toRaw(pagination))
       } catch (error) {
         ElMessage.error(`Ошибка загрузки резюме: ${error.message}`)
         console.error('❌ Error loading resumes:', error)
@@ -558,7 +549,6 @@ export default {
     
     const handleSortChange = ({ prop, order }) => {
       // В реальном приложении здесь будет сортировка
-      console.log('Sort:', prop, order)
     }
     
     const handleSizeChange = (size) => {
@@ -626,7 +616,6 @@ export default {
     }
     
     const handleExportCompleted = (exportInfo) => {
-      console.log('Export completed:', exportInfo)
       // Можно добавить дополнительную логику после экспорта
     }
     

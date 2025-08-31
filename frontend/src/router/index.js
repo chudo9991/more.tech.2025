@@ -10,6 +10,7 @@ import ResumesList from '../views/ResumesList.vue'
 import ResumeDetail from '../views/ResumeDetail.vue'
 import ResumeUpload from '../views/ResumeUpload.vue'
 import BatchUpload from '../views/BatchUpload.vue'
+import ScenariosList from '../components/ScenariosList.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -73,6 +74,11 @@ const router = createRouter({
       path: '/resumes/batch-upload',
       name: 'batch-upload',
       component: BatchUpload
+    },
+    {
+      path: '/scenarios',
+      name: 'scenarios',
+      component: ScenariosList
     }
   ]
 })

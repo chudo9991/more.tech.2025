@@ -8,6 +8,7 @@
       <router-link to="/hr" class="nav-link">HR Панель</router-link>
       <router-link to="/vacancies" class="nav-link">Вакансии</router-link>
       <router-link to="/resumes" class="nav-link">Резюме</router-link>
+      <router-link to="/scenarios" class="nav-link">Сценарии</router-link>
       <router-link to="/interview" class="nav-link">Интервью</router-link>
       <router-link to="/model-status" class="nav-link">Статус модели</router-link>
     </div>

@@ -429,6 +429,126 @@ export const useHRStore = defineStore('hr', {
       } finally {
         this.loading = false
       }
+    },
+
+    // Scenario management methods
+    async generateScenario(vacancyId, scenarioData) {
+      try {
+        this.loading = true
+        this.error = null
+        
+        const response = await axios.post(
+          `${API_BASE_URL}/api/v1/scenarios/generate`,
+          {
+            vacancy_id: vacancyId,
+            scenario_name: scenarioData.scenario_name,
+            description: scenarioData.description,
+            force_regenerate: scenarioData.force_regenerate || false
+          }
+        )
+        
+        return response.data
+      } catch (error) {
+        this.error = error.response?.data?.detail || 'Failed to generate scenario'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async previewScenario(vacancyId, scenarioData) {
+      try {
+        this.loading = true
+        this.error = null
+        
+        const response = await axios.post(
+          `${API_BASE_URL}/api/v1/scenarios/preview`,
+          {
+            vacancy_id: vacancyId,
+            scenario_name: scenarioData.scenario_name,
+            description: scenarioData.description
+          }
+        )
+        
+        return response.data
+      } catch (error) {
+        this.error = error.response?.data?.detail || 'Failed to preview scenario'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async getVacancyScenarios(vacancyId) {
+      try {
+        this.loading = true
+        this.error = null
+        
+        const response = await axios.get(
+          `${API_BASE_URL}/api/v1/scenarios/vacancies/${vacancyId}/scenarios`
+        )
+        
+        return response.data
+      } catch (error) {
+        this.error = error.response?.data?.detail || 'Failed to fetch scenarios'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async getVacancyDynamicCriteria(vacancyId) {
+      try {
+        this.loading = true
+        this.error = null
+        
+        const response = await axios.get(
+          `${API_BASE_URL}/api/v1/scenarios/vacancies/${vacancyId}/dynamic-criteria`
+        )
+        
+        return response.data
+      } catch (error) {
+        this.error = error.response?.data?.detail || 'Failed to fetch dynamic criteria'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async regenerateScenario(scenarioId) {
+      try {
+        this.loading = true
+        this.error = null
+        
+        const response = await axios.post(
+          `${API_BASE_URL}/api/v1/scenarios/${scenarioId}/regenerate`
+        )
+        
+        return response.data
+      } catch (error) {
+        this.error = error.response?.data?.detail || 'Failed to regenerate scenario'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async deleteScenario(scenarioId) {
+      try {
+        this.loading = true
+        this.error = null
+        
+        const response = await axios.delete(
+          `${API_BASE_URL}/api/v1/scenarios/${scenarioId}`
+        )
+        
+        return response.data
+      } catch (error) {
+        this.error = error.response?.data?.detail || 'Failed to delete scenario'
+        throw error
+      } finally {
+        this.loading = false
+      }
     }
   }
 })

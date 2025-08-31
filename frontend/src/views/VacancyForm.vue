@@ -12,6 +12,16 @@
               Назад
             </el-button>
             <el-button 
+              v-if="isEdit && route?.params?.id"
+              type="success" 
+              @click="generateScenario" 
+              :loading="generatingScenario"
+              size="large"
+            >
+              <el-icon><Star /></el-icon>
+              Сгенерировать сценарий
+            </el-button>
+            <el-button 
               type="primary" 
               @click="saveVacancy" 
               :loading="saving"
@@ -394,14 +404,14 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { 
-  ArrowLeft, Check, Document, Briefcase, Money, User, InfoFilled
+  ArrowLeft, Check, Document, Briefcase, Money, User, InfoFilled, Star
 } from '@element-plus/icons-vue'
 import KeywordsSection from '@/components/KeywordsSection.vue'
 
 export default {
   name: 'VacancyForm',
   components: {
-    ArrowLeft, Check, Document, Briefcase, Money, User, InfoFilled,
+    ArrowLeft, Check, Document, Briefcase, Money, User, InfoFilled, Star,
     KeywordsSection
   },
   setup() {
@@ -409,6 +419,7 @@ export default {
     const router = useRouter()
     const formRef = ref()
     const saving = ref(false)
+    const generatingScenario = ref(false)
     const isEdit = ref(false)
     
     // Computed properties для безопасного доступа к route.params
@@ -518,6 +529,43 @@ export default {
       // Можно добавить дополнительную логику обработки обновления ключевых слов
     }
 
+    const generateScenario = async () => {
+      if (!vacancyId.value) {
+        ElMessage.warning('ID вакансии не найден')
+        return
+      }
+
+      generatingScenario.value = true
+      try {
+        const response = await fetch('/api/v1/scenarios/generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            vacancy_id: vacancyId.value,
+            scenario_name: `Сценарий для ${form.title}`,
+            description: `Автоматически сгенерированный сценарий для вакансии ${form.title}`
+          })
+        })
+
+        const result = await response.json()
+
+        if (result.success) {
+          ElMessage.success('Сценарий успешно создан!')
+          // Перенаправляем на страницу сценариев
+          router.push('/scenarios')
+        } else {
+          ElMessage.error(result.error || 'Ошибка создания сценария')
+        }
+      } catch (error) {
+        console.error('Ошибка генерации сценария:', error)
+        ElMessage.error('Не удалось создать сценарий')
+      } finally {
+        generatingScenario.value = false
+      }
+    }
+
     onMounted(() => {
       if (vacancyId.value) {
         isEdit.value = true
@@ -530,12 +578,14 @@ export default {
       form,
       rules,
       saving,
+      generatingScenario,
       isEdit,
       vacancyId,
       hasVacancyId,
       saveVacancy,
       goBack,
-      handleKeywordsUpdated
+      handleKeywordsUpdated,
+      generateScenario
     }
   }
 }

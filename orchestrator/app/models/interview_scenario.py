@@ -23,3 +23,4 @@ class InterviewScenario(Base):
     vacancy = relationship("Vacancy", back_populates="interview_scenarios")
     scenario_nodes = relationship("ScenarioNode", back_populates="scenario", cascade="all, delete-orphan")
     scenario_transitions = relationship("ScenarioTransition", back_populates="scenario", cascade="all, delete-orphan")
+    criteria_mappings = relationship("ScenarioCriteriaMapping", back_populates="scenario", cascade="all, delete-orphan")

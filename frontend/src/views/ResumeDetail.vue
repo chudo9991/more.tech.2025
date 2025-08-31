@@ -452,7 +452,6 @@ export default {
     }
     
     const handleExportCompleted = (exportInfo) => {
-      console.log('Export completed:', exportInfo)
     }
     
     const analyzeSkill = async (skill) => {

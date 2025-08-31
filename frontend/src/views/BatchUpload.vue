@@ -217,7 +217,6 @@ export default {
     const vacancies = ref([])
 
     const handleFileChange = (file, fileList) => {
-      console.log('File changed:', file.name, 'FileList length:', fileList.length)
       
       // Проверка размера файла
       if (file.size > 10 * 1024 * 1024) {
@@ -242,9 +241,6 @@ export default {
     }
 
     const startBatchUpload = async () => {
-      console.log('Starting batch upload, fileList length:', fileList.value.length)
-      console.log('FileList:', fileList.value)
-      
       if (fileList.value.length === 0) {
         ElMessage.warning('Выберите файлы для загрузки')
         return
@@ -396,7 +392,6 @@ export default {
     })
 
                     const handleExportCompleted = (exportInfo) => {
-                  console.log('Export completed:', exportInfo)
                 }
                 
                 return {
