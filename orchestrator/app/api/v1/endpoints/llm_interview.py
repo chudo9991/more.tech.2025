@@ -68,6 +68,9 @@ async def analyze_answer_with_llm(
         question_text = request.get("question_text", "")
         answer_text = request.get("answer_text", "")
         vacancy_requirements = request.get("vacancy_requirements", "")
+        session_id = request.get("session_id", "")
+        audio_url = request.get("audio_url", "")
+        question_id = request.get("question_id", "")
         
         if not question_text or not answer_text:
             raise HTTPException(
@@ -80,8 +83,17 @@ async def analyze_answer_with_llm(
             question_text, answer_text, vacancy_requirements
         )
         
+        # Сохраняем данные в таблицу qa если есть session_id
+        qa_record = None
+        if session_id:
+            qa_record = await save_qa_record(
+                db, session_id, question_id, question_text, answer_text, 
+                audio_url, analysis
+            )
+        
         return {
             "analysis": analysis,
+            "qa_record": qa_record,
             "analyzed_at": "2025-08-30T18:00:00Z"
         }
         
@@ -90,6 +102,72 @@ async def analyze_answer_with_llm(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Ошибка анализа ответа: {str(e)}"
         )
+
+async def save_qa_record(
+    db: Session, 
+    session_id: str, 
+    question_id: str, 
+    question_text: str, 
+    answer_text: str, 
+    audio_url: str, 
+    analysis: Dict[str, Any]
+) -> Dict[str, Any]:
+    """Сохраняет запись в таблицу qa"""
+    try:
+        from app.models import QA, QAScore, Criteria
+        from datetime import datetime
+        import uuid
+        
+        # Получаем следующий номер шага
+        existing_qa_count = db.query(QA).filter(QA.session_id == session_id).count()
+        step_no = existing_qa_count + 1
+        
+        # Создаем запись QA (id будет автоинкремент)
+        qa_record = QA(
+            session_id=session_id,
+            step_no=step_no,
+            question_id=None,  # Не привязываем к конкретному вопросу пока
+            question_text=question_text,
+            answer_text=answer_text,
+            audio_url=audio_url,
+            tone=analysis.get("tone", "neutral"),
+            passed=analysis.get("score", 0) >= 0.7,  # Проходной балл 70%
+            created_at=datetime.utcnow()
+        )
+        
+        db.add(qa_record)
+        db.flush()  # Получаем ID
+        
+        # Сохраняем оценки по критериям
+        if "per_criterion" in analysis:
+            for criterion_score in analysis["per_criterion"]:
+                qa_score = QAScore(
+                    qa_id=qa_record.id,
+                    criterion_id=criterion_score.get("id", "general"),
+                    score=criterion_score.get("score", 0.0),
+                    evidence=criterion_score.get("evidence", ""),
+                    red_flag=criterion_score.get("red_flag", False),
+                    created_at=datetime.utcnow()
+                )
+                db.add(qa_score)
+        
+        db.commit()
+        
+        return {
+            "id": qa_record.id,
+            "session_id": qa_record.session_id,
+            "step_no": qa_record.step_no,
+            "question_text": qa_record.question_text,
+            "answer_text": qa_record.answer_text,
+            "audio_url": qa_record.audio_url,
+            "tone": qa_record.tone,
+            "passed": qa_record.passed,
+            "created_at": qa_record.created_at.isoformat() if qa_record.created_at else None
+        }
+        
+    except Exception as e:
+        db.rollback()
+        raise Exception(f"Ошибка сохранения QA записи: {str(e)}")
 
 
 @router.post("/smart-navigate")

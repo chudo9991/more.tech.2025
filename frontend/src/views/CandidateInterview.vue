@@ -599,6 +599,16 @@ const processAudioMessage = async (audioBlob) => {
     // Analyze tone of voice and update avatar emotion (silently)
     const toneAnalysis = await analyzeToneAndUpdateAvatar(transcribedText)
     
+    // Analyze answer and save to QA table if we have current question
+    if (currentQuestion.value?.question_text) {
+      await analyzeAndSaveAnswer(
+        currentQuestion.value.question_text,
+        transcribedText,
+        audioUrl,
+        currentQuestion.value.question_id || 'unknown'
+      )
+    }
+    
     // Get avatar response
     await getAvatarResponse(transcribedText)
     
@@ -623,6 +633,40 @@ const processAudioMessage = async (audioBlob) => {
 }
 
 
+
+const analyzeAndSaveAnswer = async (questionText, answerText, audioUrl, questionId) => {
+  try {
+    console.log('Analyzing and saving answer:', { questionText, answerText, audioUrl, questionId })
+    
+    const response = await fetch('/api/v1/llm-interview/analyze-answer', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        question_text: questionText,
+        answer_text: answerText,
+        session_id: sessionId.value,
+        audio_url: audioUrl,
+        question_id: questionId,
+        vacancy_requirements: linkedResume.value?.vacancy_requirements || ''
+      })
+    })
+    
+    if (response.ok) {
+      const result = await response.json()
+      console.log('Answer analysis result:', result)
+      
+      if (result.qa_record) {
+        console.log('QA record saved:', result.qa_record)
+      }
+    } else {
+      console.error('Failed to analyze answer:', response.status, response.statusText)
+    }
+  } catch (error) {
+    console.error('Error analyzing and saving answer:', error)
+  }
+}
 
 const getAvatarResponse = async (userMessage) => {
   try {

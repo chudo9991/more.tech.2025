@@ -176,63 +176,7 @@
         </div>
       </el-card>
 
-      <!-- Chat Messages -->
-      <el-card class="messages-card">
-        <template #header>
-          <span>Сообщения чата</span>
-        </template>
-        
-        <div v-if="messages && messages.length > 0">
-          <div 
-            v-for="message in messages" 
-            :key="message.id"
-            class="message-item"
-          >
-            <div class="message-header">
-              <span class="message-type">{{ message.message_type === 'user' ? '👤 Кандидат' : '🤖 Аватар' }}</span>
-              <span class="message-time">{{ formatDate(message.timestamp) }}</span>
-            </div>
-            
-            <div class="message-content">
-              <div class="message-text">{{ message.text }}</div>
-              
-              <div class="message-metrics" v-if="message.audio_url || message.transcription_confidence">
-                <el-row :gutter="20">
-                  <el-col :span="6" v-if="message.audio_url">
-                    <div class="metric">
-                      <label>Аудио:</label>
-                      <el-button 
-                        size="small" 
-                        type="primary" 
-                        @click="playAudio(message.audio_url)"
-                      >
-                        <el-icon><VideoPlay /></el-icon>
-                        Воспроизвести
-                      </el-button>
-                    </div>
-                  </el-col>
-                  <el-col :span="6" v-if="message.transcription_confidence">
-                    <div class="metric">
-                      <label>Уверенность STT:</label>
-                      <span>{{ (message.transcription_confidence * 100).toFixed(1) }}%</span>
-                    </div>
-                  </el-col>
-                  <el-col :span="6" v-if="message.tone_analysis">
-                    <div class="metric">
-                      <label>Тон голоса:</label>
-                      <span>{{ getToneLabel(message.tone_analysis) }}</span>
-                    </div>
-                  </el-col>
-                </el-row>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div v-else class="no-messages">
-          <el-empty description="Сообщений пока нет" />
-        </div>
-      </el-card>
+
 
       <!-- Summary -->
       <el-card class="summary-card" v-if="sessionData && sessionData.qa_records && sessionData.qa_records.length > 0">
@@ -282,7 +226,6 @@ const emit = defineEmits(['close'])
 const hrStore = useHRStore()
 const loading = ref(false)
 const sessionData = ref(null)
-const messages = ref([])
 
 // Methods
 const loadSessionData = async () => {
@@ -290,9 +233,6 @@ const loadSessionData = async () => {
     loading.value = true
     const response = await hrStore.fetchSessionResults(props.sessionId)
     sessionData.value = response
-    
-    // Load messages
-    await loadMessages()
   } catch (error) {
     ElMessage.error('Failed to load session data')
     console.error('Error loading session data:', error)
@@ -301,25 +241,8 @@ const loadSessionData = async () => {
   }
 }
 
-const loadMessages = async () => {
-  try {
-    console.log('Loading messages for session:', props.sessionId)
-    const response = await fetch(`/api/v1/sessions/messages?session_id=${props.sessionId}`)
-    if (response.ok) {
-      const data = await response.json()
-      messages.value = data.messages || []
-      console.log('Loaded messages:', messages.value.length, 'messages')
-    } else {
-      console.error('Failed to load messages:', response.status, response.statusText)
-    }
-  } catch (error) {
-    console.error('Error loading messages:', error)
-  }
-}
-
 const refreshData = async () => {
   await loadSessionData()
-  await loadMessages()
   ElMessage.success('Данные обновлены')
 }
 
@@ -414,17 +337,7 @@ const formatDuration = (startDate, endDate) => {
   return `${diffMins}m ${diffSecs}s`
 }
 
-const getToneLabel = (tone) => {
-  const labels = {
-    positive: '😊 Позитивный',
-    neutral: '😐 Нейтральный',
-    concerned: '😟 Обеспокоенный',
-    excited: '🤩 Восторженный',
-    confused: '😕 Растерянный',
-    confident: '😎 Уверенный'
-  }
-  return labels[tone] || tone
-}
+
 
 // Watchers
 watch(() => props.sessionId, (newId) => {
@@ -600,59 +513,6 @@ onMounted(() => {
 
 .summary-card {
   margin-bottom: 20px;
-}
-
-.messages-card {
-  margin-bottom: 20px;
-}
-
-.message-item {
-  background-color: white;
-  padding: 15px;
-  border-radius: 6px;
-  margin-bottom: 15px;
-  border: 1px solid #ebeef5;
-}
-
-.message-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.message-type {
-  font-weight: 600;
-  color: #303133;
-}
-
-.message-time {
-  font-size: 0.9rem;
-  color: #909399;
-}
-
-.message-content {
-  margin-bottom: 10px;
-}
-
-.message-text {
-  padding: 10px;
-  background-color: #f5f7fa;
-  border-radius: 4px;
-  margin-bottom: 10px;
-  line-height: 1.5;
-}
-
-.message-metrics {
-  margin-top: 10px;
-}
-
-.no-messages {
-  text-align: center;
-  padding: 40px;
-  color: #909399;
 }
 
 .summary-list {
