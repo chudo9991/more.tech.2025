@@ -3,19 +3,11 @@
     <el-container>
       <el-header>
         <div class="header-content">
-          <h1>Статус модели Whisper</h1>
+          <h1>Статус моделей</h1>
           <div class="header-actions">
-            <el-button type="primary" @click="refreshStatus" :loading="loading">
+            <el-button type="primary" @click="refreshAllStatus" :loading="loading">
               <el-icon><Refresh /></el-icon>
-              Обновить
-            </el-button>
-            <el-button type="warning" @click="reloadModel" :loading="reloading">
-              <el-icon><Refresh /></el-icon>
-              Перезагрузить модель
-            </el-button>
-            <el-button type="danger" @click="clearCache" :loading="clearing">
-              <el-icon><Delete /></el-icon>
-              Очистить кэш
+              Обновить все
             </el-button>
           </div>
         </div>
@@ -23,41 +15,41 @@
       
       <el-main>
         <div class="page-description">
-          <p>Мониторинг состояния модели Whisper для распознавания речи</p>
+          <p>Мониторинг состояния моделей Whisper и LLM</p>
         </div>
 
-        <!-- Model Status Card -->
+        <!-- Whisper Model Status Card -->
         <el-card class="status-card" shadow="hover">
           <template #header>
             <div class="card-header">
-              <span>Статус модели</span>
-              <el-tag :type="getStatusType()" size="large">
-                {{ getStatusText() }}
+              <span>Статус модели Whisper</span>
+              <el-tag :type="getWhisperStatusType()" size="large">
+                {{ getWhisperStatusText() }}
               </el-tag>
             </div>
           </template>
           
-          <el-row :gutter="20" v-if="modelStatus">
+          <el-row :gutter="20" v-if="whisperStatus">
             <el-col :span="12">
               <div class="info-section">
                 <h3>Основная информация</h3>
                 <div class="info-item">
                   <label>Модель:</label>
-                  <span>{{ modelStatus.whisper_model }}</span>
+                  <span>{{ whisperStatus.whisper_model }}</span>
                 </div>
                 <div class="info-item">
                   <label>Статус загрузки:</label>
-                  <el-tag :type="modelStatus.model_loaded ? 'success' : 'danger'">
-                    {{ modelStatus.model_loaded ? 'Загружена' : 'Не загружена' }}
+                  <el-tag :type="whisperStatus.model_loaded ? 'success' : 'danger'">
+                    {{ whisperStatus.model_loaded ? 'Загружена' : 'Не загружена' }}
                   </el-tag>
                 </div>
                 <div class="info-item">
                   <label>Размер модели:</label>
-                  <span>{{ modelStatus.model_size_mb }} MB</span>
+                  <span>{{ whisperStatus.model_size_mb }} MB</span>
                 </div>
                 <div class="info-item">
                   <label>Путь к модели:</label>
-                  <span class="path-text">{{ modelStatus.model_path || 'Не найден' }}</span>
+                  <span class="path-text">{{ whisperStatus.model_path || 'Не найден' }}</span>
                 </div>
               </div>
             </el-col>
@@ -67,29 +59,102 @@
                 <h3>Компоненты системы</h3>
                 <div class="info-item">
                   <label>VAD (Voice Activity Detection):</label>
-                  <el-tag :type="modelStatus.vad_loaded ? 'success' : 'danger'">
-                    {{ modelStatus.vad_loaded ? 'Активен' : 'Неактивен' }}
+                  <el-tag :type="whisperStatus.vad_loaded ? 'success' : 'danger'">
+                    {{ whisperStatus.vad_loaded ? 'Активен' : 'Неактивен' }}
                   </el-tag>
                 </div>
                 <div class="info-item">
                   <label>MinIO соединение:</label>
-                  <el-tag :type="modelStatus.minio_connected ? 'success' : 'danger'">
-                    {{ modelStatus.minio_connected ? 'Подключено' : 'Отключено' }}
+                  <el-tag :type="whisperStatus.minio_connected ? 'success' : 'danger'">
+                    {{ whisperStatus.minio_connected ? 'Подключено' : 'Отключено' }}
                   </el-tag>
                 </div>
                 <div class="info-item">
                   <label>Кэш модели:</label>
-                  <el-tag :type="modelStatus.model_exists ? 'success' : 'warning'">
-                    {{ modelStatus.model_exists ? 'Найден' : 'Не найден' }}
+                  <el-tag :type="whisperStatus.model_exists ? 'success' : 'warning'">
+                    {{ whisperStatus.model_exists ? 'Найден' : 'Не найден' }}
                   </el-tag>
                 </div>
               </div>
             </el-col>
           </el-row>
           
-          <div v-else-if="error" class="error-section">
+          <div v-else-if="whisperError" class="error-section">
             <el-alert
-              :title="error"
+              :title="whisperError"
+              type="error"
+              :closable="false"
+              show-icon
+            />
+          </div>
+          
+          <div v-else class="loading-section">
+            <el-skeleton :rows="6" animated />
+          </div>
+        </el-card>
+
+        <!-- LLM Model Status Card -->
+        <el-card class="status-card" shadow="hover">
+          <template #header>
+            <div class="card-header">
+              <span>Статус модели LLM</span>
+              <el-tag :type="getLLMStatusType()" size="large">
+                {{ getLLMStatusText() }}
+              </el-tag>
+            </div>
+          </template>
+          
+          <el-row :gutter="20" v-if="llmStatus">
+            <el-col :span="12">
+              <div class="info-section">
+                <h3>Основная информация</h3>
+                <div class="info-item">
+                  <label>Модель:</label>
+                  <span>{{ llmStatus.model_deployment }}</span>
+                </div>
+                <div class="info-item">
+                  <label>Статус подключения:</label>
+                  <el-tag :type="llmStatus.azure_accessible ? 'success' : 'danger'">
+                    {{ llmStatus.azure_accessible ? 'Доступна' : 'Недоступна' }}
+                  </el-tag>
+                </div>
+                <div class="info-item">
+                  <label>API версия:</label>
+                  <span>{{ llmStatus.api_version }}</span>
+                </div>
+                <div class="info-item">
+                  <label>Endpoint:</label>
+                  <span class="path-text">{{ llmStatus.azure_endpoint || 'Не настроен' }}</span>
+                </div>
+              </div>
+            </el-col>
+            
+            <el-col :span="12">
+              <div class="info-section">
+                <h3>Состояние системы</h3>
+                <div class="info-item">
+                  <label>Клиент инициализирован:</label>
+                  <el-tag :type="llmStatus.client_initialized ? 'success' : 'danger'">
+                    {{ llmStatus.client_initialized ? 'Да' : 'Нет' }}
+                  </el-tag>
+                </div>
+                <div class="info-item">
+                  <label>Учетные данные:</label>
+                  <el-tag :type="llmStatus.credentials_configured ? 'success' : 'warning'">
+                    {{ llmStatus.credentials_configured ? 'Настроены' : 'Не настроены' }}
+                  </el-tag>
+                </div>
+                <div class="info-item" v-if="llmStatus.error">
+                  <label>Ошибка:</label>
+                  <span class="error-text">{{ llmStatus.error }}</span>
+                </div>
+              </div>
+            </el-col>
+          </el-row>
+          
+          <div v-else-if="llmError" class="error-section">
+            <el-alert
+              :title="llmError"
               type="error"
               :closable="false"
               show-icon
@@ -108,21 +173,21 @@
           </template>
           
           <el-row :gutter="20">
-            <el-col :span="8">
+            <el-col :span="6">
               <div class="action-item">
                 <h4>Обновить статус</h4>
-                <p>Получить актуальную информацию о состоянии модели</p>
-                <el-button type="primary" @click="refreshStatus" :loading="loading">
+                <p>Получить актуальную информацию о состоянии моделей</p>
+                <el-button type="primary" @click="refreshAllStatus" :loading="loading">
                   <el-icon><Refresh /></el-icon>
-                  Обновить
+                  Обновить все
                 </el-button>
               </div>
             </el-col>
             
-            <el-col :span="8">
+            <el-col :span="6">
               <div class="action-item">
-                <h4>Перезагрузить модель</h4>
-                <p>Принудительно перезагрузить модель в память</p>
+                <h4>Перезагрузить Whisper</h4>
+                <p>Принудительно перезагрузить модель Whisper в память</p>
                 <el-button type="warning" @click="reloadModel" :loading="reloading">
                   <el-icon><Refresh /></el-icon>
                   Перезагрузить
@@ -130,13 +195,24 @@
               </div>
             </el-col>
             
-            <el-col :span="8">
+            <el-col :span="6">
               <div class="action-item">
                 <h4>Очистить кэш</h4>
-                <p>Удалить кэшированную модель с диска</p>
+                <p>Удалить кэшированную модель Whisper с диска</p>
                 <el-button type="danger" @click="clearCache" :loading="clearing">
                   <el-icon><Delete /></el-icon>
                   Очистить
+                </el-button>
+              </div>
+            </el-col>
+            
+            <el-col :span="6">
+              <div class="action-item">
+                <h4>Проверить Azure</h4>
+                <p>Проверить подключение к Azure OpenAI</p>
+                <el-button type="info" @click="checkAzureConnection" :loading="checkingAzure">
+                  <el-icon><Refresh /></el-icon>
+                  Проверить
                 </el-button>
               </div>
             </el-col>
@@ -155,29 +231,65 @@ import axios from 'axios'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 
-const modelStatus = ref(null)
-const error = ref(null)
+const whisperStatus = ref(null)
+const whisperError = ref(null)
+const llmStatus = ref(null)
+const llmError = ref(null)
 const loading = ref(false)
 const reloading = ref(false)
 const clearing = ref(false)
+const checkingAzure = ref(false)
 
-const fetchStatus = async () => {
+const fetchWhisperStatus = async () => {
   try {
-    loading.value = true
-    error.value = null
+    whisperError.value = null
     
     const response = await axios.get(`${API_BASE_URL}/api/v1/stt/model-status`)
-    modelStatus.value = response.data
+    whisperStatus.value = response.data
   } catch (err) {
-    error.value = err.response?.data?.detail || 'Ошибка при получении статуса модели'
-    console.error('Error fetching model status:', err)
+    whisperError.value = err.response?.data?.detail || 'Ошибка при получении статуса модели Whisper'
+    console.error('Error fetching Whisper model status:', err)
+  }
+}
+
+const fetchLLMStatus = async () => {
+  try {
+    llmError.value = null
+    
+    const response = await axios.get(`${API_BASE_URL}/api/v1/llm/model-status`)
+    llmStatus.value = response.data
+  } catch (err) {
+    llmError.value = err.response?.data?.detail || 'Ошибка при получении статуса модели LLM'
+    console.error('Error fetching LLM model status:', err)
+  }
+}
+
+const fetchAllStatus = async () => {
+  try {
+    loading.value = true
+    await Promise.all([
+      fetchWhisperStatus(),
+      fetchLLMStatus()
+    ])
   } finally {
     loading.value = false
   }
 }
 
-const refreshStatus = () => {
-  fetchStatus()
+const refreshAllStatus = () => {
+  fetchAllStatus()
+}
+
+const checkAzureConnection = async () => {
+  try {
+    checkingAzure.value = true
+    await fetchLLMStatus()
+    ElMessage.success('Статус Azure обновлен')
+  } catch (err) {
+    ElMessage.error('Ошибка при проверке Azure подключения')
+  } finally {
+    checkingAzure.value = false
+  }
 }
 
 const reloadModel = async () => {
@@ -186,11 +298,11 @@ const reloadModel = async () => {
     
     const response = await axios.post(`${API_BASE_URL}/api/v1/stt/reload-model`)
     
-    ElMessage.success('Модель успешно перезагружена')
-    await fetchStatus()
+    ElMessage.success('Модель Whisper успешно перезагружена')
+    await fetchWhisperStatus()
   } catch (err) {
-    ElMessage.error(err.response?.data?.detail || 'Ошибка при перезагрузке модели')
-    console.error('Error reloading model:', err)
+    ElMessage.error(err.response?.data?.detail || 'Ошибка при перезагрузке модели Whisper')
+    console.error('Error reloading Whisper model:', err)
   } finally {
     reloading.value = false
   }
@@ -199,7 +311,7 @@ const reloadModel = async () => {
 const clearCache = async () => {
   try {
     await ElMessageBox.confirm(
-      'Вы уверены, что хотите очистить кэш модели? Это приведет к повторной загрузке модели при следующем использовании.',
+      'Вы уверены, что хотите очистить кэш модели Whisper? Это приведет к повторной загрузке модели при следующем использовании.',
       'Подтверждение',
       {
         confirmButtonText: 'Очистить',
@@ -212,8 +324,8 @@ const clearCache = async () => {
     
     const response = await axios.post(`${API_BASE_URL}/api/v1/stt/clear-cache`)
     
-    ElMessage.success('Кэш модели очищен')
-    await fetchStatus()
+    ElMessage.success('Кэш модели Whisper очищен')
+    await fetchWhisperStatus()
   } catch (err) {
     if (err !== 'cancel') {
       ElMessage.error(err.response?.data?.detail || 'Ошибка при очистке кэша')
@@ -224,22 +336,36 @@ const clearCache = async () => {
   }
 }
 
-const getStatusType = () => {
-  if (!modelStatus.value) return 'info'
-  if (modelStatus.value.model_loaded && modelStatus.value.model_exists) return 'success'
-  if (modelStatus.value.model_exists) return 'warning'
+const getWhisperStatusType = () => {
+  if (!whisperStatus.value) return 'info'
+  if (whisperStatus.value.model_loaded && whisperStatus.value.model_exists) return 'success'
+  if (whisperStatus.value.model_exists) return 'warning'
   return 'danger'
 }
 
-const getStatusText = () => {
-  if (!modelStatus.value) return 'Загрузка...'
-  if (modelStatus.value.model_loaded && modelStatus.value.model_exists) return 'Готова'
-  if (modelStatus.value.model_exists) return 'Кэширована'
+const getWhisperStatusText = () => {
+  if (!whisperStatus.value) return 'Загрузка...'
+  if (whisperStatus.value.model_loaded && whisperStatus.value.model_exists) return 'Готова'
+  if (whisperStatus.value.model_exists) return 'Кэширована'
   return 'Не найдена'
 }
 
+const getLLMStatusType = () => {
+  if (!llmStatus.value) return 'info'
+  if (llmStatus.value.azure_accessible) return 'success'
+  if (llmStatus.value.credentials_configured) return 'warning'
+  return 'danger'
+}
+
+const getLLMStatusText = () => {
+  if (!llmStatus.value) return 'Загрузка...'
+  if (llmStatus.value.azure_accessible) return 'Доступна'
+  if (llmStatus.value.credentials_configured) return 'Настроена'
+  return 'Недоступна'
+}
+
 onMounted(() => {
-  fetchStatus()
+  fetchAllStatus()
 })
 </script>
 
@@ -325,6 +451,12 @@ onMounted(() => {
 
 .path-text {
   font-family: monospace;
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.error-text {
+  color: #f56c6c;
   font-size: 12px;
   word-break: break-all;
 }

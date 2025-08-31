@@ -431,3 +431,48 @@ Please provide a corrected version with the same structure but valid JSON syntax
                 }
             ]
         })
+
+    def get_azure_status(self) -> Dict[str, Any]:
+        """Get Azure OpenAI connection status and information"""
+        try:
+            status = {
+                "azure_endpoint": settings.AZURE_OPENAI_ENDPOINT,
+                "model_deployment": settings.AZURE_OPENAI_DEPLOYMENT_NAME,
+                "api_version": settings.AZURE_OPENAI_API_VERSION,
+                "client_initialized": self.client is not None,
+                "credentials_configured": bool(settings.AZURE_OPENAI_ENDPOINT and settings.AZURE_OPENAI_API_KEY)
+            }
+            
+            # Test connection if client is available
+            if self.client:
+                try:
+                    # Try a simple test call to check if Azure is accessible
+                    test_response = self.client.chat.completions.create(
+                        model=settings.AZURE_OPENAI_DEPLOYMENT_NAME,
+                        messages=[
+                            {"role": "user", "content": "Hello"}
+                        ],
+                        max_tokens=5,
+                        temperature=0
+                    )
+                    status["azure_accessible"] = True
+                    status["test_response"] = test_response.choices[0].message.content
+                except Exception as e:
+                    status["azure_accessible"] = False
+                    status["error"] = str(e)
+            else:
+                status["azure_accessible"] = False
+                status["error"] = "Client not initialized"
+            
+            return status
+            
+        except Exception as e:
+            return {
+                "azure_endpoint": settings.AZURE_OPENAI_ENDPOINT,
+                "model_deployment": settings.AZURE_OPENAI_DEPLOYMENT_NAME,
+                "api_version": settings.AZURE_OPENAI_API_VERSION,
+                "client_initialized": False,
+                "credentials_configured": False,
+                "azure_accessible": False,
+                "error": str(e)
+            }

@@ -81,6 +81,17 @@ async def generate_text(
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.get("/model-status")
+async def get_model_status() -> Dict[str, Any]:
+    """Get Azure OpenAI model status and connection information"""
+    try:
+        llm_service = LLMService()
+        status = llm_service.get_azure_status()
+        return status
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/healthz")
 async def health_check() -> Dict[str, str]:
     """Health check endpoint"""
