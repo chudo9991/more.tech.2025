@@ -5,18 +5,24 @@ import asyncio
 import tempfile
 import os
 import hashlib
-from typing import Dict, Any, Optional
+import time
+from typing import Dict, Any, Optional, List
 import httpx
 from PIL import Image
 import io
 
 from app.core.config import settings
+from app.services.a2e_service import A2EService
 
 
 class AvatarService:
     def __init__(self):
+        print("AvatarService: Initializing...")
         self.cache = {}
         self._init_minio_client()
+        print("AvatarService: Creating A2E service...")
+        self.a2e_service = A2EService()
+        print("AvatarService: Initialization complete")
 
     def _init_minio_client(self):
         """Initialize MinIO client for avatar storage"""
@@ -258,3 +264,62 @@ class AvatarService:
         except Exception as e:
             print(f"Avatar URL retrieval failed: {e}")
             return None
+
+    # A2E API Integration Methods
+    
+    async def get_available_voices(self, country: str = "ru", region: str = "RU") -> List[Dict[str, Any]]:
+        """Get available voices from A2E API"""
+        return await self.a2e_service.get_available_voices(country, region)
+
+    async def generate_tts(self, text: str, voice_id: Optional[str] = None, speech_rate: Optional[float] = None) -> Optional[str]:
+        """Generate TTS audio from text"""
+        return await self.a2e_service.generate_tts(text, voice_id, speech_rate)
+
+    async def generate_avatar_video(
+        self,
+        text: str,
+        session_id: str,
+        voice_id: Optional[str] = None,
+        avatar_id: Optional[str] = None,
+        resolution: Optional[int] = None
+    ) -> Dict[str, Any]:
+        """Generate avatar video from text"""
+        try:
+            # Generate video using A2E API
+            video_url = await self.a2e_service.generate_avatar_video_from_text(
+                text=text,
+                voice_id=voice_id,
+                avatar_id=avatar_id,
+                resolution=resolution,
+                title=f"interview-{session_id}-{int(time.time())}"
+            )
+            
+            if video_url:
+                result = {
+                    "video_url": video_url,
+                    "session_id": session_id,
+                    "text": text,
+                    "voice_id": voice_id or self.a2e_service.default_voice_id,
+                    "avatar_id": avatar_id or self.a2e_service.default_avatar_id,
+                    "resolution": resolution or self.a2e_service.default_resolution,
+                    "generated_at": asyncio.get_event_loop().time()
+                }
+                
+                # Cache result
+                cache_key = f"video_{session_id}_{hash(text)}"
+                self.cache[cache_key] = result
+                
+                return result
+            else:
+                raise Exception("Video generation failed")
+                
+        except Exception as e:
+            raise Exception(f"Avatar video generation failed: {str(e)}")
+
+    async def check_video_status(self, task_id: str) -> Dict[str, Any]:
+        """Check video generation status"""
+        return await self.a2e_service.check_video_status(task_id)
+
+    async def get_a2e_service_status(self) -> Dict[str, Any]:
+        """Get A2E service status"""
+        return await self.a2e_service.get_service_status()

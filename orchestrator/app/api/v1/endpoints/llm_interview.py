@@ -1,15 +1,23 @@
 """
 LLM Interview API endpoints
 """
+import httpx
 from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
 
 from app.core.database import get_db
 from app.services.llm_question_generator import LLMQuestionGenerator
 from app.schemas.smart_scenario import SmartScenarioNavigationRequest, SmartScenarioNavigationResponse
 
 router = APIRouter()
+
+class AvatarSpeakRequest(BaseModel):
+    session_id: str
+    text: str
+    avatar_id: str = "68af59a86eeedd0042ca7e27"  # Alice (working for video)
+    voice_id: str = "66d3f6a704d077b1432fb7d3"   # Anna
 
 
 @router.post("/generate-question")
@@ -370,4 +378,110 @@ async def get_contextual_questions_status(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Ошибка получения статуса: {str(e)}"
+        )
+
+
+@router.post("/avatar-speak")
+async def avatar_speak(request: AvatarSpeakRequest):
+    """
+    Интеграция с avatar сервисом для генерации видео с аватаром
+    
+    Логика:
+    1. Сначала пытаемся получить streaming token
+    2. Если streaming недоступен, переключаемся на fallback генерацию видео
+    3. Возвращаем URL для отображения (stream или video)
+    """
+    try:
+        print(f"=== Avatar speak endpoint called ===")
+        print(f"Session ID: {request.session_id}")
+        print(f"Text: {request.text[:50]}...")
+        
+        # Step 1: Try to get streaming token
+        async with httpx.AsyncClient() as client:
+            streaming_response = await client.post(
+                "http://avatar:8005/api/v1/avatar/streaming/get-token",
+                json={
+                    "avatar_id": request.avatar_id
+                },
+                timeout=10.0
+            )
+            
+            if streaming_response.status_code == 200:
+                streaming_data = streaming_response.json()
+                
+                if streaming_data.get("success") and streaming_data.get("stream_url"):
+                    # Streaming is available
+                    print("Streaming mode available")
+                    return {
+                        "success": True,
+                        "mode": "streaming",
+                        "stream_url": streaming_data.get("stream_url"),
+                        "session_id": request.session_id,
+                        "text": request.text
+                    }
+                elif streaming_data.get("fallback_mode"):
+                    # Streaming unavailable, use fallback video generation
+                    print("Streaming unavailable, using fallback video generation")
+                    
+                    # Step 2: Generate fallback video
+                    fallback_response = await client.post(
+                        "http://avatar:8005/api/v1/avatar/fallback/generate-video",
+                        json={
+                            "text": request.text,
+                            "session_id": request.session_id,
+                            "voice_id": request.voice_id,
+                            "avatar_id": request.avatar_id,
+                            "resolution": 720
+                        },
+                        timeout=300.0  # Longer timeout for video generation
+                    )
+                    
+                    if fallback_response.status_code == 200:
+                        fallback_data = fallback_response.json()
+                        
+                        if fallback_data.get("success"):
+                            print("Fallback video generated successfully")
+                            return {
+                                "success": True,
+                                "mode": "fallback_video",
+                                "video_url": fallback_data.get("video_url"),
+                                "session_id": request.session_id,
+                                "text": request.text
+                            }
+                        else:
+                            print(f"Fallback video generation failed - response: {fallback_data}")
+                            raise HTTPException(
+                                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                detail="Fallback video generation failed"
+                            )
+                    else:
+                        print(f"Avatar service error - status: {fallback_response.status_code}, response: {fallback_response.text}")
+                        raise HTTPException(
+                            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=f"Avatar service error: {fallback_response.status_code}"
+                        )
+                else:
+                    # Other streaming error
+                    raise HTTPException(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        detail=f"Streaming error: {streaming_data.get('message', 'Unknown error')}"
+                    )
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Avatar service error: {streaming_response.status_code}"
+                )
+                
+    except httpx.TimeoutException:
+        raise HTTPException(
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            detail="Avatar service timeout"
+        )
+    except Exception as e:
+        print(f"Error in avatar_speak: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Avatar speak error: {str(e)}"
         )

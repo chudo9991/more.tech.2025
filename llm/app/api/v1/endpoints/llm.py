@@ -63,6 +63,24 @@ async def analyze_tone(
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.post("/analyze-answer")
+async def analyze_answer(
+    request: Dict[str, Any]
+) -> Dict[str, Any]:
+    """Analyze answer using LLM"""
+    try:
+        llm_service = LLMService()
+        result = await llm_service.generate(
+            prompt=request.get("prompt", ""),
+            max_tokens=request.get("max_tokens", 1000),
+            temperature=request.get("temperature", 0.3),
+            system_message="Ты - опытный HR-специалист, анализирующий ответ кандидата на техническое интервью. ВАЖНО: Всегда отвечай на РУССКОМ ЯЗЫКЕ. Все вопросы, комментарии и анализ должны быть на русском языке."
+        )
+        return {"analysis": result}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @router.post("/generate")
 async def generate_text(
     request: Dict[str, Any]

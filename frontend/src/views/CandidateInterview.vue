@@ -14,113 +14,79 @@
       <el-main>
         <el-row :gutter="20">
           <!-- Avatar Section -->
-          <el-col :span="6">
+          <el-col :span="16">
             <el-card class="avatar-card">
               <template #header>
                 <span>Аватар интервьюера</span>
               </template>
               
               <div class="avatar-container">
-                <div class="rtsp-placeholder">
-                  <el-icon><VideoCamera /></el-icon>
-                  <span>Тут будет RTSP трансляция AI-аватара</span>
-                  <small>Подключение к внешнему сервису генерации аватаров</small>
-                </div>
-              </div>
-            </el-card>
-          </el-col>
-          
-          <!-- Vacancy Info Section -->
-          <el-col :span="6" v-if="currentQuestion?.vacancy_context">
-            <el-card class="vacancy-info-card">
-              <template #header>
-                <span>Информация о вакансии</span>
-              </template>
-              
-              <div class="vacancy-info">
-                <div class="vacancy-title">
-                  <h4>{{ currentQuestion.vacancy_context.title }}</h4>
-                  <el-tag v-if="currentQuestion.vacancy_context.vacancy_code" type="info" size="small">
-                    {{ currentQuestion.vacancy_context.vacancy_code }}
-                  </el-tag>
-                </div>
-                
-                <div class="vacancy-details">
-                  <div v-if="currentQuestion.vacancy_context.requirements" class="detail-item">
-                    <strong>Требования:</strong>
-                    <p>{{ currentQuestion.vacancy_context.requirements }}</p>
-                  </div>
-                  
-                  <div v-if="currentQuestion.vacancy_context.experience_required" class="detail-item">
-                    <strong>Опыт:</strong>
-                    <p>{{ currentQuestion.vacancy_context.experience_required }}</p>
-                  </div>
-                  
-                  <div v-if="currentQuestion.vacancy_context.education_level" class="detail-item">
-                    <strong>Образование:</strong>
-                    <p>{{ currentQuestion.vacancy_context.education_level }}</p>
-                  </div>
-                </div>
+                <StreamingAvatarPlayer 
+                  ref="avatarPlayerRef"
+                  :session-id="sessionId"
+                  @avatar-connected="handleAvatarConnected"
+                  @avatar-disconnected="handleAvatarDisconnected"
+                  @avatar-question="handleAvatarQuestion"
+                  @avatar-speak="handleAvatarSpeak"
+                />
               </div>
             </el-card>
           </el-col>
           
           <!-- Chat Section -->
-          <el-col :span="currentQuestion?.vacancy_context ? 12 : 18">
+          <el-col :span="8">
             <el-card class="chat-card">
-              <template #header>
-                <div class="chat-controls">
-                  <!-- Code Input Section -->
-                  <div v-if="!interviewStarted && !resumeLinked" class="code-input-section">
-                    <div class="code-input-wrapper">
-                      <el-input
-                        v-model="interviewCode"
-                        placeholder="Введите код интервью (6 цифр)"
-                        maxlength="6"
-                        style="width: 200px; margin-right: 10px;"
-                        @keyup.enter="validateCode"
-                      >
-                        <template #prefix>
-                          <el-icon><Key /></el-icon>
-                        </template>
-                      </el-input>
-                      <el-button 
-                        type="primary" 
-                        @click="validateCode"
-                        :loading="validatingCode"
-                      >
-                        Подтвердить код
-                      </el-button>
-                    </div>
-                    <div v-if="codeError" class="code-error">
-                      {{ codeError }}
-                    </div>
-                  </div>
-                  
-                  <!-- Resume Info -->
-                  <div v-if="resumeLinked && linkedResume" class="resume-info">
-                    <el-tag type="success" size="large">
-                      <el-icon><Document /></el-icon>
-                      Резюме привязано: {{ linkedResume.original_filename }}
-                    </el-tag>
-                  </div>
-                  
+              <!-- Code Input Section -->
+              <div v-if="!interviewStarted" class="code-input-section">
+                <div class="code-input-wrapper">
+                  <el-input
+                    v-model="interviewCode"
+                    placeholder="Введите код интервью (6 цифр)"
+                    maxlength="6"
+                    style="width: 200px; margin-right: 10px;"
+                    @keyup.enter="validateCode"
+                  >
+                    <template #prefix>
+                      <el-icon><Key /></el-icon>
+                    </template>
+                  </el-input>
+                  <el-button 
+                    type="primary" 
+                    @click="validateCode"
+                    :loading="validatingCode"
+                    style="white-space: pre-line; height: auto; line-height: 1.2;"
+                  >
+                    Подтвердить<br>код
+                  </el-button>
                   <el-button 
                     type="success" 
                     @click="startInterview"
                     :disabled="interviewStarted || !resumeLinked"
+                    style="white-space: pre-line; height: auto; line-height: 1.2;"
                   >
-                    Начать интервью
+                    Начать<br>интервью
                   </el-button>
                   <el-button 
                     type="danger" 
                     @click="endInterview"
                     :disabled="!interviewStarted"
+                    style="white-space: pre-line; height: auto; line-height: 1.2;"
                   >
-                    Завершить интервью
+                    Завершить<br>интервью
                   </el-button>
                 </div>
-              </template>
+                <div v-if="codeError" class="code-error">
+                  {{ codeError }}
+                </div>
+              </div>
+              
+              <!-- Resume Info -->
+              <div v-if="resumeLinked && linkedResume" class="resume-info">
+                <el-tag type="success" size="large">
+                  <el-icon><Document /></el-icon>
+                  Резюме привязано: {{ linkedResume.original_filename }}
+                </el-tag>
+              </div>
               
               <!-- Chat Messages -->
               <div class="chat-messages" ref="chatContainer">
@@ -137,34 +103,35 @@
               </div>
               
               <!-- Voice Input -->
-              <div class="voice-input">
+              <div class="voice-input-horizontal">
                 <!-- Microphone Status -->
-                <div class="microphone-status" style="margin-bottom: 10px;">
+                <div class="microphone-status-group">
                   <el-tag 
                     :type="availableMicrophones.length > 0 ? 'success' : 'warning'"
                     size="small"
                   >
-                    {{ availableMicrophones.length > 0 ? '🎤 Микрофон доступен' : '⚠️ Микрофон недоступен' }}
+                    <span v-html="availableMicrophones.length > 0 ? '🎤 Микрофон<br>доступен' : '⚠️ Микрофон<br>недоступен'"></span>
                   </el-tag>
-                  <el-button 
-                    v-if="availableMicrophones.length === 0"
-                    type="warning" 
-                    size="small"
-                    @click="requestMicrophonePermission"
-                    style="margin-left: 10px;"
-                  >
-                    🔧 Запросить доступ к микрофону
-                  </el-button>
+                                        <el-button 
+                        v-if="availableMicrophones.length === 0"
+                        type="warning" 
+                        size="small"
+                        @click="requestMicrophonePermission"
+                        :disabled="!resumeLinked"
+                        style="margin-left: 10px;"
+                      >
+                        🔧 Запросить доступ
+                      </el-button>
                 </div>
                 
                 <!-- Microphone Selection -->
-                <div class="microphone-selector" v-if="availableMicrophones.length > 1">
+                <div class="microphone-selector-group" v-if="availableMicrophones.length > 1">
                   <label>Микрофон:</label>
                   <el-select 
                     v-model="selectedMicrophone" 
                     placeholder="Выберите микрофон"
                     size="small"
-                    style="width: 200px; margin-left: 10px;"
+                    style="width: 200px;"
                   >
                     <el-option
                       v-for="mic in availableMicrophones"
@@ -176,14 +143,14 @@
                 </div>
                 
                 <!-- Voice Control Buttons -->
-                <div class="voice-controls" style="display: flex; gap: 10px; margin-top: 15px;">
+                <div class="voice-controls-group">
                   <!-- Answer Button -->
                   <el-button 
                     type="primary" 
-                    size="large"
+                    size="small"
                     @click="startRecording"
-                    :disabled="isRecording"
-                    style="flex: 1; height: 50px; font-size: 16px; font-weight: bold;"
+                    :disabled="isRecording || !resumeLinked"
+                    style="flex: 1;"
                   >
                     {{ isRecording ? '🎤 Запись...' : '🎤 Ответ' }}
                   </el-button>
@@ -191,23 +158,23 @@
                   <!-- Stop Button -->
                   <el-button 
                     type="danger" 
-                    size="large"
+                    size="small"
                     @click="stopRecording"
                     :disabled="!isRecording"
-                    style="flex: 1; height: 50px; font-size: 16px; font-weight: bold;"
+                    style="flex: 1;"
                   >
                     🛑 Стоп
                   </el-button>
                 </div>
+              </div>
                 
-                <div class="recording-status" v-if="isRecording">
-                  <el-progress 
-                    :percentage="recordingProgress" 
-                    :show-text="false"
-                    :stroke-width="4"
-                  />
-                  <span>{{ recordingDuration }}s</span>
-                </div>
+              <div class="recording-status" v-if="isRecording">
+                <el-progress 
+                  :percentage="recordingProgress" 
+                  :show-text="false"
+                  :stroke-width="4"
+                />
+                <span>{{ recordingDuration }}s</span>
               </div>
               
 
@@ -225,7 +192,12 @@
             <el-col :span="12">
               <div class="progress-item">
                 <label>Задано вопросов:</label>
-                <span>{{ sessionData.current_step }}/{{ sessionData.total_steps }}</span>
+                <span v-if="scenarioData">
+                  {{ sessionData.current_step }}/{{ scenarioData.total_nodes || 0 }}
+                </span>
+                <span v-else>
+                  {{ sessionData.current_step }}/...
+                </span>
               </div>
             </el-col>
             <el-col :span="12">
@@ -249,6 +221,7 @@ import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { User, VideoCamera, Key, Document } from '@element-plus/icons-vue'
 import { uploadAudioToMinio } from '@/utils/minio'
+import StreamingAvatarPlayer from '@/components/StreamingAvatarPlayer.vue'
 
 // Reactive data
 const sessionData = ref(null)
@@ -274,6 +247,9 @@ const validatingCode = ref(false)
 const codeError = ref('')
 const resumeLinked = ref(false)
 const linkedResume = ref(null)
+const scenarioData = ref(null)
+
+
 
 // Recording state
 let recordingInterval = null
@@ -290,8 +266,30 @@ const VAD_DEBOUNCE_TIME = 250 // 500ms debounce
 
 // Computed
 const sessionId = ref(null)
+const avatarPlayerRef = ref(null)
 
 // Methods
+const loadScenarioData = async (resumeId) => {
+  try {
+    // Получаем информацию о резюме, чтобы найти связанную вакансию
+    const resumeResponse = await fetch(`/api/v1/resumes/${resumeId}`)
+    if (resumeResponse.ok) {
+      const resume = await resumeResponse.json()
+      
+      // Получаем сценарий для вакансии
+      if (resume.vacancy_id) {
+        const scenarioResponse = await fetch(`/api/v1/scenarios/by-vacancy/${resume.vacancy_id}`)
+        if (scenarioResponse.ok) {
+          const scenario = await scenarioResponse.json()
+          scenarioData.value = scenario
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error loading scenario data:', error)
+  }
+}
+
 const validateCode = async () => {
   if (!interviewCode.value || interviewCode.value.length !== 6) {
     codeError.value = 'Код должен содержать 6 цифр'
@@ -320,6 +318,9 @@ const validateCode = async () => {
       if (resumeResponse.ok) {
         linkedResume.value = await resumeResponse.json()
       }
+      
+      // Load scenario data
+      await loadScenarioData(result.resume_id)
       
       resumeLinked.value = true
       ElMessage.success('Код подтвержден! Резюме привязано к интервью.')
@@ -502,6 +503,12 @@ const endInterview = async () => {
 
 const startRecording = async () => {
   try {
+    // Проверяем, что интервью началось и есть session ID
+    if (!sessionId.value) {
+      ElMessage.warning('Сначала нужно начать интервью')
+      return
+    }
+    
     // Проверяем доступность navigator.mediaDevices
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       throw new Error('MediaDevices API не поддерживается в этом браузере')
@@ -694,8 +701,20 @@ const analyzeAndSaveAnswer = async (questionText, answerText, audioUrl, question
 
 const getAvatarResponse = async (userMessage) => {
   try {
-    // In production, this would call LLM service for chat
-    const response = await fetch(`/api/v1/llm/chat`, {
+    // Check if session ID is available
+    if (!sessionId.value) {
+      console.error('No session ID available, cannot get avatar response')
+      addMessage({
+        id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        type: 'avatar',
+        text: 'Извините, произошла ошибка. Пожалуйста, попробуйте еще раз.',
+        timestamp: new Date()
+      })
+      return
+    }
+
+    // Step 1: Get LLM response
+    const llmResponse = await fetch(`/api/v1/llm/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -706,24 +725,65 @@ const getAvatarResponse = async (userMessage) => {
       })
     })
     
-    if (response.ok) {
-      const result = await response.json()
+    if (llmResponse.ok) {
+      const llmResult = await llmResponse.json()
+      const avatarText = llmResult.response
       
+      // Add message to chat
       addMessage({
         id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         type: 'avatar',
-        text: result.response,
+        text: avatarText,
         timestamp: new Date()
       })
       
-      // Avatar emotion is handled internally by the avatar service
-      // No need to call external update-emotion endpoint
+      // Step 2: Generate avatar video/speech
+      try {
+        const avatarResponse = await fetch(`/api/v1/llm-interview/avatar-speak`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            session_id: sessionId.value,
+            text: avatarText,
+            avatar_id: '676e1f054c86ff839eae2cc3', // Alice
+            voice_id: '66d3f6a704d077b1432fb7d3'  // Anna
+          })
+        })
+        
+        if (avatarResponse.ok) {
+          const avatarResult = await avatarResponse.json()
+          
+          if (avatarResult.success) {
+            if (avatarResult.mode === 'streaming' && avatarResult.stream_url) {
+              // Update streaming URL
+              console.log('Streaming mode activated')
+              // The StreamingAvatarPlayer will handle this automatically
+            } else if (avatarResult.mode === 'fallback_video' && avatarResult.video_url) {
+              // Update video URL for fallback mode
+              console.log('Fallback video mode activated:', avatarResult.video_url)
+              // Pass video URL to StreamingAvatarPlayer
+              if (avatarPlayerRef.value) {
+                avatarPlayerRef.value.setVideoUrl(avatarResult.video_url)
+              }
+            }
+          } else {
+            console.warn('Avatar generation failed, using placeholder')
+          }
+        } else {
+          console.warn('Avatar service unavailable, using placeholder')
+        }
+      } catch (avatarError) {
+        console.warn('Avatar service error, using placeholder:', avatarError)
+      }
+      
     } else {
       // Fallback response
       addMessage({
         id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         type: 'avatar',
-        text: 'Thank you for your response. Could you please elaborate on that?',
+        text: 'Спасибо за ваш ответ. Можете ли вы рассказать об этом подробнее?',
         timestamp: new Date()
       })
     }
@@ -771,6 +831,13 @@ const getStatusLabel = (status) => {
 
 const analyzeToneAndUpdateAvatar = async (text) => {
   try {
+    // Check if session ID is available
+    if (!sessionId.value) {
+      console.error('No session ID available, cannot analyze tone')
+      currentEmotion.value = 'neutral'
+      return 'neutral'
+    }
+
     // Silently analyze tone for internal avatar emotion updates
     const response = await fetch(`/api/v1/llm/analyze-tone`, {
       method: 'POST',
@@ -1044,6 +1111,31 @@ const markContextualQuestionAsUsed = async (questionId) => {
     console.error('Error marking contextual question as used:', error)
   }
 }
+
+// Avatar event handlers
+const handleAvatarConnected = (data) => {
+  console.log('Avatar connected:', data)
+  ElMessage.success('Аватар подключен и готов к общению!')
+}
+
+const handleAvatarDisconnected = (data) => {
+  console.log('Avatar disconnected:', data)
+  ElMessage.info('Аватар отключен')
+}
+
+const handleAvatarQuestion = (data) => {
+  console.log('Avatar question:', data)
+  // Можно добавить логику для обработки вопросов аватара
+  // Например, добавить в чат или обработать ответ
+}
+
+const handleAvatarSpeak = (data) => {
+  console.log('Avatar speak:', data)
+  // Можно добавить логику для обработки речи аватара
+  // Например, добавить в чат или обработать произнесенный текст
+}
+
+
 </script>
 
 <style scoped>
@@ -1074,10 +1166,12 @@ const markContextualQuestionAsUsed = async (questionId) => {
   height: 600px;
 }
 
+
+
 .avatar-container {
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: stretch;
   height: 100%;
   margin-bottom: 20px;
 }
@@ -1149,6 +1243,40 @@ const markContextualQuestionAsUsed = async (questionId) => {
 .chat-controls {
   display: flex;
   gap: 10px;
+  align-items: center;
+}
+
+.interview-controls {
+  display: flex;
+  gap: 10px;
+  margin: 15px 0;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.voice-input-horizontal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin: 15px 0;
+}
+
+.microphone-status-group {
+  display: flex;
+  align-items: center;
+}
+
+.microphone-selector-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+}
+
+.voice-controls-group {
+  display: flex;
+  gap: 5px;
 }
 
 .chat-messages {

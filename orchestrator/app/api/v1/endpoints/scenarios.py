@@ -20,6 +20,60 @@ from app.schemas.dynamic_criteria import (
 router = APIRouter()
 
 
+@router.get("/by-vacancy/{vacancy_id}")
+async def get_scenario_by_vacancy(
+    vacancy_id: str,
+    db: Session = Depends(get_db)
+) -> Dict[str, Any]:
+    """
+    Получение активного сценария для конкретной вакансии
+    """
+    try:
+        # Проверяем существование вакансии
+        vacancy = db.query(Vacancy).filter(Vacancy.id == vacancy_id).first()
+        if not vacancy:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Вакансия {vacancy_id} не найдена"
+            )
+        
+        # Получаем активный сценарий
+        scenario = db.query(InterviewScenario).filter(
+            InterviewScenario.vacancy_id == vacancy_id,
+            InterviewScenario.is_active == True
+        ).first()
+        
+        if not scenario:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Активный сценарий для вакансии {vacancy_id} не найден"
+            )
+        
+        # Подсчитываем узлы
+        nodes_count = db.query(ScenarioNode).filter(
+            ScenarioNode.scenario_id == scenario.id
+        ).count()
+        
+        return {
+            "id": scenario.id,
+            "name": scenario.name,
+            "description": scenario.description,
+            "is_active": scenario.is_active,
+            "version": scenario.version,
+            "total_nodes": nodes_count,
+            "created_at": scenario.created_at.isoformat() if scenario.created_at else None,
+            "updated_at": scenario.updated_at.isoformat() if scenario.updated_at else None
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Ошибка получения сценария: {str(e)}"
+        )
+
+
 @router.get("/")
 async def get_scenarios(
     vacancy_id: Optional[str] = Query(None, description="Фильтр по ID вакансии"),
@@ -298,6 +352,9 @@ async def get_vacancy_dynamic_criteria(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Ошибка получения критериев: {str(e)}"
         )
+
+
+
 
 
 @router.get("/vacancies/{vacancy_id}/scenarios")

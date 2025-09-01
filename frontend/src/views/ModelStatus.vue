@@ -15,7 +15,7 @@
       
       <el-main>
         <div class="page-description">
-          <p>Мониторинг состояния моделей Whisper и LLM</p>
+          <p>Мониторинг состояния моделей Whisper, LLM и A2E Avatar</p>
         </div>
 
         <!-- Whisper Model Status Card -->
@@ -166,6 +166,9 @@
           </div>
         </el-card>
 
+        <!-- Avatar Status Component -->
+        <AvatarStatus />
+
         <!-- Actions Card -->
         <el-card class="actions-card" shadow="never">
           <template #header>
@@ -228,6 +231,7 @@ import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Refresh, Delete } from '@element-plus/icons-vue'
 import axios from 'axios'
+import AvatarStatus from '@/components/AvatarStatus.vue'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 
