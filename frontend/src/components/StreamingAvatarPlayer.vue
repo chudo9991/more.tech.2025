@@ -23,12 +23,14 @@
         ref="videoElement"
         :src="streamUrl"
         autoplay
-        muted
         controls
+        preload="metadata"
         class="avatar-video"
+        style="width: 100%; height: 100%; object-fit: contain; max-width: 100%; max-height: 100%;"
         @error="handleVideoError"
         @loadstart="handleVideoLoadStart"
         @canplay="handleVideoCanPlay"
+        @loadedmetadata="handleVideoLoadedMetadata"
       >
         Ваш браузер не поддерживает видео.
       </video>
@@ -78,7 +80,7 @@ const isConnected = ref(false)
 const connecting = ref(false)
 
 // Avatar configuration
-const avatarId = '676e1f054c86ff839eae2cc3' // Alice
+const avatarId = '68af59a86eeedd0042ca7e27' // Alice (working for video)
 const apiBaseUrl = import.meta.env.VITE_API_URL || ''
 
 // Methods
@@ -153,6 +155,15 @@ const handleVideoCanPlay = () => {
   emit('avatar-connected', { sessionId: props.sessionId })
 }
 
+const handleVideoLoadedMetadata = () => {
+  console.log('Video metadata loaded')
+  if (videoElement.value) {
+    console.log('Video duration:', videoElement.value.duration)
+    console.log('Video dimensions:', videoElement.value.videoWidth, 'x', videoElement.value.videoHeight)
+    console.log('Video ready state:', videoElement.value.readyState)
+  }
+}
+
 onMounted(async () => {
   console.log('StreamingAvatarPlayer mounted, connecting to avatar...')
   await connectToAvatar()
@@ -207,9 +218,12 @@ onMounted(async () => {
 }
 
 .avatar-video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
   border-radius: 8px;
+  background-color: #f5f5f5;
+  max-width: 100% !important;
+  max-height: 100% !important;
 }
 </style>

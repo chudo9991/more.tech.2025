@@ -215,22 +215,28 @@ class A2EService:
             
             while time.time() - start_time < timeout:
                 status = await self.check_video_status(task_id)
+                print(f"Video status check: {status}")
                 
                 if status["status"] == "success":
+                    print(f"Video completed successfully: {status['result_url']}")
                     return status["result_url"]
                 elif status["status"] == "failed":
                     raise Exception(f"Video generation failed: {status['error']}")
                 elif status["status"] in ["init", "pending", "copy"]:
                     # Still processing, wait and check again
+                    print(f"Video still processing: {status['status']}, progress: {status['progress']}%")
                     await asyncio.sleep(check_interval)
                 else:
                     # Unknown status, wait and check again
+                    print(f"Unknown video status: {status['status']}, waiting...")
                     await asyncio.sleep(check_interval)
             
             raise Exception(f"Video generation timeout after {timeout} seconds")
             
         except Exception as e:
             print(f"Video completion wait failed: {e}")
+            import traceback
+            traceback.print_exc()
             return None
 
     async def generate_avatar_video_from_text(

@@ -747,7 +747,7 @@ const getAvatarResponse = async (userMessage) => {
           body: JSON.stringify({
             session_id: sessionId.value,
             text: avatarText,
-            avatar_id: '676e1f054c86ff839eae2cc3', // Alice
+            avatar_id: '68af59a86eeedd0042ca7e27', // Alice (working for video)
             voice_id: '66d3f6a704d077b1432fb7d3'  // Anna
           })
         })
