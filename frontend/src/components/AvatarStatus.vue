@@ -122,11 +122,223 @@
       </el-row>
     </el-card>
     
+    <!-- Avatar Settings Section -->
+    <el-card class="settings-card" shadow="hover">
+      <template #header>
+        <div class="card-header">
+          <span>Настройки аватара</span>
+          <el-button type="primary" size="small" @click="loadAllOptions">
+            <el-icon><Refresh /></el-icon>
+            Загрузить опции
+          </el-button>
+        </div>
+      </template>
+      
+      <el-row :gutter="20">
+        <!-- Available Voices -->
+        <el-col :span="8">
+          <div class="settings-section">
+            <h4>Доступные голоса</h4>
+            <el-select 
+              v-model="avatarStore.selectedVoice" 
+              placeholder="Выберите голос"
+              style="width: 100%"
+              :loading="avatarStore.loading.voices"
+            >
+              <el-option
+                v-for="voice in avatarStore.availableVoices"
+                :key="voice.id"
+                :label="voice.name || voice.id"
+                :value="voice.id"
+              />
+            </el-select>
+            <div class="setting-info">
+              <small>Выбран: {{ avatarStore.currentVoice?.name || 'Не выбран' }}</small>
+            </div>
+          </div>
+        </el-col>
+        
+        <!-- Available Avatars -->
+        <el-col :span="8">
+          <div class="settings-section">
+            <h4>Доступные аватары</h4>
+            <el-select 
+              v-model="avatarStore.selectedAvatar" 
+              placeholder="Выберите аватар"
+              style="width: 100%"
+              :loading="avatarStore.loading.avatars"
+            >
+              <el-option
+                v-for="avatar in avatarStore.availableAvatars"
+                :key="avatar.id"
+                :label="avatar.name || avatar.id"
+                :value="avatar.id"
+              />
+            </el-select>
+            <div class="setting-info">
+              <small>Выбран: {{ avatarStore.currentAvatar?.name || 'Не выбран' }}</small>
+            </div>
+          </div>
+        </el-col>
+        
+        <!-- Video Resolution -->
+        <el-col :span="8">
+          <div class="settings-section">
+            <h4>Разрешение видео</h4>
+            <el-select 
+              v-model="avatarStore.resolution" 
+              placeholder="Выберите разрешение"
+              style="width: 100%"
+            >
+              <el-option label="720p" :value="720" />
+              <el-option label="1080p" :value="1080" />
+            </el-select>
+            <div class="setting-info">
+              <small>Текущее: {{ avatarStore.resolution }}p</small>
+            </div>
+          </div>
+        </el-col>
+      </el-row>
+      
+      <el-row :gutter="20" style="margin-top: 20px;">
+        <!-- Speech Rate -->
+        <el-col :span="6">
+          <div class="settings-section">
+            <h4>Скорость речи</h4>
+            <el-slider
+              v-model="avatarStore.speechRate"
+              :min="0.5"
+              :max="2.0"
+              :step="0.1"
+              :show-tooltip="true"
+              :format-tooltip="(val) => `${val}x`"
+            />
+            <div class="setting-info">
+              <small>Текущая: {{ avatarStore.speechRate }}x</small>
+            </div>
+          </div>
+        </el-col>
+        
+        <!-- Lip-sync Quality -->
+        <el-col :span="6">
+          <div class="settings-section">
+            <h4>Качество синхронизации</h4>
+            <el-switch
+              v-model="avatarStore.isSkipRs"
+              active-text="Быстро"
+              inactive-text="Высокое качество"
+              :active-value="true"
+              :inactive-value="false"
+            />
+            <div class="setting-info">
+              <small>{{ avatarStore.isSkipRs ? 'Быстро (стандартное качество)' : 'Высокое качество (медленнее)' }}</small>
+            </div>
+          </div>
+        </el-col>
+        
+        <!-- Captions -->
+        <el-col :span="6">
+          <div class="settings-section">
+            <h4>Субтитры</h4>
+            <el-switch
+              v-model="avatarStore.isCaptionEnabled"
+              active-text="Включены"
+              inactive-text="Выключены"
+            />
+            <div class="setting-info">
+              <small>{{ avatarStore.isCaptionEnabled ? 'Субтитры включены' : 'Субтитры выключены' }}</small>
+            </div>
+          </div>
+        </el-col>
+        
+        <!-- Background Color -->
+        <el-col :span="6">
+          <div class="settings-section">
+            <h4>Цвет фона</h4>
+            <el-color-picker
+              v-model="avatarStore.backgroundColor"
+              show-alpha
+              size="large"
+            />
+            <div class="setting-info">
+              <small>Текущий: {{ avatarStore.backgroundColor }}</small>
+            </div>
+          </div>
+        </el-col>
+      </el-row>
+      
+      <!-- Test Video Generation -->
+      <el-row style="margin-top: 30px;">
+        <el-col :span="24">
+          <div class="test-section">
+            <h4>Тест генерации видео</h4>
+            <p>Сгенерировать тестовое видео с текущими настройками</p>
+            
+            <el-button 
+              type="success" 
+              @click="testVideoGeneration"
+              :loading="avatarStore.loading.testGeneration"
+              size="large"
+            >
+              <el-icon><VideoPlay /></el-icon>
+              Сгенерировать тест
+            </el-button>
+            
+            <!-- Test Video Result -->
+            <div v-if="avatarStore.testVideoUrl" class="test-result">
+              <h5>Результат теста:</h5>
+              <video 
+                :src="avatarStore.testVideoUrl" 
+                controls 
+                style="max-width: 100%; max-height: 300px;"
+                class="test-video"
+              >
+                Ваш браузер не поддерживает видео.
+              </video>
+              <div class="test-info">
+                <p><strong>Текст:</strong> "Добро пожаловать на интервью!"</p>
+                <p><strong>Голос:</strong> {{ avatarStore.currentVoice?.name || 'Не выбран' }}</p>
+                <p><strong>Аватар:</strong> {{ avatarStore.currentAvatar?.name || 'Не выбран' }}</p>
+                <p><strong>Разрешение:</strong> {{ avatarStore.resolution }}p</p>
+                <p><strong>Скорость речи:</strong> {{ avatarStore.speechRate }}x</p>
+              </div>
+            </div>
+            
+            <!-- Test Error -->
+            <div v-if="avatarStore.error" class="test-error">
+              <el-alert
+                :title="avatarStore.error"
+                type="error"
+                :closable="false"
+                show-icon
+              />
+            </div>
+          </div>
+        </el-col>
+      </el-row>
+      
+      <!-- Save Settings -->
+      <el-row style="margin-top: 30px;">
+        <el-col :span="24">
+          <div class="save-section">
+            <el-button type="primary" @click="saveSettings" size="large">
+              <el-icon><Check /></el-icon>
+              Сохранить настройки
+            </el-button>
+            <el-button @click="resetSettings" size="large" style="margin-left: 10px;">
+              <el-icon><RefreshLeft /></el-icon>
+              Сбросить к умолчаниям
+            </el-button>
+          </div>
+        </el-col>
+      </el-row>
+    </el-card>
+    
     <!-- Settings Modal -->
     <el-dialog
       v-model="settingsVisible"
       title="Настройки аватара A2E"
-      width="80%"
+      width="90%"
       :close-on-click-modal="false"
       :close-on-press-escape="false"
     >
@@ -149,10 +361,14 @@
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
-import { Refresh, Microphone, VideoCamera, Setting } from '@element-plus/icons-vue'
+import { Refresh, Microphone, VideoCamera, Setting, VideoPlay, Check, RefreshLeft } from '@element-plus/icons-vue'
 import AvatarSettings from './AvatarSettings.vue'
+import { useAvatarSettingsStore } from '../stores/avatarSettings'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || ''
+
+// Avatar settings store
+const avatarStore = useAvatarSettingsStore()
 
 const avatarStatus = ref(null)
 const avatarError = ref(null)
@@ -229,6 +445,41 @@ const handleSettingsSaved = (settings) => {
   settingsVisible.value = false
 }
 
+// Load all available options from A2E API
+const loadAllOptions = async () => {
+  try {
+    await avatarStore.fetchAllOptions()
+    ElMessage.success('Опции загружены успешно!')
+  } catch (error) {
+    ElMessage.error('Ошибка загрузки опций: ' + error.message)
+  }
+}
+
+// Test video generation with current settings
+const testVideoGeneration = async () => {
+  try {
+    await avatarStore.testVideoGeneration()
+    ElMessage.success('Тестовое видео сгенерировано успешно!')
+  } catch (error) {
+    ElMessage.error('Ошибка генерации тестового видео: ' + error.message)
+  }
+}
+
+// Save current settings
+const saveSettings = () => {
+  if (avatarStore.saveSettings()) {
+    ElMessage.success('Настройки сохранены!')
+  } else {
+    ElMessage.error('Ошибка сохранения настроек')
+  }
+}
+
+// Reset settings to defaults
+const resetSettings = () => {
+  avatarStore.resetToDefaults()
+  ElMessage.success('Настройки сброшены к умолчаниям!')
+}
+
 const getStatusType = () => {
   if (!avatarStatus.value) return 'info'
   if (avatarStatus.value.api_accessible && avatarStatus.value.streaming_available) return 'success'
@@ -243,8 +494,16 @@ const getStatusText = () => {
   return 'Недоступен'
 }
 
-onMounted(() => {
-  fetchAvatarStatus()
+onMounted(async () => {
+  await fetchAvatarStatus()
+  
+  // Load saved settings and available options
+  avatarStore.loadSettings()
+  try {
+    await avatarStore.fetchAllOptions()
+  } catch (error) {
+    console.warn('Failed to load avatar options:', error)
+  }
 })
 </script>
 
@@ -331,5 +590,87 @@ onMounted(() => {
 
 .action-item .el-button {
   width: 100%;
+}
+
+/* Settings Card Styles */
+.settings-card {
+  margin-top: 20px;
+}
+
+.settings-section {
+  margin-bottom: 20px;
+}
+
+.settings-section h4 {
+  margin: 0 0 10px 0;
+  color: #303133;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.setting-info {
+  margin-top: 8px;
+  color: #909399;
+}
+
+.setting-info small {
+  font-size: 12px;
+}
+
+/* Test Section Styles */
+.test-section {
+  text-align: center;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.test-section h4 {
+  margin: 0 0 10px 0;
+  color: #303133;
+}
+
+.test-section p {
+  margin: 0 0 20px 0;
+  color: #606266;
+}
+
+.test-result {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.test-result h5 {
+  margin: 0 0 15px 0;
+  color: #303133;
+}
+
+.test-video {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.test-info {
+  margin-top: 15px;
+  padding: 15px;
+  background-color: #f0f9ff;
+  border-radius: 6px;
+}
+
+.test-info p {
+  margin: 5px 0;
+  font-size: 13px;
+}
+
+.test-error {
+  margin-top: 20px;
+}
+
+/* Save Section Styles */
+.save-section {
+  text-align: center;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
 }
 </style>

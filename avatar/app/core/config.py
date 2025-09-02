@@ -28,10 +28,10 @@ class Settings(BaseSettings):
     # A2E API settings
     A2E_API_KEY: str = ""
     A2E_BASE_URL: str = "https://video.a2e.ai"
-    A2E_DEFAULT_AVATAR_ID: str = "68af59a86eeedd0042ca7e27"  # Alice (working for video)
-    A2E_DEFAULT_VOICE_ID: str = "66d3f6a704d077b1432fb7d3"  # Anna
+    A2E_DEFAULT_AVATAR_ID: str = "68af59a86eeedd0042ca7e27"  # Default Avatar (working for video)
+    A2E_DEFAULT_VOICE_ID: str = "66d3f6a704d077b1432fb7d3"  # Nadia
     A2E_DEFAULT_RESOLUTION: int = 720
-    A2E_DEFAULT_SPEECH_RATE: float = 1.0
+    A2E_DEFAULT_SPEECH_RATE: float = 1.5
     
     # CORS
     ALLOWED_HOSTS: List[str] = ["*"]

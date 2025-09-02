@@ -102,10 +102,10 @@ async def generate_fallback_video(request: FallbackVideoRequest) -> Dict[str, An
         a2e_service = A2EService()
         video_url = await a2e_service.generate_avatar_video_from_text(
             text=request.text,
-            voice_id=request.voice_id,
-            avatar_id=request.avatar_id,
-            resolution=request.resolution,
-                                    title=f"Interview {request.session_id[:20]}"
+            voice_id=request.voice_id or a2e_service.default_voice_id,
+            avatar_id=request.avatar_id or a2e_service.default_avatar_id,
+            resolution=request.resolution or a2e_service.default_resolution,
+            title=f"Interview {request.session_id[:20]}"
         )
         
         if video_url:

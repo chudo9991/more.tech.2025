@@ -142,7 +142,8 @@ class A2EService:
                     "anchor_type": 1,  # user twin
                     "audioSrc": audio_url,
                     "resolution": resolution,
-                    "isCaptionEnabled": False
+                    "isCaptionEnabled": False,
+                    "isSkipRs": True  # Используем быстрое качество по умолчанию
                 }
                 
                 response = await client.post(
