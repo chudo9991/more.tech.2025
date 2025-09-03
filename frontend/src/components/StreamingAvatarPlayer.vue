@@ -26,7 +26,7 @@
         controls
         preload="metadata"
         class="avatar-video"
-        style="width: 100%; height: 100%; object-fit: contain; max-width: 100%; max-height: 100%;"
+        style="width: 100%; height: 100%; object-fit: cover; max-width: 100%; max-height: 100%;"
         @error="handleVideoError"
         @loadstart="handleVideoLoadStart"
         @canplay="handleVideoCanPlay"
@@ -220,7 +220,7 @@ onMounted(async () => {
 .avatar-video {
   width: 100% !important;
   height: 100% !important;
-  object-fit: contain !important;
+  object-fit: cover !important; /* Изменено с contain на cover для формата 1:1 */
   border-radius: 8px;
   background-color: #f5f5f5;
   max-width: 100% !important;

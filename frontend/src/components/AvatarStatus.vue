@@ -184,7 +184,7 @@
         <!-- Video Resolution -->
         <el-col :span="8">
           <div class="settings-section">
-            <h4>Разрешение видео</h4>
+            <h4>Разрешение видео (1:1 формат)</h4>
             <el-select 
               v-model="avatarStore.resolution" 
               placeholder="Выберите разрешение"
@@ -299,7 +299,7 @@
                 <p><strong>Текст:</strong> "Добро пожаловать на интервью!"</p>
                 <p><strong>Голос:</strong> {{ avatarStore.currentVoice?.name || 'Не выбран' }}</p>
                 <p><strong>Аватар:</strong> {{ avatarStore.currentAvatar?.name || 'Не выбран' }}</p>
-                <p><strong>Разрешение:</strong> {{ avatarStore.resolution }}p</p>
+                <p><strong>Разрешение:</strong> {{ avatarStore.resolution }}x{{ avatarStore.resolution }} (1:1)</p>
                 <p><strong>Скорость речи:</strong> {{ avatarStore.speechRate }}x</p>
               </div>
             </div>

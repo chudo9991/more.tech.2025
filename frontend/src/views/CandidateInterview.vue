@@ -117,7 +117,7 @@
                         type="warning" 
                         size="small"
                         @click="requestMicrophonePermission"
-                        :disabled="!resumeLinked"
+                        :disabled="!resumeLinked || isVideoPlaying || isWaitingForVideo"
                         style="margin-left: 10px;"
                       >
                         🔧 Запросить доступ
@@ -149,7 +149,7 @@
                     type="primary" 
                     size="small"
                     @click="startRecording"
-                    :disabled="isRecording || !resumeLinked"
+                    :disabled="isRecording || !resumeLinked || isVideoPlaying || isWaitingForVideo"
                     style="flex: 1;"
                   >
                     {{ isRecording ? '🎤 Запись...' : '🎤 Ответ' }}
@@ -160,7 +160,7 @@
                     type="danger" 
                     size="small"
                     @click="stopRecording"
-                    :disabled="!isRecording"
+                    :disabled="!isRecording || isVideoPlaying || isWaitingForVideo"
                     style="flex: 1;"
                   >
                     🛑 Стоп
@@ -249,7 +249,9 @@ const resumeLinked = ref(false)
 const linkedResume = ref(null)
 const scenarioData = ref(null)
 
-
+// Состояние интерфейса для управления видео
+const isVideoPlaying = ref(false)
+const isWaitingForVideo = ref(false)
 
 // Recording state
 let recordingInterval = null
@@ -383,22 +385,34 @@ const startInterview = async () => {
     
     interviewStarted.value = true
     
-    // Add welcome message
+    // 1. Добавляем приветственное сообщение в чат
+    const welcomeMessage = 'Привет! Добро пожаловать на ИИ-интервью. Я здесь, чтобы задать вам несколько вопросов о вашем опыте и навыков. Готовы начать?'
+    
     addMessage({
       id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       type: 'avatar',
-      text: 'Привет! Добро пожаловать на ИИ-интервью. Я здесь, чтобы задать вам несколько вопросов о вашем опыте и навыках. Готовы начать?',
+      text: welcomeMessage,
       timestamp: new Date()
     })
     
-    // Save welcome message to database
+    // 2. Сохраняем приветственное сообщение в базу данных
     await saveMessageToDatabase(
-      'Привет! Добро пожаловать на ИИ-интервью. Я здесь, чтобы задать вам несколько вопросов о вашем опыте и навыках. Готовы начать?',
+      welcomeMessage,
       'avatar',
       `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
     )
     
-    // Get first question
+    // 3. Генерируем видео для приветствия
+    console.log('Generating video for welcome message...')
+    disableUserInput() // Блокируем ввод
+    await generateAvatarVideo(welcomeMessage)
+    
+    // 4. ЖДЕМ окончания видео
+    console.log('Waiting for welcome video to complete...')
+    await waitForVideoCompletion()
+    
+    // 5. ТОЛЬКО ПОТОМ получаем первый вопрос
+    console.log('Welcome video completed, getting first question...')
     await getNextQuestion()
     
     ElMessage.success('Интервью началось')
@@ -439,7 +453,7 @@ const getNextQuestion = async () => {
         contextual_question_id: questionData.contextual_question_id || null
       }
       
-      // Add question to chat (без визуальных отличий для пользователя)
+      // 1. Добавляем вопрос в чат
       addMessage({
         id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         type: 'avatar',
@@ -448,12 +462,25 @@ const getNextQuestion = async () => {
         is_contextual: result.is_contextual || false
       })
       
-      // Save question to database
+      // 2. Сохраняем вопрос в базу данных
       await saveMessageToDatabase(
         questionData.question_text,
         'avatar',
         `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
       )
+      
+      // 3. Генерируем видео для вопроса
+      console.log('Generating video for question:', questionData.question_text.substring(0, 50) + '...')
+      disableUserInput() // Блокируем ввод
+      await generateAvatarVideo(questionData.question_text)
+      
+      // 4. ЖДЕМ окончания видео
+      console.log('Waiting for question video to complete...')
+      await waitForVideoCompletion()
+      
+      // 5. Теперь пользователь может отвечать
+      console.log('Question video completed, user can now answer')
+      enableUserInput() // Разблокируем ввод
     }
   } catch (error) {
     console.error('Error getting next question:', error)
@@ -699,6 +726,91 @@ const analyzeAndSaveAnswer = async (questionText, answerText, audioUrl, question
   }
 }
 
+// Единый метод для генерации видео аватара (DRY)
+const generateAvatarVideo = async (text) => {
+  try {
+    console.log('Generating avatar video for text:', text.substring(0, 50) + '...')
+    
+    const avatarResponse = await fetch(`/api/v1/llm-interview/avatar-speak`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        session_id: sessionId.value,
+        text: text,
+        avatar_id: '68af59a86eeedd0042ca7e27', // Alice (working for video)
+        voice_id: '66d3f6a704d077b1432fb7d3'  // Anna
+      })
+    })
+    
+    if (avatarResponse.ok) {
+      const avatarResult = await avatarResponse.json()
+      if (avatarResult.success && avatarResult.mode === 'fallback_video') {
+        console.log('Fallback video generated:', avatarResult.video_url)
+        avatarPlayerRef.value?.setVideoUrl(avatarResult.video_url)
+        return avatarResult.video_url
+      } else if (avatarResult.success && avatarResult.mode === 'streaming') {
+        console.log('Streaming mode activated')
+        return 'streaming'
+      }
+    }
+  } catch (error) {
+    console.warn('Avatar video generation failed:', error)
+  }
+  return null
+}
+
+// Методы управления состоянием интерфейса (KISS)
+const enableUserInput = () => {
+  isVideoPlaying.value = false
+  isWaitingForVideo.value = false
+  console.log('User input enabled')
+}
+
+const disableUserInput = () => {
+  isVideoPlaying.value = true
+  isWaitingForVideo.value = true
+  console.log('User input disabled')
+}
+
+// Метод ожидания окончания видео (KISS)
+const waitForVideoCompletion = () => {
+  return new Promise((resolve) => {
+    if (!avatarPlayerRef.value) {
+      console.log('No avatar player ref, resolving immediately')
+      resolve()
+      return
+    }
+    
+    console.log('Waiting for video completion...')
+    
+    // Слушаем событие окончания видео
+    const onVideoEnd = () => {
+      console.log('Video ended, resolving promise')
+      resolve()
+      // Убираем слушатель
+      const videoElement = avatarPlayerRef.value?.$el?.querySelector('video')
+      if (videoElement) {
+        videoElement.removeEventListener('ended', onVideoEnd)
+      }
+    }
+    
+    // Добавляем слушатель
+    const videoElement = avatarPlayerRef.value?.$el?.querySelector('video')
+    if (videoElement) {
+      videoElement.addEventListener('ended', onVideoEnd)
+      console.log('Video end listener added')
+    } else {
+      console.log('Video element not found, resolving in 5 seconds')
+    }
+    
+    // Fallback: если видео не найдено, разрешаем через 5 секунд
+    setTimeout(() => {
+      console.log('Video completion timeout, resolving')
+      resolve()
+    }, 5000)
+  })
+}
+
 const getAvatarResponse = async (userMessage) => {
   try {
     // Check if session ID is available
@@ -729,7 +841,7 @@ const getAvatarResponse = async (userMessage) => {
       const llmResult = await llmResponse.json()
       const avatarText = llmResult.response
       
-      // Add message to chat
+      // 1. Добавляем ответ в чат
       addMessage({
         id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         type: 'avatar',
@@ -737,46 +849,18 @@ const getAvatarResponse = async (userMessage) => {
         timestamp: new Date()
       })
       
-      // Step 2: Generate avatar video/speech
-      try {
-        const avatarResponse = await fetch(`/api/v1/llm-interview/avatar-speak`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            session_id: sessionId.value,
-            text: avatarText,
-            avatar_id: '68af59a86eeedd0042ca7e27', // Alice (working for video)
-            voice_id: '66d3f6a704d077b1432fb7d3'  // Anna
-          })
-        })
-        
-        if (avatarResponse.ok) {
-          const avatarResult = await avatarResponse.json()
-          
-          if (avatarResult.success) {
-            if (avatarResult.mode === 'streaming' && avatarResult.stream_url) {
-              // Update streaming URL
-              console.log('Streaming mode activated')
-              // The StreamingAvatarPlayer will handle this automatically
-            } else if (avatarResult.mode === 'fallback_video' && avatarResult.video_url) {
-              // Update video URL for fallback mode
-              console.log('Fallback video mode activated:', avatarResult.video_url)
-              // Pass video URL to StreamingAvatarPlayer
-              if (avatarPlayerRef.value) {
-                avatarPlayerRef.value.setVideoUrl(avatarResult.video_url)
-              }
-            }
-          } else {
-            console.warn('Avatar generation failed, using placeholder')
-          }
-        } else {
-          console.warn('Avatar service unavailable, using placeholder')
-        }
-      } catch (avatarError) {
-        console.warn('Avatar service error, using placeholder:', avatarError)
-      }
+      // 2. Генерируем видео для ответа
+      console.log('Generating video for LLM response:', avatarText.substring(0, 50) + '...')
+      disableUserInput() // Блокируем ввод
+      await generateAvatarVideo(avatarText)
+      
+      // 3. ЖДЕМ окончания видео
+      console.log('Waiting for response video to complete...')
+      await waitForVideoCompletion()
+      
+      // 4. ТОЛЬКО ПОТОМ получаем следующий вопрос
+      console.log('Response video completed, getting next question...')
+      await getNextQuestion()
       
     } else {
       // Fallback response

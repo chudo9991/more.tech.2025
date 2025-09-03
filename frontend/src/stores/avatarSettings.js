@@ -10,7 +10,7 @@ export const useAvatarSettingsStore = defineStore('avatarSettings', {
     selectedAvatar: '68af59a86eeedd0042ca7e27', // Default Avatar (по умолчанию)
     
     // Настройки генерации видео
-    resolution: 720,
+    resolution: 720,  // 1:1 format (720x720)
     speechRate: 1.5, // Обновлено на 1.5x
     isSkipRs: true, // Обновлено на быстро (стандартное качество)
     isCaptionEnabled: false,
@@ -201,7 +201,7 @@ export const useAvatarSettingsStore = defineStore('avatarSettings', {
     resetToDefaults() {
       this.selectedVoice = '66d3f6a704d077b1432fb7d3'
       this.selectedAvatar = '68af59a86eeedd0042ca7e27'
-      this.resolution = 720
+      this.resolution = 720  // 1:1 format (720x720)
       this.speechRate = 1.5
       this.isSkipRs = true
       this.isCaptionEnabled = false

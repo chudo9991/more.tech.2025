@@ -38,7 +38,7 @@ class StreamingAvatarContextRequest(BaseModel):
 class AvatarSettings(BaseModel):
     voice_id: str = None
     avatar_id: str = None
-    resolution: int = 720
+    resolution: int = 720  # 1:1 format (720x720)
     speech_rate: float = 1.0
     quality: str = "high"
 
@@ -53,14 +53,14 @@ class VideoGenerationRequest(BaseModel):
     session_id: str
     voice_id: str = None
     avatar_id: str = None
-    resolution: int = 720
+    resolution: int = 720  # 1:1 format (720x720)
 
 class FallbackVideoRequest(BaseModel):
     text: str
     session_id: str
     voice_id: str = None
     avatar_id: str = None
-    resolution: int = 720
+    resolution: int = 720  # 1:1 format (720x720)
 
 @router.post("/generate")
 async def generate_avatar_video(request: VideoGenerationRequest) -> Dict[str, Any]:
@@ -208,7 +208,7 @@ class VideoStatusRequest(BaseModel):
 class AvatarSettings(BaseModel):
     voice_id: str = "66d3f6a704d077b1432fb7d3"  # Anna
     avatar_id: str = "68af59a86eeedd0042ca7e27"  # Default avatar
-    resolution: int = 720
+    resolution: int = 720  # 1:1 format (720x720)
     speech_rate: float = 1.0
     language: str = "ru-RU"
 
@@ -600,6 +600,187 @@ async def leave_streaming_room(request: StreamingAvatarRequest) -> Dict[str, Any
         }
     except Exception as e:
         print(f"Error in leave_streaming_room: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=400, detail=str(e))
+
+# ============================================================================
+# NEW STREAMING ENDPOINTS (v2) - исправленные endpoints для стриминга
+# ============================================================================
+
+from app.services.a2e_streaming_service import A2EStreamingService
+
+@router.get("/streaming-v2/avatars")
+async def get_streaming_avatars_v2() -> Dict[str, Any]:
+    """Get all available streaming avatars - исправленная версия"""
+    try:
+        print("=== Get streaming avatars v2 endpoint called ===")
+        streaming_service = A2EStreamingService()
+        avatars = await streaming_service.get_available_streaming_avatars()
+        return {
+            "success": True,
+            "avatars": avatars,
+            "total_count": len(avatars)
+        }
+    except Exception as e:
+        print(f"Error in get_streaming_avatars_v2: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/streaming-v2/get-token")
+async def get_streaming_token_v2(request: StreamingAvatarRequest) -> Dict[str, Any]:
+    """Get streaming avatar token - исправленная версия"""
+    try:
+        print("=== Get streaming token v2 endpoint called ===")
+        print(f"Request: {request}")
+        streaming_service = A2EStreamingService()
+        token_data = await streaming_service.get_streaming_token(request.avatar_id)
+        
+        # Check if there's an error in the response
+        if not token_data.get("success"):
+            if token_data.get("fallback_mode"):
+                return {
+                    "success": False,
+                    "error": token_data.get("error"),
+                    "message": token_data.get("message"),
+                    "avatar_id": request.avatar_id,
+                    "stream_url": None,
+                    "fallback_mode": True,
+                    "fallback_endpoint": "/api/v1/avatar/fallback/generate-video"
+                }
+            else:
+                return {
+                    "success": False,
+                    "error": token_data.get("error"),
+                    "message": token_data.get("message"),
+                    "avatar_id": request.avatar_id,
+                    "stream_url": None
+                }
+        
+        return {
+            "success": True,
+            "token": token_data.get("token"),
+            "stream_url": token_data.get("stream_url"),
+            "room_id": token_data.get("room_id"),
+            "avatar_id": request.avatar_id,
+            "fallback_mode": False
+        }
+    except Exception as e:
+        print(f"Error in get_streaming_token_v2: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/streaming-v2/set-context")
+async def set_streaming_context_v2(request: StreamingAvatarContextRequest) -> Dict[str, Any]:
+    """Set QA context for streaming avatar - исправленная версия"""
+    try:
+        print("=== Set streaming context v2 endpoint called ===")
+        print(f"Request: {request}")
+        streaming_service = A2EStreamingService()
+        result = await streaming_service.set_streaming_context(request.avatar_id, request.context)
+        return {
+            "success": result,
+            "avatar_id": request.avatar_id,
+            "context": request.context
+        }
+    except Exception as e:
+        print(f"Error in set_streaming_context_v2: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/streaming-v2/get-context")
+async def get_streaming_context_v2(avatar_id: str) -> Dict[str, Any]:
+    """Get QA context for streaming avatar - исправленная версия"""
+    try:
+        print("=== Get streaming context v2 endpoint called ===")
+        print(f"Avatar ID: {avatar_id}")
+        streaming_service = A2EStreamingService()
+        context = await streaming_service.get_streaming_context(avatar_id)
+        return {
+            "success": True,
+            "avatar_id": avatar_id,
+            "context": context
+        }
+    except Exception as e:
+        print(f"Error in get_streaming_context_v2: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/streaming-v2/ask-question")
+async def ask_streaming_question_v2(request: StreamingAvatarQuestionRequest) -> Dict[str, Any]:
+    """Ask a question to streaming avatar - исправленная версия"""
+    try:
+        print("=== Ask streaming question v2 endpoint called ===")
+        print(f"Request: {request}")
+        streaming_service = A2EStreamingService()
+        response = await streaming_service.ask_streaming_question(request.avatar_id, request.question)
+        return {
+            "success": True,
+            "avatar_id": request.avatar_id,
+            "question": request.question,
+            "response": response
+        }
+    except Exception as e:
+        print(f"Error in ask_streaming_question_v2: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/streaming-v2/speak")
+async def speak_streaming_directly_v2(request: StreamingAvatarSpeakRequest) -> Dict[str, Any]:
+    """Make streaming avatar speak directly - исправленная версия"""
+    try:
+        print("=== Speak streaming directly v2 endpoint called ===")
+        print(f"Request: {request}")
+        streaming_service = A2EStreamingService()
+        result = await streaming_service.speak_streaming_directly(request.avatar_id, request.text)
+        return {
+            "success": True,
+            "avatar_id": request.avatar_id,
+            "text": request.text,
+            "result": result
+        }
+    except Exception as e:
+        print(f"Error in speak_streaming_directly_v2: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/streaming-v2/leave-room")
+async def leave_streaming_room_v2(request: StreamingAvatarRequest) -> Dict[str, Any]:
+    """Leave streaming avatar room - исправленная версия"""
+    try:
+        print("=== Leave streaming room v2 endpoint called ===")
+        print(f"Request: {request}")
+        streaming_service = A2EStreamingService()
+        result = await streaming_service.leave_streaming_room(request.avatar_id)
+        return {
+            "success": result,
+            "avatar_id": request.avatar_id
+        }
+    except Exception as e:
+        print(f"Error in leave_streaming_room_v2: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/streaming-v2/status")
+async def get_streaming_status_v2() -> Dict[str, Any]:
+    """Get streaming service status - исправленная версия"""
+    try:
+        print("=== Get streaming status v2 endpoint called ===")
+        streaming_service = A2EStreamingService()
+        status = await streaming_service.get_streaming_status()
+        return {
+            "success": True,
+            "status": status
+        }
+    except Exception as e:
+        print(f"Error in get_streaming_status_v2: {e}")
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=400, detail=str(e))
