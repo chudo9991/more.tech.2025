@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     MAX_AUDIO_DURATION_SECONDS: int = 300
     
     # Whisper settings
-    WHISPER_MODEL: str = "base"
+    WHISPER_MODEL: str = "small"
     WHISPER_LANGUAGE: str = "ru"
     VAD_ENABLED: bool = True
     VAD_AGGRESSIVENESS: int = 2
