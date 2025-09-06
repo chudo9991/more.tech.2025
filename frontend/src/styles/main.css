@@ -1,0 +1,151 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* Custom CSS Variables for Design Tokens */
+:root {
+  /* Colors */
+  --color-primary: theme('colors.primary.500');
+  --color-primary-hover: theme('colors.primary.600');
+  --color-primary-light: theme('colors.primary.100');
+  
+  --color-neutral: theme('colors.neutral.500');
+  --color-neutral-light: theme('colors.neutral.100');
+  --color-neutral-dark: theme('colors.neutral.700');
+  
+  --color-success: theme('colors.success.500');
+  --color-warning: theme('colors.warning.500');
+  --color-error: theme('colors.error.500');
+  --color-info: theme('colors.info.500');
+  
+  /* Typography */
+  --font-family-sans: theme('fontFamily.sans');
+  --font-family-mono: theme('fontFamily.mono');
+  
+  /* Spacing */
+  --spacing-xs: theme('spacing.1');
+  --spacing-sm: theme('spacing.2');
+  --spacing-md: theme('spacing.4');
+  --spacing-lg: theme('spacing.6');
+  --spacing-xl: theme('spacing.8');
+  
+  /* Border Radius */
+  --radius-sm: theme('borderRadius.sm');
+  --radius-md: theme('borderRadius.md');
+  --radius-lg: theme('borderRadius.lg');
+  --radius-xl: theme('borderRadius.xl');
+  
+  /* Shadows */
+  --shadow-soft: theme('boxShadow.soft');
+  --shadow-medium: theme('boxShadow.medium');
+  --shadow-strong: theme('boxShadow.strong');
+  
+  /* Transitions */
+  --transition-fast: 150ms ease-in-out;
+  --transition-normal: 250ms ease-in-out;
+  --transition-slow: 350ms ease-in-out;
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-neutral: theme('colors.neutral.400');
+    --color-neutral-light: theme('colors.neutral.800');
+    --color-neutral-dark: theme('colors.neutral.200');
+  }
+}
+
+/* Base styles */
+@layer base {
+  html {
+    font-family: var(--font-family-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  body {
+    @apply bg-neutral-50 text-neutral-900;
+    @apply transition-colors duration-300;
+  }
+  
+  /* Focus styles for accessibility */
+  *:focus {
+    @apply outline-none ring-2 ring-primary-500 ring-offset-2;
+  }
+  
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Component layer for reusable patterns */
+@layer components {
+  /* Button base styles */
+  .btn-base {
+    @apply inline-flex items-center justify-center;
+    @apply px-4 py-2 text-sm font-medium;
+    @apply border border-transparent rounded-md;
+    @apply transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  
+  /* Card base styles */
+  .card-base {
+    @apply bg-white rounded-lg shadow-soft;
+    @apply border border-neutral-200;
+    @apply transition-shadow duration-200;
+  }
+  
+  .card-base:hover {
+    @apply shadow-medium;
+  }
+  
+  /* Input base styles */
+  .input-base {
+    @apply block w-full px-3 py-2;
+    @apply text-neutral-900 placeholder-neutral-500;
+    @apply bg-white border border-neutral-300 rounded-md;
+    @apply transition-colors duration-200;
+    @apply focus:ring-primary-500 focus:border-primary-500;
+  }
+  
+  /* Layout utilities */
+  .container-responsive {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  .section-spacing {
+    @apply py-12 lg:py-16;
+  }
+}
+
+/* Utility layer for custom utilities */
+@layer utilities {
+  /* Text utilities */
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  /* Animation utilities */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+  
+  /* Accessibility utilities */
+  .sr-only {
+    @apply absolute w-px h-px p-0 -m-px overflow-hidden;
+    @apply whitespace-nowrap border-0;
+    clip: rect(0, 0, 0, 0);
+  }
+  
+  /* Touch target utilities */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+}
