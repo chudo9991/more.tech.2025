@@ -136,6 +136,6 @@ const formatTimestamp = (timestamp: Date): string => {
 
 <style scoped>
 .alert-item {
-  @apply hover:shadow-sm;
+  @apply hover:shadow-md;
 }
 </style>

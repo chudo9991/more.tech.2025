@@ -907,28 +907,28 @@ onMounted(() => {
 /* Custom animations for status indicators */
 @keyframes pulse-success {
   0%, 100% {
-    @apply bg-success-500;
+    background-color: #10b981;
   }
   50% {
-    @apply bg-success-400;
+    background-color: #34d399;
   }
 }
 
 @keyframes pulse-warning {
   0%, 100% {
-    @apply bg-warning-500;
+    background-color: #f59e0b;
   }
   50% {
-    @apply bg-warning-400;
+    background-color: #fbbf24;
   }
 }
 
 @keyframes pulse-error {
   0%, 100% {
-    @apply bg-error-500;
+    background-color: #ef4444;
   }
   50% {
-    @apply bg-error-400;
+    background-color: #f87171;
   }
 }
 
