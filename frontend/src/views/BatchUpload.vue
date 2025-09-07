@@ -1,195 +1,273 @@
 <template>
   <div class="batch-upload">
-                    <div class="page-header">
-                  <h1>Пакетная загрузка резюме</h1>
-                  <div class="header-buttons">
-                    <ExportButtons 
-                      :batch-id="currentBatchId" 
-                      @export-completed="handleExportCompleted" 
-                    />
-                    <el-button @click="$router.push('/resumes')" icon="ArrowLeft">
-                      Назад к списку
-                    </el-button>
-                  </div>
-                </div>
+    <!-- Header -->
+    <PageHeader
+      title="Пакетная загрузка резюме"
+      subtitle="Загружайте и обрабатывайте несколько резюме одновременно"
+    >
+      <template #actions>
+        <ExportButtons 
+          :batch-id="currentBatchId" 
+          @export-completed="handleExportCompleted" 
+        />
+        <BaseButton 
+          variant="secondary" 
+          icon="mdi mdi-arrow-left"
+          @click="$router.push('/resumes')"
+        >
+          Назад к списку
+        </BaseButton>
+      </template>
+    </PageHeader>
 
-    <el-row :gutter="20">
-      <!-- Форма загрузки -->
-      <el-col :span="12">
-        <el-card>
-          <template #header>
-            <span>Загрузка файлов</span>
-          </template>
+    <!-- Main Content -->
+    <div class="panel-content">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Форма загрузки -->
+        <div>
+          <BaseCard>
+            <template #header>
+              <h3 class="text-lg font-semibold text-white">Загрузка файлов</h3>
+            </template>
 
-          <el-form :model="form" :rules="rules" ref="formRef" label-width="120px">
-            <el-form-item label="Вакансия" prop="vacancy_id">
-              <el-select 
-                v-model="form.vacancy_id" 
-                placeholder="Выберите вакансию (необязательно)"
-                clearable
-                style="width: 100%"
-              >
-                <el-option
-                  v-for="vacancy in vacancies"
-                  :key="vacancy.id"
-                  :label="vacancy.title"
-                  :value="vacancy.id"
+            <div class="space-y-6">
+              <!-- Выбор вакансии -->
+              <div>
+                <label class="block text-sm font-medium text-slate-300 mb-2">
+                  Вакансия
+                </label>
+                <BaseSelect
+                  v-model="form.vacancy_id"
+                  :items="vacancyOptions"
+                  placeholder="Выберите вакансию (необязательно)"
+                  clearable
                 />
-              </el-select>
-            </el-form-item>
-
-            <el-form-item label="Максимум потоков" prop="max_concurrent">
-              <el-input-number
-                v-model="form.max_concurrent"
-                :min="1"
-                :max="10"
-                style="width: 100%"
-              />
-              <div class="form-help">
-                Количество одновременно обрабатываемых файлов
               </div>
-            </el-form-item>
 
-            <el-form-item label="Файлы" prop="files">
-              <el-upload
-                ref="uploadRef"
-                :auto-upload="false"
-                :on-change="handleFileChange"
-                :on-remove="handleFileRemove"
-                v-model:file-list="fileList"
-                multiple
-                :limit="50"
-                accept=".pdf,.docx,.rtf,.txt"
-                drag
-              >
-                <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-                <div class="el-upload__text">
-                  Перетащите файлы сюда или <em>нажмите для выбора</em>
-                </div>
-                <template #tip>
-                  <div class="el-upload__tip">
-                    Поддерживаемые форматы: PDF, DOCX, RTF, TXT. Максимум 50 файлов, 10MB каждый.
+              <!-- Максимум потоков -->
+              <div>
+                <label class="block text-sm font-medium text-slate-300 mb-2">
+                  Максимум потоков
+                </label>
+                <BaseInput
+                  v-model="form.max_concurrent"
+                  type="number"
+                  :min="1"
+                  :max="10"
+                  placeholder="3"
+                />
+                <p class="mt-2 text-sm text-slate-400">
+                  Количество одновременно обрабатываемых файлов
+                </p>
+              </div>
+
+              <!-- Загрузка файлов -->
+              <div>
+                <label class="block text-sm font-medium text-slate-300 mb-2">
+                  Файлы
+                </label>
+                <div class="upload-area" @click="triggerFileInput" @dragover.prevent @drop.prevent="handleDrop">
+                  <input
+                    ref="fileInput"
+                    type="file"
+                    accept=".pdf,.docx,.rtf,.txt"
+                    @change="handleFileSelect"
+                    multiple
+                    class="hidden"
+                  />
+                  <div v-if="fileList.length === 0" class="upload-placeholder">
+                    <svg class="w-12 h-12 text-cyan-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <p class="text-slate-300 mb-2">
+                      Перетащите файлы сюда или <span class="text-cyan-400 cursor-pointer">нажмите для выбора</span>
+                    </p>
+                    <p class="text-sm text-slate-400">
+                      Поддерживаемые форматы: PDF, DOCX, RTF, TXT. Максимум 50 файлов, 10MB каждый.
+                    </p>
                   </div>
-                </template>
-              </el-upload>
-            </el-form-item>
+                  <div v-else class="files-selected">
+                    <div class="mb-4">
+                      <p class="text-slate-300 font-medium">Выбрано файлов: {{ fileList.length }}</p>
+                    </div>
+                    <div class="max-h-40 overflow-y-auto space-y-2">
+                      <div
+                        v-for="(file, index) in fileList"
+                        :key="index"
+                        class="flex items-center justify-between p-2 bg-slate-800/50 rounded-lg"
+                      >
+                        <div class="flex items-center gap-2">
+                          <svg class="w-4 h-4 text-cyan-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
+                          </svg>
+                          <span class="text-sm text-slate-300 truncate">{{ file.name }}</span>
+                        </div>
+                        <BaseButton
+                          variant="secondary"
+                          size="sm"
+                          @click.stop="removeFile(index)"
+                        >
+                          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </BaseButton>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-            <el-form-item>
-              <el-button 
-                type="primary" 
-                @click="startBatchUpload"
-                :loading="uploading"
-                :disabled="fileList.length === 0"
-              >
-                Начать обработку
-              </el-button>
-              <el-button @click="resetForm">Сбросить</el-button>
-            </el-form-item>
-          </el-form>
-        </el-card>
-      </el-col>
-
-      <!-- Статус обработки -->
-      <el-col :span="12">
-        <el-card>
-          <template #header>
-            <span>Статус обработки</span>
-          </template>
-
-          <div v-if="batchStatus" class="batch-status">
-            <el-descriptions :column="1" border>
-              <el-descriptions-item label="ID пакета">
-                {{ batchStatus.batch_id }}
-              </el-descriptions-item>
-              <el-descriptions-item label="Статус">
-                <el-tag :type="getStatusType(batchStatus.status)">
-                  {{ getStatusText(batchStatus.status) }}
-                </el-tag>
-              </el-descriptions-item>
-              <el-descriptions-item label="Всего файлов">
-                {{ batchStatus.total_files }}
-              </el-descriptions-item>
-              <el-descriptions-item label="Успешно">
-                <el-tag type="success">{{ batchStatus.successful }}</el-tag>
-              </el-descriptions-item>
-              <el-descriptions-item label="Ошибок">
-                <el-tag type="danger" v-if="batchStatus.failed > 0">
-                  {{ batchStatus.failed }}
-                </el-tag>
-                <span v-else>0</span>
-              </el-descriptions-item>
-              <el-descriptions-item label="Время обработки" v-if="batchStatus.processing_time_seconds">
-                {{ formatTime(batchStatus.processing_time_seconds) }}
-              </el-descriptions-item>
-            </el-descriptions>
-
-            <!-- Результаты -->
-            <div v-if="batchStatus.results && batchStatus.results.length > 0" class="results-section">
-              <h4>Результаты обработки:</h4>
-              <el-table :data="batchStatus.results" size="small" max-height="300">
-                <el-table-column prop="filename" label="Файл" width="200" />
-                <el-table-column prop="status" label="Статус" width="100">
-                  <template #default="{ row }">
-                    <el-tag :type="row.status === 'success' ? 'success' : 'danger'" size="small">
-                      {{ row.status === 'success' ? 'Успех' : 'Ошибка' }}
-                    </el-tag>
-                  </template>
-                </el-table-column>
-                <el-table-column prop="sections_found" label="Блоков" width="80" />
-                <el-table-column prop="skills_found" label="Навыков" width="80" />
-                <el-table-column prop="error" label="Ошибка" show-overflow-tooltip />
-              </el-table>
+              <!-- Кнопки действий -->
+              <div class="flex gap-3">
+                <BaseButton
+                  variant="primary"
+                  @click="startBatchUpload"
+                  :loading="uploading"
+                  :disabled="fileList.length === 0"
+                  icon="mdi mdi-play"
+                >
+                  Начать обработку
+                </BaseButton>
+                <BaseButton 
+                  variant="secondary"
+                  @click="resetForm"
+                  icon="mdi mdi-refresh"
+                >
+                  Сбросить
+                </BaseButton>
+              </div>
             </div>
-          </div>
+          </BaseCard>
+        </div>
 
-          <div v-else class="no-status">
-            <el-empty description="Нет активной обработки" />
-          </div>
-        </el-card>
+        <!-- Статус обработки -->
+        <div class="space-y-6">
+          <BaseCard>
+            <template #header>
+              <h3 class="text-lg font-semibold text-white">Статус обработки</h3>
+            </template>
 
-        <!-- Статистика -->
-        <el-card style="margin-top: 20px">
-          <template #header>
-            <span>Статистика пакетной обработки</span>
-          </template>
+            <div v-if="batchStatus" class="space-y-4">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <p class="text-sm text-slate-400">ID пакета</p>
+                  <p class="text-slate-300 font-mono">{{ batchStatus.batch_id }}</p>
+                </div>
+                <div>
+                  <p class="text-sm text-slate-400">Статус</p>
+                  <span :class="getStatusClass(batchStatus.status)" class="px-2 py-1 text-xs font-medium rounded-full">
+                    {{ getStatusText(batchStatus.status) }}
+                  </span>
+                </div>
+                <div>
+                  <p class="text-sm text-slate-400">Всего файлов</p>
+                  <p class="text-slate-300 font-medium">{{ batchStatus.total_files }}</p>
+                </div>
+                <div>
+                  <p class="text-sm text-slate-400">Успешно</p>
+                  <p class="text-green-400 font-medium">{{ batchStatus.successful }}</p>
+                </div>
+                <div>
+                  <p class="text-sm text-slate-400">Ошибок</p>
+                  <p :class="batchStatus.failed > 0 ? 'text-red-400' : 'text-slate-300'" class="font-medium">
+                    {{ batchStatus.failed }}
+                  </p>
+                </div>
+                <div v-if="batchStatus.processing_time_seconds">
+                  <p class="text-sm text-slate-400">Время обработки</p>
+                  <p class="text-slate-300 font-medium">{{ formatTime(batchStatus.processing_time_seconds) }}</p>
+                </div>
+              </div>
 
-          <el-descriptions :column="2" border>
-            <el-descriptions-item label="Всего пакетов">
-              {{ batchStats.total_batches }}
-            </el-descriptions-item>
-            <el-descriptions-item label="Успешных">
-              {{ batchStats.successful_batches }}
-            </el-descriptions-item>
-            <el-descriptions-item label="Ошибок">
-              {{ batchStats.failed_batches }}
-            </el-descriptions-item>
-            <el-descriptions-item label="Файлов обработано">
-              {{ batchStats.total_files_processed }}
-            </el-descriptions-item>
-          </el-descriptions>
-        </el-card>
-      </el-col>
-    </el-row>
+              <!-- Результаты -->
+              <div v-if="batchStatus.results && batchStatus.results.length > 0" class="mt-6">
+                <h4 class="text-sm font-medium text-slate-300 mb-3">Результаты обработки:</h4>
+                <div class="max-h-60 overflow-y-auto space-y-2">
+                  <div
+                    v-for="result in batchStatus.results"
+                    :key="result.filename"
+                    class="p-3 bg-slate-800/50 rounded-lg border border-slate-700"
+                  >
+                    <div class="flex items-center justify-between mb-2">
+                      <p class="text-sm font-medium text-slate-300 truncate">{{ result.filename }}</p>
+                      <span :class="result.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'" 
+                            class="px-2 py-1 text-xs font-medium rounded-full">
+                        {{ result.status === 'success' ? 'Успех' : 'Ошибка' }}
+                      </span>
+                    </div>
+                    <div class="flex gap-4 text-xs text-slate-400">
+                      <span>Блоков: {{ result.sections_found || 0 }}</span>
+                      <span>Навыков: {{ result.skills_found || 0 }}</span>
+                    </div>
+                    <div v-if="result.error" class="mt-2 text-xs text-red-400">
+                      {{ result.error }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div v-else class="text-center py-12">
+              <svg class="w-16 h-16 text-slate-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <p class="text-slate-400">Нет активной обработки</p>
+            </div>
+          </BaseCard>
+
+          <!-- Статистика -->
+          <BaseCard>
+            <template #header>
+              <h3 class="text-lg font-semibold text-white">Статистика пакетной обработки</h3>
+            </template>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <p class="text-sm text-slate-400">Всего пакетов</p>
+                <p class="text-slate-300 font-medium">{{ batchStats.total_batches }}</p>
+              </div>
+              <div>
+                <p class="text-sm text-slate-400">Успешных</p>
+                <p class="text-green-400 font-medium">{{ batchStats.successful_batches }}</p>
+              </div>
+              <div>
+                <p class="text-sm text-slate-400">Ошибок</p>
+                <p class="text-red-400 font-medium">{{ batchStats.failed_batches }}</p>
+              </div>
+              <div>
+                <p class="text-sm text-slate-400">Файлов обработано</p>
+                <p class="text-slate-300 font-medium">{{ batchStats.total_files_processed }}</p>
+              </div>
+            </div>
+          </BaseCard>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { ArrowLeft, UploadFilled } from '@element-plus/icons-vue'
+import { ref, reactive, onMounted, onUnmounted, computed } from 'vue'
 import { useHRStore } from '@/stores/hr'
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseCard from '@/components/base/BaseCard.vue'
+import BaseSelect from '@/components/base/BaseSelect.vue'
+import BaseInput from '@/components/base/BaseInput.vue'
+import PageHeader from '@/components/layout/PageHeader.vue'
 import ExportButtons from '@/components/ExportButtons.vue'
 
 export default {
   name: 'BatchUpload',
   components: {
-    ArrowLeft,
-    UploadFilled,
+    BaseButton,
+    BaseCard,
+    BaseSelect,
+    BaseInput,
+    PageHeader,
     ExportButtons
   },
   setup() {
-    const formRef = ref()
-    const uploadRef = ref()
+    const fileInput = ref()
     const fileList = ref([])
     const uploading = ref(false)
     const batchStatus = ref(null)
@@ -207,20 +285,47 @@ export default {
       max_concurrent: 3
     })
 
-    const rules = {
-      max_concurrent: [
-        { required: true, message: 'Укажите количество потоков', trigger: 'blur' },
-        { type: 'number', min: 1, max: 10, message: 'От 1 до 10 потоков', trigger: 'blur' }
-      ]
-    }
-
     const vacancies = ref([])
+    
+    // Computed
+    const vacancyOptions = computed(() => 
+      vacancies.value.map(vacancy => ({
+        label: vacancy.title,
+        value: vacancy.id,
+        description: vacancy.vacancy_code
+      }))
+    )
 
-    const handleFileChange = (file, fileList) => {
-      
+    const triggerFileInput = () => {
+      fileInput.value?.click()
+    }
+    
+    const handleFileSelect = (event) => {
+      const files = Array.from(event.target.files)
+      files.forEach(file => {
+        if (validateFile(file) && fileList.value.length < 50) {
+          fileList.value.push(file)
+        }
+      })
+    }
+    
+    const handleDrop = (event) => {
+      const files = Array.from(event.dataTransfer.files)
+      files.forEach(file => {
+        if (validateFile(file) && fileList.value.length < 50) {
+          fileList.value.push(file)
+        }
+      })
+    }
+    
+    const removeFile = (index) => {
+      fileList.value.splice(index, 1)
+    }
+    
+    const validateFile = (file) => {
       // Проверка размера файла
       if (file.size > 10 * 1024 * 1024) {
-        ElMessage.error(`Файл ${file.name} слишком большой (максимум 10MB)`)
+        alert(`Файл ${file.name} слишком большой (максимум 10MB)`)
         return false
       }
       
@@ -228,16 +333,11 @@ export default {
       const allowedTypes = ['pdf', 'docx', 'rtf', 'txt']
       const fileType = file.name.split('.').pop().toLowerCase()
       if (!allowedTypes.includes(fileType)) {
-        ElMessage.error(`Неподдерживаемый формат файла: ${file.name}`)
+        alert(`Неподдерживаемый формат файла: ${file.name}`)
         return false
       }
       
-      // Файл прошел проверку
       return true
-    }
-
-    const handleFileRemove = (file, fileList) => {
-      // Файл удален из списка
     }
 
     const startBatchUpload = async () => {
@@ -256,7 +356,7 @@ export default {
         }
         
         fileList.value.forEach(file => {
-          formData.append('files', file.raw)
+          formData.append('files', file)
         })
 
         const response = await fetch('/api/v1/batch/upload', {
@@ -273,14 +373,14 @@ export default {
         localStorage.setItem('currentBatchId', result.batch_id)  // Сохраняем в localStorage
         batchStatus.value = result
         
-        ElMessage.success(`Пакетная обработка запущена. ID: ${result.batch_id}`)
+        alert(`Пакетная обработка запущена. ID: ${result.batch_id}`)
         
         // Начать мониторинг статуса
         startStatusMonitoring()
         
       } catch (error) {
         console.error('Batch upload error:', error)
-        ElMessage.error(`Ошибка загрузки: ${error.message}`)
+        alert(`Ошибка загрузки: ${error.message}`)
       } finally {
         uploading.value = false
       }
@@ -314,16 +414,28 @@ export default {
     }
 
     const resetForm = () => {
-      formRef.value?.resetFields()
+      form.vacancy_id = ''
+      form.max_concurrent = 3
       fileList.value = []
-      uploadRef.value?.clearFiles()
+      if (fileInput.value) {
+        fileInput.value.value = ''
+      }
       batchStatus.value = null
       if (statusInterval.value) {
         clearInterval(statusInterval.value)
         statusInterval.value = null
       }
       currentBatchId.value = null
-      localStorage.removeItem('currentBatchId')  // Очищаем localStorage
+      localStorage.removeItem('currentBatchId')
+    }
+    
+    const getStatusClass = (status) => {
+      const classes = {
+        processing: 'bg-yellow-100 text-yellow-800',
+        completed: 'bg-green-100 text-green-800',
+        error: 'bg-red-100 text-red-800'
+      }
+      return classes[status] || 'bg-gray-100 text-gray-800'
     }
 
     const getStatusType = (status) => {
@@ -395,19 +507,21 @@ export default {
                 }
                 
                 return {
-                  formRef,
-                  uploadRef,
+                  fileInput,
                   fileList,
                   uploading,
                   batchStatus,
                   batchStats,
                   form,
-                  rules,
                   vacancies,
-                  handleFileChange,
-                  handleFileRemove,
+                  vacancyOptions,
+                  triggerFileInput,
+                  handleFileSelect,
+                  handleDrop,
+                  removeFile,
                   startBatchUpload,
                   resetForm,
+                  getStatusClass,
                   getStatusType,
                   getStatusText,
                   formatTime,
@@ -419,58 +533,68 @@ export default {
 
 <style scoped>
 .batch-upload {
-  padding: 20px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  position: relative;
 }
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.page-header h1 {
-  margin: 0;
-  color: #303133;
-}
-
-.header-buttons {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.form-help {
-  font-size: 12px;
-  color: #909399;
-  margin-top: 4px;
-}
-
-.batch-status {
-  margin-top: 10px;
-}
-
-.results-section {
-  margin-top: 20px;
-}
-
-.results-section h4 {
-  margin-bottom: 10px;
-  color: #303133;
-}
-
-.no-status {
-  text-align: center;
-  padding: 40px 0;
-}
-
-:deep(.el-upload-dragger) {
+.batch-upload::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(0, 255, 255, 0.05) 0%, transparent 60%),
+    radial-gradient(circle at 80% 20%, rgba(138, 43, 226, 0.05) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 1;
 }
 
-:deep(.el-upload__tip) {
-  font-size: 12px;
-  color: #909399;
-  margin-top: 8px;
+.panel-content {
+  position: relative;
+  z-index: 2;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.upload-area {
+  border: 2px dashed rgba(0, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(10px);
+  margin-bottom: 0.5rem;
+}
+
+.upload-area:hover {
+  border-color: rgba(0, 255, 255, 0.5);
+  background: rgba(15, 23, 42, 0.7);
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.files-selected {
+  text-align: left;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .panel-content {
+    padding: 1rem;
+  }
+  
+  .upload-area {
+    padding: 1.5rem;
+  }
 }
 </style>

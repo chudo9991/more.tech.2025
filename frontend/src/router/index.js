@@ -11,6 +11,7 @@ import ResumeDetail from '../views/ResumeDetail.vue'
 import ResumeUpload from '../views/ResumeUpload.vue'
 import BatchUpload from '../views/BatchUpload.vue'
 import ScenariosList from '../components/ScenariosList.vue'
+import MetricsShowcase from '../components/MetricsShowcase.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -79,6 +80,11 @@ const router = createRouter({
       path: '/scenarios',
       name: 'scenarios',
       component: ScenariosList
+    },
+    {
+      path: '/metrics-showcase',
+      name: 'metrics-showcase',
+      component: MetricsShowcase
     }
   ]
 })

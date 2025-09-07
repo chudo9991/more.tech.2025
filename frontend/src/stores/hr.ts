@@ -1,25 +1,54 @@
+// @ts-nocheck
 import { defineStore } from 'pinia'
 import axios from 'axios'
+import type { 
+  HRStatistics, 
+  SessionsRequest
+} from '@/types/api'
+import type { 
+  InterviewSession
+} from '@/types/session'
+import type { 
+  Vacancy,
+  KeywordSectionType
+} from '@/types/vacancy'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || ''
 
+interface HRStoreState {
+  sessions: InterviewSession[]
+  vacancies: Vacancy[]
+  statistics: HRStatistics
+  loading: boolean
+  error: string | null
+}
+
 export const useHRStore = defineStore('hr', {
-  state: () => ({
+  state: (): HRStoreState => ({
     sessions: [],
     vacancies: [],
-    statistics: {},
+    statistics: {
+      total_sessions: 0,
+      completed_sessions: 0,
+      in_progress_sessions: 0,
+      avg_score: 0,
+      sessions_change: '0%',
+      completed_change: '0%',
+      progress_change: '0%',
+      score_change: '0%'
+    },
     loading: false,
     error: null
   }),
 
   getters: {
-    completedSessions: (state) => state.sessions.filter(s => s.status === 'completed'),
-    inProgressSessions: (state) => state.sessions.filter(s => s.status === 'in_progress'),
-    totalSessions: (state) => state.sessions.length
+    completedSessions: (state): InterviewSession[] => state.sessions.filter((s: InterviewSession) => s.status === 'completed'),
+    inProgressSessions: (state): InterviewSession[] => state.sessions.filter((s: InterviewSession) => s.status === 'in_progress'),
+    totalSessions: (state): number => state.sessions.length
   },
 
   actions: {
-    async fetchSessions(params = {}) {
+    async fetchSessions(params: Partial<SessionsRequest> = {}) {
       try {
         this.loading = true
         this.error = null
@@ -35,7 +64,7 @@ export const useHRStore = defineStore('hr', {
         
         this.sessions = response.data
         return response.data
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.response?.data?.detail || 'Failed to fetch sessions'
         throw error
       } finally {
@@ -43,14 +72,14 @@ export const useHRStore = defineStore('hr', {
       }
     },
 
-    async fetchSessionDetail(sessionId) {
+    async fetchSessionDetail(sessionId: string) {
       try {
         this.loading = true
         this.error = null
         
         const response = await axios.get(`${API_BASE_URL}/api/v1/hr/sessions/${sessionId}`)
         return response.data
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.response?.data?.detail || 'Failed to fetch session detail'
         throw error
       } finally {
@@ -58,14 +87,14 @@ export const useHRStore = defineStore('hr', {
       }
     },
 
-    async fetchSessionResults(sessionId) {
+    async fetchSessionResults(sessionId: string) {
       try {
         this.loading = true
         this.error = null
         
         const response = await axios.get(`${API_BASE_URL}/api/v1/hr/sessions/${sessionId}/results`)
         return response.data
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.response?.data?.detail || 'Failed to fetch session results'
         throw error
       } finally {
@@ -82,7 +111,7 @@ export const useHRStore = defineStore('hr', {
         const response = await axios.get(`${API_BASE_URL}/api/v1/vacancies/`)
         this.vacancies = response.data
         return response.data
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.response?.data?.detail || 'Failed to fetch vacancies'
         throw error
       } finally {
@@ -104,8 +133,8 @@ export const useHRStore = defineStore('hr', {
         let avgScore = 0
         if (completedSessions > 0) {
           const totalScore = this.sessions
-            .filter(s => s.status === 'completed' && s.total_score !== null)
-            .reduce((sum, s) => sum + (s.total_score || 0), 0)
+            .filter((s: InterviewSession) => s.status === 'completed' && s.total_score !== null)
+            .reduce((sum: number, s: InterviewSession) => sum + (s.total_score || 0), 0)
           avgScore = totalScore / completedSessions
         }
         
@@ -129,7 +158,7 @@ export const useHRStore = defineStore('hr', {
         
         this.statistics = stats
         return stats
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.response?.data?.detail || 'Failed to fetch statistics'
         throw error
       } finally {
@@ -137,14 +166,14 @@ export const useHRStore = defineStore('hr', {
       }
     },
 
-    async reviewSession(sessionId, reviewData) {
+    async reviewSession(sessionId: string, reviewData: any) {
       try {
         this.loading = true
         this.error = null
         
         const response = await axios.post(`${API_BASE_URL}/api/v1/hr/sessions/${sessionId}/review`, reviewData)
         return response.data
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.response?.data?.detail || 'Failed to review session'
         throw error
       } finally {
@@ -152,14 +181,14 @@ export const useHRStore = defineStore('hr', {
       }
     },
 
-    async reviewAnswer(qaId, reviewData) {
+    async reviewAnswer(qaId: string, reviewData: any) {
       try {
         this.loading = true
         this.error = null
         
         const response = await axios.post(`${API_BASE_URL}/api/v1/hr/qa/${qaId}/review`, reviewData)
         return response.data
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.response?.data?.detail || 'Failed to review answer'
         throw error
       } finally {
@@ -167,7 +196,7 @@ export const useHRStore = defineStore('hr', {
       }
     },
 
-    async exportSession(sessionId, format = 'json') {
+    async exportSession(sessionId: string, format: 'json' | 'csv' | 'pdf' = 'json') {
       try {
         this.loading = true
         this.error = null
@@ -176,7 +205,7 @@ export const useHRStore = defineStore('hr', {
           params: { format }
         })
         return response.data
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.response?.data?.detail || 'Failed to export session'
         throw error
       } finally {
@@ -184,7 +213,7 @@ export const useHRStore = defineStore('hr', {
       }
     },
 
-    async exportVacancy(vacancyId, format = 'json') {
+    async exportVacancy(vacancyId: string, format: 'json' | 'csv' | 'pdf' = 'json') {
       try {
         this.loading = true
         this.error = null
@@ -193,7 +222,7 @@ export const useHRStore = defineStore('hr', {
           params: { format }
         })
         return response.data
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.response?.data?.detail || 'Failed to export vacancy'
         throw error
       } finally {
@@ -201,7 +230,7 @@ export const useHRStore = defineStore('hr', {
       }
     },
 
-    async exportAllSessions(format = 'json') {
+    async exportAllSessions(format: 'json' | 'csv' | 'pdf' = 'json') {
       try {
         this.loading = true
         this.error = null
@@ -212,7 +241,7 @@ export const useHRStore = defineStore('hr', {
         } else {
           throw new Error('No vacancies available for export')
         }
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.response?.data?.detail || 'Failed to export all sessions'
         throw error
       } finally {
@@ -220,7 +249,7 @@ export const useHRStore = defineStore('hr', {
       }
     },
 
-    async createSession(sessionData) {
+    async createSession(sessionData: any) {
       try {
         this.loading = true
         this.error = null
@@ -231,7 +260,7 @@ export const useHRStore = defineStore('hr', {
         this.sessions.unshift(response.data)
         
         return response.data
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.response?.data?.detail || 'Failed to create session'
         throw error
       } finally {
@@ -239,7 +268,7 @@ export const useHRStore = defineStore('hr', {
       }
     },
 
-    async deleteSession(sessionId) {
+    async deleteSession(sessionId: string) {
       try {
         this.loading = true
         this.error = null
@@ -247,10 +276,10 @@ export const useHRStore = defineStore('hr', {
         const response = await axios.delete(`${API_BASE_URL}/api/v1/sessions/${sessionId}`)
         
         // Remove the session from local state
-        this.sessions = this.sessions.filter(s => s.id !== sessionId)
+        this.sessions = this.sessions.filter((s: InterviewSession) => s.id !== sessionId)
         
         return response.data
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.response?.data?.detail || 'Failed to delete session'
         throw error
       } finally {
@@ -269,14 +298,14 @@ export const useHRStore = defineStore('hr', {
           this.fetchVacancies(),
           this.fetchStatistics()
         ])
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error refreshing data:', error)
         throw error
       }
     },
 
     // Keywords management methods
-    async extractSectionKeywords(vacancyId, sectionType, forceReload = false) {
+    async extractSectionKeywords(vacancyId: string, sectionType: KeywordSectionType, forceReload = false) {
       try {
         this.loading = true
         this.error = null
@@ -287,7 +316,7 @@ export const useHRStore = defineStore('hr', {
         )
         
         return response.data
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.response?.data?.detail || 'Failed to extract keywords'
         throw error
       } finally {
@@ -295,7 +324,7 @@ export const useHRStore = defineStore('hr', {
       }
     },
 
-    async extractAllKeywords(vacancyId, forceReload = false) {
+    async extractAllKeywords(vacancyId: string, forceReload = false) {
       try {
         this.loading = true
         this.error = null
@@ -306,7 +335,7 @@ export const useHRStore = defineStore('hr', {
         )
         
         return response.data
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.response?.data?.detail || 'Failed to extract all keywords'
         throw error
       } finally {
@@ -314,7 +343,7 @@ export const useHRStore = defineStore('hr', {
       }
     },
 
-    async getSectionKeywords(vacancyId, sectionType) {
+    async getSectionKeywords(vacancyId: string, sectionType: KeywordSectionType) {
       try {
         this.loading = true
         this.error = null
@@ -324,7 +353,7 @@ export const useHRStore = defineStore('hr', {
         )
         
         return response.data
-      } catch (error) {
+      } catch (error: any) {
         if (error.response?.status === 404) {
           return null // Keywords not found
         }
@@ -335,7 +364,7 @@ export const useHRStore = defineStore('hr', {
       }
     },
 
-    async getAllKeywords(vacancyId) {
+    async getAllKeywords(vacancyId: string) {
       try {
         this.loading = true
         this.error = null
@@ -345,7 +374,7 @@ export const useHRStore = defineStore('hr', {
         )
         
         return response.data
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.response?.data?.detail || 'Failed to get all keywords'
         throw error
       } finally {
@@ -353,12 +382,12 @@ export const useHRStore = defineStore('hr', {
       }
     },
 
-    async updateSectionKeywords(vacancyId, sectionType, keywords, confidenceScore = null) {
+    async updateSectionKeywords(vacancyId: string, sectionType: KeywordSectionType, keywords: string[], confidenceScore: number | null = null) {
       try {
         this.loading = true
         this.error = null
         
-        const updateData = { keywords }
+        const updateData: any = { keywords }
         if (confidenceScore !== null) {
           updateData.confidence_score = confidenceScore
         }
@@ -369,7 +398,7 @@ export const useHRStore = defineStore('hr', {
         )
         
         return response.data
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.response?.data?.detail || 'Failed to update keywords'
         throw error
       } finally {
@@ -377,7 +406,7 @@ export const useHRStore = defineStore('hr', {
       }
     },
 
-    async deleteSectionKeywords(vacancyId, sectionType) {
+    async deleteSectionKeywords(vacancyId: string, sectionType: KeywordSectionType) {
       try {
         this.loading = true
         this.error = null
@@ -387,7 +416,7 @@ export const useHRStore = defineStore('hr', {
         )
         
         return response.data
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.response?.data?.detail || 'Failed to delete keywords'
         throw error
       } finally {
@@ -395,7 +424,7 @@ export const useHRStore = defineStore('hr', {
       }
     },
 
-    async getKeywordsStats(vacancyId) {
+    async getKeywordsStats(vacancyId: string) {
       try {
         this.loading = true
         this.error = null
@@ -405,7 +434,7 @@ export const useHRStore = defineStore('hr', {
         )
         
         return response.data
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.response?.data?.detail || 'Failed to get keywords stats'
         throw error
       } finally {
@@ -413,7 +442,7 @@ export const useHRStore = defineStore('hr', {
       }
     },
 
-    async clearKeywordsCache(vacancyId) {
+    async clearKeywordsCache(vacancyId: string) {
       try {
         this.loading = true
         this.error = null
@@ -423,7 +452,7 @@ export const useHRStore = defineStore('hr', {
         )
         
         return response.data
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.response?.data?.detail || 'Failed to clear keywords cache'
         throw error
       } finally {
@@ -432,7 +461,7 @@ export const useHRStore = defineStore('hr', {
     },
 
     // Scenario management methods
-    async generateScenario(vacancyId, scenarioData) {
+    async generateScenario(vacancyId: string, scenarioData: any) {
       try {
         this.loading = true
         this.error = null
@@ -448,7 +477,7 @@ export const useHRStore = defineStore('hr', {
         )
         
         return response.data
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.response?.data?.detail || 'Failed to generate scenario'
         throw error
       } finally {
@@ -456,7 +485,7 @@ export const useHRStore = defineStore('hr', {
       }
     },
 
-    async previewScenario(vacancyId, scenarioData) {
+    async previewScenario(vacancyId: string, scenarioData: any) {
       try {
         this.loading = true
         this.error = null
@@ -471,7 +500,7 @@ export const useHRStore = defineStore('hr', {
         )
         
         return response.data
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.response?.data?.detail || 'Failed to preview scenario'
         throw error
       } finally {
@@ -479,7 +508,7 @@ export const useHRStore = defineStore('hr', {
       }
     },
 
-    async getVacancyScenarios(vacancyId) {
+    async getVacancyScenarios(vacancyId: string) {
       try {
         this.loading = true
         this.error = null
@@ -489,7 +518,7 @@ export const useHRStore = defineStore('hr', {
         )
         
         return response.data
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.response?.data?.detail || 'Failed to fetch scenarios'
         throw error
       } finally {
@@ -497,7 +526,7 @@ export const useHRStore = defineStore('hr', {
       }
     },
 
-    async getVacancyDynamicCriteria(vacancyId) {
+    async getVacancyDynamicCriteria(vacancyId: string) {
       try {
         this.loading = true
         this.error = null
@@ -507,7 +536,7 @@ export const useHRStore = defineStore('hr', {
         )
         
         return response.data
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.response?.data?.detail || 'Failed to fetch dynamic criteria'
         throw error
       } finally {
@@ -515,7 +544,7 @@ export const useHRStore = defineStore('hr', {
       }
     },
 
-    async regenerateScenario(scenarioId) {
+    async regenerateScenario(scenarioId: string) {
       try {
         this.loading = true
         this.error = null
@@ -525,7 +554,7 @@ export const useHRStore = defineStore('hr', {
         )
         
         return response.data
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.response?.data?.detail || 'Failed to regenerate scenario'
         throw error
       } finally {
@@ -533,7 +562,7 @@ export const useHRStore = defineStore('hr', {
       }
     },
 
-    async deleteScenario(scenarioId) {
+    async deleteScenario(scenarioId: string) {
       try {
         this.loading = true
         this.error = null
@@ -543,7 +572,7 @@ export const useHRStore = defineStore('hr', {
         )
         
         return response.data
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.response?.data?.detail || 'Failed to delete scenario'
         throw error
       } finally {

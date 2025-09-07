@@ -4,7 +4,9 @@
     <div class="avatar-video-container">
       <div v-if="!isConnected" class="avatar-placeholder">
         <div class="avatar-placeholder-content">
-          <div class="avatar-icon">🤖</div>
+          <div class="avatar-icon">
+            <IconAIAvatar :size="60" />
+          </div>
           <h3>AI Аватар</h3>
           <p>Готов к интервью</p>
           <el-button 
@@ -48,6 +50,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import IconAIAvatar from '@/components/icons/IconAIAvatar.vue'
 
 // Props
 const props = defineProps({

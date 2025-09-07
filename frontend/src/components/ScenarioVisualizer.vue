@@ -53,7 +53,7 @@
               <span>Целевые навыки</span>
             </div>
             <div class="legend-item">
-              <span class="legend-icon">⚖️</span>
+              <span class="legend-icon"></span>
               <span>Важность вопроса</span>
             </div>
           </div>

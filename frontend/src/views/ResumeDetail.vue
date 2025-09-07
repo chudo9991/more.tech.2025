@@ -583,7 +583,45 @@ export default {
 
 <style scoped>
 .resume-detail {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #0f172a 50%, #1e293b 75%, #0f172a 100%);
+  position: relative;
+  overflow-x: hidden;
   padding: 20px;
+}
+
+.resume-detail::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(0, 255, 255, 0.1) 0%, transparent 60%),
+    radial-gradient(circle at 80% 20%, rgba(138, 43, 226, 0.1) 0%, transparent 60%),
+    radial-gradient(circle at 40% 40%, rgba(75, 0, 130, 0.08) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.resume-detail::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    linear-gradient(45deg, rgba(0, 255, 255, 0.02) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(138, 43, 226, 0.02) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(0, 255, 255, 0.02) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(138, 43, 226, 0.02) 75%);
+  background-size: 60px 60px;
+  background-position: 0 0, 0 30px, 30px -30px, -30px 0px;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.3;
 }
 
 .page-header {
@@ -591,11 +629,22 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.6));
+  backdrop-filter: blur(30px);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 40px rgba(0, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .page-header h1 {
   margin: 0;
-  color: #303133;
+  color: #00ffff;
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
 }
 
 .header-buttons {
