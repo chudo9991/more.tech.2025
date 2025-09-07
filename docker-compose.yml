@@ -183,6 +183,8 @@ services:
       - caddy_data:/data
       - caddy_config:/config
       - caddy_logs:/var/log/caddy
+    extra_hosts:
+      - "moretech2025clvb.ru:127.0.0.1"
     depends_on:
       - frontend
       - orchestrator
