@@ -1,0 +1,14 @@
+moretech2025clvb.ru {
+    # Использовать самоподписанный сертификат
+    tls internal
+    
+    # API routes - proxy to orchestrator backend
+    handle /api/* {
+        reverse_proxy orchestrator:8000
+    }
+    
+    # All other routes - proxy to frontend
+    handle /* {
+        reverse_proxy frontend:3000
+    }
+}
