@@ -186,11 +186,7 @@ services:
     depends_on:
       - frontend
       - orchestrator
-    healthcheck:
-      test: ["CMD", "caddy", "healthcheck", "--config", "/etc/caddy/Caddyfile"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+    restart: unless-stopped
 
   # Redis Cache
   redis:
