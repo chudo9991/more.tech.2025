@@ -59,10 +59,11 @@ services:
       minio:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://orchestrator:8000/healthz"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
       interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
+      start_period: 60s
 
   # Speech-to-Text Service
   stt:
@@ -84,10 +85,11 @@ services:
       minio:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://stt:8001/healthz"]
+      test: ["CMD", "curl", "-f", "http://localhost:8001/healthz"]
       interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
+      start_period: 60s
 
   # LLM Service (Azure GPT-4o)
   llm:
@@ -104,10 +106,11 @@ services:
     ports:
       - "8004:8004"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://llm:8004/healthz"]
+      test: ["CMD", "curl", "-f", "http://localhost:8004/healthz"]
       interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
+      start_period: 60s
 
   # Avatar Service
   avatar:
@@ -130,10 +133,11 @@ services:
       minio:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://avatar:8005/healthz"]
+      test: ["CMD", "curl", "-f", "http://localhost:8005/healthz"]
       interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
+      start_period: 60s
 
   # Scoring Service (LLM)
   scoring:
@@ -152,10 +156,11 @@ services:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://scoring:8003/healthz"]
+      test: ["CMD", "curl", "-f", "http://localhost:8003/healthz"]
       interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
+      start_period: 60s
 
   # Frontend (Vue/React)
   frontend:
@@ -167,10 +172,11 @@ services:
     depends_on:
       - orchestrator
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://frontend:3000"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
       interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
+      start_period: 60s
 
   # Caddy Reverse Proxy with automatic SSL
   caddy:
