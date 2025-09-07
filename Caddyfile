@@ -33,6 +33,6 @@ moretech2025clvb.ru {
     # Logging
     log {
         output file /var/log/caddy/access.log
-        format single_field common_log
+        format json
     }
 }
