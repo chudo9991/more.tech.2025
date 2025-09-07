@@ -1,4 +1,7 @@
 moretech2025clvb.ru {
+    # Use self-signed certificates for local development
+    tls internal
+    
     # API routes - proxy to orchestrator backend
     handle /api/* {
         reverse_proxy orchestrator:8000
