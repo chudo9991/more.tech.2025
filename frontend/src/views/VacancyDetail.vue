@@ -509,7 +509,43 @@ export default {
 <style scoped>
 .vacancy-detail {
   min-height: 100vh;
-  background-color: #f5f7fa;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #0f172a 50%, #1e293b 75%, #0f172a 100%);
+  position: relative;
+  overflow-x: hidden;
+}
+
+.vacancy-detail::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(0, 255, 255, 0.1) 0%, transparent 60%),
+    radial-gradient(circle at 80% 20%, rgba(138, 43, 226, 0.1) 0%, transparent 60%),
+    radial-gradient(circle at 40% 40%, rgba(75, 0, 130, 0.08) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.vacancy-detail::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    linear-gradient(45deg, rgba(0, 255, 255, 0.02) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(138, 43, 226, 0.02) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(0, 255, 255, 0.02) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(138, 43, 226, 0.02) 75%);
+  background-size: 60px 60px;
+  background-position: 0 0, 0 30px, 30px -30px, -30px 0px;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.3;
 }
 
 .header-content {
@@ -521,9 +557,10 @@ export default {
 
 .header-left h1 {
   margin: 0 0 12px 0;
-  color: #303133;
+  color: #00ffff;
   font-size: 28px;
   font-weight: 600;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
 }
 
 .vacancy-meta {
@@ -544,8 +581,14 @@ export default {
 
 .info-card {
   margin-bottom: 24px;
-  border: none;
-  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  border-radius: 16px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 40px rgba(0, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .card-header {
@@ -553,7 +596,8 @@ export default {
   align-items: center;
   gap: 8px;
   font-weight: 600;
-  color: #303133;
+  color: #00ffff;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
 }
 
 .card-header .el-icon {
@@ -572,25 +616,27 @@ export default {
 .info-item label {
   display: block;
   font-weight: 600;
-  color: #606266;
+  color: #94a3b8;
   margin-bottom: 4px;
   font-size: 14px;
 }
 
 .info-value {
-  color: #303133;
+  color: #e2e8f0;
   font-size: 14px;
 }
 
 .info-text {
-  color: #303133;
+  color: #e2e8f0;
   font-size: 14px;
   line-height: 1.6;
   white-space: pre-wrap;
-  background-color: #fafafa;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(10px);
   padding: 12px;
-  border-radius: 4px;
-  border-left: 3px solid #409eff;
+  border-radius: 8px;
+  border-left: 3px solid #00ffff;
+  border: 1px solid rgba(0, 255, 255, 0.2);
 }
 
 :deep(.el-card__header) {

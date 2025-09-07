@@ -11,6 +11,7 @@
       <router-link to="/scenarios" class="nav-link">Сценарии</router-link>
       <router-link to="/interview" class="nav-link">Интервью</router-link>
       <router-link to="/model-status" class="nav-link">Статус модели</router-link>
+      <router-link to="/metrics-showcase" class="nav-link">Демо карточек</router-link>
     </div>
   </div>
 </template>

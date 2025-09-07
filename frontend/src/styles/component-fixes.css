@@ -1,0 +1,346 @@
+/* Component Fixes for Modern UI Theme */
+
+/* Fix for Resume Upload page */
+.resume-upload .page-header {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.6)) !important;
+  backdrop-filter: blur(30px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  border-radius: 16px !important;
+  padding: 1.5rem !important;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 40px rgba(0, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+.resume-upload .page-header h1 {
+  color: #00ffff !important;
+  font-weight: 700 !important;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5) !important;
+}
+
+/* Fix for Element Plus components */
+.el-row {
+  margin: 0 !important;
+}
+
+.el-col {
+  padding: 0 10px !important;
+}
+
+.el-card {
+  background: rgba(15, 23, 42, 0.6) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  border-radius: 16px !important;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 40px rgba(0, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  color: #e2e8f0 !important;
+}
+
+.el-card__header {
+  background: rgba(0, 255, 255, 0.1) !important;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2) !important;
+  color: #00ffff !important;
+  font-weight: 600 !important;
+}
+
+.el-card__body {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+}
+
+/* Fix for upload components */
+.el-upload {
+  width: 100% !important;
+}
+
+.el-upload-dragger {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 2px dashed rgba(0, 255, 255, 0.4) !important;
+  border-radius: 12px !important;
+  color: #e2e8f0 !important;
+  transition: all 0.3s ease !important;
+}
+
+.el-upload-dragger:hover {
+  border-color: rgba(0, 255, 255, 0.6) !important;
+  background: rgba(15, 23, 42, 0.9) !important;
+}
+
+.el-upload__text {
+  color: #94a3b8 !important;
+}
+
+.el-upload__tip {
+  color: #64748b !important;
+}
+
+/* Fix for form components */
+.el-form-item__label {
+  color: #e2e8f0 !important;
+  font-weight: 500 !important;
+}
+
+.el-input__inner,
+.el-textarea__inner,
+.el-select .el-input__inner {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  color: #e2e8f0 !important;
+  border-radius: 8px !important;
+}
+
+.el-input__inner:focus,
+.el-textarea__inner:focus,
+.el-select .el-input__inner:focus {
+  border-color: rgba(0, 255, 255, 0.6) !important;
+  box-shadow: 0 0 0 2px rgba(0, 255, 255, 0.1) !important;
+}
+
+.el-input__inner::placeholder,
+.el-textarea__inner::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Fix for select dropdown */
+.el-select-dropdown {
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+}
+
+.el-option {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+}
+
+.el-option:hover {
+  background: rgba(0, 255, 255, 0.1) !important;
+}
+
+.el-option.selected {
+  background: rgba(0, 255, 255, 0.2) !important;
+  color: #00ffff !important;
+}
+
+/* Fix for buttons */
+.el-button {
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  transition: all 0.3s ease !important;
+}
+
+.el-button--primary {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.8), rgba(138, 43, 226, 0.8)) !important;
+  border-color: rgba(0, 255, 255, 0.6) !important;
+  color: #ffffff !important;
+}
+
+.el-button--primary:hover {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.9), rgba(138, 43, 226, 0.9)) !important;
+  border-color: rgba(0, 255, 255, 0.8) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px rgba(0, 255, 255, 0.3) !important;
+}
+
+.el-button--default {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border-color: rgba(0, 255, 255, 0.3) !important;
+  color: #e2e8f0 !important;
+}
+
+.el-button--default:hover {
+  background: rgba(15, 23, 42, 0.9) !important;
+  border-color: rgba(0, 255, 255, 0.5) !important;
+  color: #00ffff !important;
+}
+
+/* Fix for tags */
+.el-tag {
+  background: rgba(0, 255, 255, 0.2) !important;
+  border-color: rgba(0, 255, 255, 0.4) !important;
+  color: #00ffff !important;
+  border-radius: 6px !important;
+}
+
+.el-tag--success {
+  background: rgba(34, 197, 94, 0.2) !important;
+  border-color: rgba(34, 197, 94, 0.4) !important;
+  color: #22c55e !important;
+}
+
+.el-tag--warning {
+  background: rgba(245, 158, 11, 0.2) !important;
+  border-color: rgba(245, 158, 11, 0.4) !important;
+  color: #f59e0b !important;
+}
+
+.el-tag--danger {
+  background: rgba(239, 68, 68, 0.2) !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+  color: #ef4444 !important;
+}
+
+.el-tag--info {
+  background: rgba(59, 130, 246, 0.2) !important;
+  border-color: rgba(59, 130, 246, 0.4) !important;
+  color: #3b82f6 !important;
+}
+
+/* Fix for icons */
+.el-icon {
+  color: inherit !important;
+}
+
+/* Fix for loading states */
+.el-loading-mask {
+  background: rgba(0, 0, 0, 0.8) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.el-loading-spinner {
+  color: #00ffff !important;
+}
+
+/* Fix for message components */
+.el-message {
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  border-radius: 8px !important;
+  color: #e2e8f0 !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+}
+
+.el-message--success {
+  border-color: rgba(34, 197, 94, 0.5) !important;
+}
+
+.el-message--warning {
+  border-color: rgba(245, 158, 11, 0.5) !important;
+}
+
+.el-message--error {
+  border-color: rgba(239, 68, 68, 0.5) !important;
+}
+
+.el-message--info {
+  border-color: rgba(59, 130, 246, 0.5) !important;
+}
+
+/* Fix for specific page layouts */
+.vacancy-option {
+  color: #e2e8f0 !important;
+}
+
+.vacancy-title {
+  color: #e2e8f0 !important;
+  font-weight: 600 !important;
+}
+
+.vacancy-code {
+  color: #94a3b8 !important;
+}
+
+.form-help {
+  color: #64748b !important;
+}
+
+.file-info {
+  background: rgba(15, 23, 42, 0.6) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  border-radius: 8px !important;
+  color: #e2e8f0 !important;
+}
+
+.file-details {
+  color: #e2e8f0 !important;
+}
+
+.file-name {
+  color: #e2e8f0 !important;
+  font-weight: 600 !important;
+}
+
+.file-size,
+.file-type {
+  color: #94a3b8 !important;
+}
+
+.info-content h4 {
+  color: #00ffff !important;
+  font-weight: 600 !important;
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.3) !important;
+}
+
+.process-steps,
+.supported-formats,
+.limitations {
+  color: #94a3b8 !important;
+}
+
+.no-recent {
+  color: #64748b !important;
+}
+
+.recent-upload-item {
+  background: rgba(15, 23, 42, 0.6) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+}
+
+.recent-upload-item:hover {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border-color: rgba(0, 255, 255, 0.4) !important;
+  transform: translateY(-2px) !important;
+}
+
+.upload-file-name {
+  color: #e2e8f0 !important;
+  font-weight: 600 !important;
+}
+
+.upload-date {
+  color: #64748b !important;
+}
+
+/* Fix for responsive issues */
+@media (max-width: 768px) {
+  .el-row {
+    margin: 0 !important;
+  }
+  
+  .el-col {
+    padding: 0 5px !important;
+  }
+  
+  .page-header {
+    margin: 0.5rem !important;
+    padding: 1rem !important;
+  }
+  
+  .page-header h1 {
+    font-size: 1.25rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .el-card {
+    margin: 0.5rem 0 !important;
+  }
+  
+  .el-form-item {
+    margin-bottom: 1rem !important;
+  }
+  
+  .el-button {
+    width: 100% !important;
+    margin-bottom: 0.5rem !important;
+  }
+}
