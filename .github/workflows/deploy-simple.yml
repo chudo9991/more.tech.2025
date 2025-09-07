@@ -21,6 +21,14 @@ jobs:
         script: |
           cd /opt/more.tech.2025
           git pull origin main
+          
+          # Create .env file for production
+          cat > .env << EOF
+          DB_PASSWORD=interview_pass
+          MINIO_ROOT_USER=minioadmin
+          MINIO_ROOT_PASSWORD=minioadmin123
+          EOF
+          
           docker-compose -f docker-compose.prod.yml down
           docker-compose -f docker-compose.prod.yml build --no-cache
           docker-compose -f docker-compose.prod.yml up -d
