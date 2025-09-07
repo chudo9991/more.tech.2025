@@ -51,8 +51,7 @@ services:
       - STT_SERVICE_URL=http://stt:8001
       - TTS_SERVICE_URL=http://tts:8002
       - SCORING_SERVICE_URL=http://scoring:8003
-    ports:
-      - "8000:8000"
+    # Ports removed - accessed through Caddy reverse proxy
     depends_on:
       db:
         condition: service_healthy
@@ -74,8 +73,7 @@ services:
       - MINIO_ENDPOINT=minio:9000
       - MINIO_ACCESS_KEY=${MINIO_ROOT_USER:-minioadmin}
       - MINIO_SECRET_KEY=${MINIO_ROOT_PASSWORD:-minioadmin123}
-    ports:
-      - "8001:8001"
+    # Ports removed - accessed through Caddy reverse proxy
     volumes:
       - whisper_cache:/root/.cache/whisper
     depends_on:
@@ -101,8 +99,7 @@ services:
       - AZURE_OPENAI_DEPLOYMENT_NAME=${AZURE_OPENAI_DEPLOYMENT_NAME:-gpt-4o}
       - LLM_TEMPERATURE=${LLM_TEMPERATURE:-0.1}
       - LLM_MAX_TOKENS=${LLM_MAX_TOKENS:-2000}
-    ports:
-      - "8004:8004"
+    # Ports removed - accessed through Caddy reverse proxy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://llm:8004/healthz"]
       interval: 30s
@@ -118,8 +115,7 @@ services:
       - MINIO_ENDPOINT=minio:9000
       - MINIO_ACCESS_KEY=${MINIO_ROOT_USER:-minioadmin}
       - MINIO_SECRET_KEY=${MINIO_ROOT_PASSWORD:-minioadmin123}
-    ports:
-      - "8005:8005"
+    # Ports removed - accessed through Caddy reverse proxy
     depends_on:
       minio:
         condition: service_healthy
@@ -140,8 +136,7 @@ services:
       - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
       - AZURE_OPENAI_API_VERSION=${AZURE_OPENAI_API_VERSION:-2024-02-15-preview}
       - AZURE_OPENAI_DEPLOYMENT_NAME=${AZURE_OPENAI_DEPLOYMENT_NAME:-gpt-4o}
-    ports:
-      - "8003:8003"
+    # Ports removed - accessed through Caddy reverse proxy
     depends_on:
       db:
         condition: service_healthy
@@ -157,24 +152,38 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     environment:
-      # Замените YOUR_DOMAIN на ваш домен или IP
-      - VITE_API_URL=http://YOUR_DOMAIN:8000
-    ports:
-      - "3000:3000"
+      - VITE_API_URL=/api
     depends_on:
       - orchestrator
     healthcheck:
       test: ["CMD", "curl", "-f", "http://frontend:3000"]
       interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
+      start_period: 60s
+
+  # Caddy Reverse Proxy with automatic SSL
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+      - caddy_logs:/var/log/caddy
+    extra_hosts:
+      - "moretech2025clvb.ru:127.0.0.1"
+    depends_on:
+      - frontend
+      - orchestrator
+    restart: unless-stopped
 
   # Redis Cache
   redis:
     image: redis:7-alpine
     container_name: moretech2025-redis-1
-    ports:
-      - "6379:6379"
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes
@@ -189,3 +198,6 @@ volumes:
   minio_data:
   whisper_cache:
   redis_data:
+  caddy_data:
+  caddy_config:
+  caddy_logs:
