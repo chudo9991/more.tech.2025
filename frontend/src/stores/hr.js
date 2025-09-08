@@ -13,9 +13,9 @@ export const useHRStore = defineStore('hr', {
   }),
 
   getters: {
-    completedSessions: (state) => state.sessions.filter(s => s.status === 'completed'),
-    inProgressSessions: (state) => state.sessions.filter(s => s.status === 'in_progress'),
-    totalSessions: (state) => state.sessions.length
+    completedSessions: state => state.sessions.filter(s => s.status === 'completed'),
+    inProgressSessions: state => state.sessions.filter(s => s.status === 'in_progress'),
+    totalSessions: state => state.sessions.length
   },
 
   actions: {
@@ -23,7 +23,7 @@ export const useHRStore = defineStore('hr', {
       try {
         this.loading = true
         this.error = null
-        
+
         const response = await axios.get(`${API_BASE_URL}/api/v1/hr/sessions`, {
           params: {
             skip: params.skip || 0,
@@ -32,7 +32,7 @@ export const useHRStore = defineStore('hr', {
             vacancy_id: params.vacancy_id
           }
         })
-        
+
         this.sessions = response.data
         return response.data
       } catch (error) {
@@ -47,7 +47,7 @@ export const useHRStore = defineStore('hr', {
       try {
         this.loading = true
         this.error = null
-        
+
         const response = await axios.get(`${API_BASE_URL}/api/v1/hr/sessions/${sessionId}`)
         return response.data
       } catch (error) {
@@ -62,7 +62,7 @@ export const useHRStore = defineStore('hr', {
       try {
         this.loading = true
         this.error = null
-        
+
         const response = await axios.get(`${API_BASE_URL}/api/v1/hr/sessions/${sessionId}/results`)
         return response.data
       } catch (error) {
@@ -77,7 +77,7 @@ export const useHRStore = defineStore('hr', {
       try {
         this.loading = true
         this.error = null
-        
+
         // Используем новый API вакансий
         const response = await axios.get(`${API_BASE_URL}/api/v1/vacancies/`)
         this.vacancies = response.data
@@ -94,12 +94,12 @@ export const useHRStore = defineStore('hr', {
       try {
         this.loading = true
         this.error = null
-        
+
         // Calculate real statistics from sessions data
         const totalSessions = this.sessions.length
         const completedSessions = this.completedSessions.length
         const inProgressSessions = this.inProgressSessions.length
-        
+
         // Calculate average score from completed sessions
         let avgScore = 0
         if (completedSessions > 0) {
@@ -108,14 +108,14 @@ export const useHRStore = defineStore('hr', {
             .reduce((sum, s) => sum + (s.total_score || 0), 0)
           avgScore = totalScore / completedSessions
         }
-        
+
         // Calculate changes (for now, we'll use simple calculations)
         // In a real app, this would compare with previous period data
         const sessionsChange = totalSessions > 0 ? '+100%' : '0%'
         const completedChange = completedSessions > 0 ? '+100%' : '0%'
         const progressChange = inProgressSessions > 0 ? '+100%' : '0%'
         const scoreChange = avgScore > 0 ? `+${(avgScore * 100).toFixed(1)}%` : '0%'
-        
+
         const stats = {
           total_sessions: totalSessions,
           completed_sessions: completedSessions,
@@ -126,7 +126,7 @@ export const useHRStore = defineStore('hr', {
           progress_change: progressChange,
           score_change: scoreChange
         }
-        
+
         this.statistics = stats
         return stats
       } catch (error) {
@@ -141,8 +141,11 @@ export const useHRStore = defineStore('hr', {
       try {
         this.loading = true
         this.error = null
-        
-        const response = await axios.post(`${API_BASE_URL}/api/v1/hr/sessions/${sessionId}/review`, reviewData)
+
+        const response = await axios.post(
+          `${API_BASE_URL}/api/v1/hr/sessions/${sessionId}/review`,
+          reviewData
+        )
         return response.data
       } catch (error) {
         this.error = error.response?.data?.detail || 'Failed to review session'
@@ -156,7 +159,7 @@ export const useHRStore = defineStore('hr', {
       try {
         this.loading = true
         this.error = null
-        
+
         const response = await axios.post(`${API_BASE_URL}/api/v1/hr/qa/${qaId}/review`, reviewData)
         return response.data
       } catch (error) {
@@ -171,7 +174,7 @@ export const useHRStore = defineStore('hr', {
       try {
         this.loading = true
         this.error = null
-        
+
         const response = await axios.get(`${API_BASE_URL}/api/v1/hr/sessions/${sessionId}/export`, {
           params: { format }
         })
@@ -188,10 +191,13 @@ export const useHRStore = defineStore('hr', {
       try {
         this.loading = true
         this.error = null
-        
-        const response = await axios.get(`${API_BASE_URL}/api/v1/hr/vacancies/${vacancyId}/export`, {
-          params: { format }
-        })
+
+        const response = await axios.get(
+          `${API_BASE_URL}/api/v1/hr/vacancies/${vacancyId}/export`,
+          {
+            params: { format }
+          }
+        )
         return response.data
       } catch (error) {
         this.error = error.response?.data?.detail || 'Failed to export vacancy'
@@ -205,7 +211,7 @@ export const useHRStore = defineStore('hr', {
       try {
         this.loading = true
         this.error = null
-        
+
         // For now, export the first vacancy - in real app this would be a bulk export
         if (this.vacancies.length > 0) {
           return await this.exportVacancy(this.vacancies[0].id, format)
@@ -224,12 +230,12 @@ export const useHRStore = defineStore('hr', {
       try {
         this.loading = true
         this.error = null
-        
+
         const response = await axios.post(`${API_BASE_URL}/api/v1/sessions/`, sessionData)
-        
+
         // Add the new session to local state
         this.sessions.unshift(response.data)
-        
+
         return response.data
       } catch (error) {
         this.error = error.response?.data?.detail || 'Failed to create session'
@@ -243,12 +249,12 @@ export const useHRStore = defineStore('hr', {
       try {
         this.loading = true
         this.error = null
-        
+
         const response = await axios.delete(`${API_BASE_URL}/api/v1/sessions/${sessionId}`)
-        
+
         // Remove the session from local state
         this.sessions = this.sessions.filter(s => s.id !== sessionId)
-        
+
         return response.data
       } catch (error) {
         this.error = error.response?.data?.detail || 'Failed to delete session'
@@ -264,11 +270,7 @@ export const useHRStore = defineStore('hr', {
 
     async refreshData() {
       try {
-        await Promise.all([
-          this.fetchSessions(),
-          this.fetchVacancies(),
-          this.fetchStatistics()
-        ])
+        await Promise.all([this.fetchSessions(), this.fetchVacancies(), this.fetchStatistics()])
       } catch (error) {
         console.error('Error refreshing data:', error)
         throw error
@@ -280,12 +282,12 @@ export const useHRStore = defineStore('hr', {
       try {
         this.loading = true
         this.error = null
-        
+
         const response = await axios.post(
           `${API_BASE_URL}/api/v1/vacancy-keywords/vacancies/${vacancyId}/keywords/extract/${sectionType}`,
           { force_reload: forceReload }
         )
-        
+
         return response.data
       } catch (error) {
         this.error = error.response?.data?.detail || 'Failed to extract keywords'
@@ -299,12 +301,12 @@ export const useHRStore = defineStore('hr', {
       try {
         this.loading = true
         this.error = null
-        
+
         const response = await axios.post(
           `${API_BASE_URL}/api/v1/vacancy-keywords/vacancies/${vacancyId}/keywords/extract-all`,
           { force_reload: forceReload }
         )
-        
+
         return response.data
       } catch (error) {
         this.error = error.response?.data?.detail || 'Failed to extract all keywords'
@@ -318,11 +320,11 @@ export const useHRStore = defineStore('hr', {
       try {
         this.loading = true
         this.error = null
-        
+
         const response = await axios.get(
           `${API_BASE_URL}/api/v1/vacancy-keywords/vacancies/${vacancyId}/keywords/${sectionType}`
         )
-        
+
         return response.data
       } catch (error) {
         if (error.response?.status === 404) {
@@ -339,11 +341,11 @@ export const useHRStore = defineStore('hr', {
       try {
         this.loading = true
         this.error = null
-        
+
         const response = await axios.get(
           `${API_BASE_URL}/api/v1/vacancy-keywords/vacancies/${vacancyId}/keywords`
         )
-        
+
         return response.data
       } catch (error) {
         this.error = error.response?.data?.detail || 'Failed to get all keywords'
@@ -357,17 +359,17 @@ export const useHRStore = defineStore('hr', {
       try {
         this.loading = true
         this.error = null
-        
+
         const updateData = { keywords }
         if (confidenceScore !== null) {
           updateData.confidence_score = confidenceScore
         }
-        
+
         const response = await axios.put(
           `${API_BASE_URL}/api/v1/vacancy-keywords/vacancies/${vacancyId}/keywords/${sectionType}`,
           updateData
         )
-        
+
         return response.data
       } catch (error) {
         this.error = error.response?.data?.detail || 'Failed to update keywords'
@@ -381,11 +383,11 @@ export const useHRStore = defineStore('hr', {
       try {
         this.loading = true
         this.error = null
-        
+
         const response = await axios.delete(
           `${API_BASE_URL}/api/v1/vacancy-keywords/vacancies/${vacancyId}/keywords/${sectionType}`
         )
-        
+
         return response.data
       } catch (error) {
         this.error = error.response?.data?.detail || 'Failed to delete keywords'
@@ -399,11 +401,11 @@ export const useHRStore = defineStore('hr', {
       try {
         this.loading = true
         this.error = null
-        
+
         const response = await axios.get(
           `${API_BASE_URL}/api/v1/vacancy-keywords/vacancies/${vacancyId}/keywords-stats`
         )
-        
+
         return response.data
       } catch (error) {
         this.error = error.response?.data?.detail || 'Failed to get keywords stats'
@@ -417,11 +419,11 @@ export const useHRStore = defineStore('hr', {
       try {
         this.loading = true
         this.error = null
-        
+
         const response = await axios.delete(
           `${API_BASE_URL}/api/v1/vacancy-keywords/vacancies/${vacancyId}/keywords-cache`
         )
-        
+
         return response.data
       } catch (error) {
         this.error = error.response?.data?.detail || 'Failed to clear keywords cache'
@@ -436,17 +438,14 @@ export const useHRStore = defineStore('hr', {
       try {
         this.loading = true
         this.error = null
-        
-        const response = await axios.post(
-          `${API_BASE_URL}/api/v1/scenarios/generate`,
-          {
-            vacancy_id: vacancyId,
-            scenario_name: scenarioData.scenario_name,
-            description: scenarioData.description,
-            force_regenerate: scenarioData.force_regenerate || false
-          }
-        )
-        
+
+        const response = await axios.post(`${API_BASE_URL}/api/v1/scenarios/generate`, {
+          vacancy_id: vacancyId,
+          scenario_name: scenarioData.scenario_name,
+          description: scenarioData.description,
+          force_regenerate: scenarioData.force_regenerate || false
+        })
+
         return response.data
       } catch (error) {
         this.error = error.response?.data?.detail || 'Failed to generate scenario'
@@ -460,16 +459,13 @@ export const useHRStore = defineStore('hr', {
       try {
         this.loading = true
         this.error = null
-        
-        const response = await axios.post(
-          `${API_BASE_URL}/api/v1/scenarios/preview`,
-          {
-            vacancy_id: vacancyId,
-            scenario_name: scenarioData.scenario_name,
-            description: scenarioData.description
-          }
-        )
-        
+
+        const response = await axios.post(`${API_BASE_URL}/api/v1/scenarios/preview`, {
+          vacancy_id: vacancyId,
+          scenario_name: scenarioData.scenario_name,
+          description: scenarioData.description
+        })
+
         return response.data
       } catch (error) {
         this.error = error.response?.data?.detail || 'Failed to preview scenario'
@@ -483,11 +479,11 @@ export const useHRStore = defineStore('hr', {
       try {
         this.loading = true
         this.error = null
-        
+
         const response = await axios.get(
           `${API_BASE_URL}/api/v1/scenarios/vacancies/${vacancyId}/scenarios`
         )
-        
+
         return response.data
       } catch (error) {
         this.error = error.response?.data?.detail || 'Failed to fetch scenarios'
@@ -501,11 +497,11 @@ export const useHRStore = defineStore('hr', {
       try {
         this.loading = true
         this.error = null
-        
+
         const response = await axios.get(
           `${API_BASE_URL}/api/v1/scenarios/vacancies/${vacancyId}/dynamic-criteria`
         )
-        
+
         return response.data
       } catch (error) {
         this.error = error.response?.data?.detail || 'Failed to fetch dynamic criteria'
@@ -519,11 +515,11 @@ export const useHRStore = defineStore('hr', {
       try {
         this.loading = true
         this.error = null
-        
+
         const response = await axios.post(
           `${API_BASE_URL}/api/v1/scenarios/${scenarioId}/regenerate`
         )
-        
+
         return response.data
       } catch (error) {
         this.error = error.response?.data?.detail || 'Failed to regenerate scenario'
@@ -537,11 +533,9 @@ export const useHRStore = defineStore('hr', {
       try {
         this.loading = true
         this.error = null
-        
-        const response = await axios.delete(
-          `${API_BASE_URL}/api/v1/scenarios/${scenarioId}`
-        )
-        
+
+        const response = await axios.delete(`${API_BASE_URL}/api/v1/scenarios/${scenarioId}`)
+
         return response.data
       } catch (error) {
         this.error = error.response?.data?.detail || 'Failed to delete scenario'

@@ -35,6 +35,7 @@
                 {{ title }}
               </h2>
             </div>
+            <div v-else class="flex-1"></div>
             
             <!-- Close button -->
             <button
@@ -52,6 +53,7 @@
           <div
             :id="contentId"
             :class="contentClasses"
+            style="margin-top: 1rem;"
           >
             <slot />
           </div>

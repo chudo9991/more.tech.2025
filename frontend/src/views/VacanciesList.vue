@@ -4,7 +4,8 @@
       <el-header>
         <div class="header-content">
           <h1>Управление вакансиями</h1>
-          <BaseButton variant="primary" @click="createVacancy" size="large" :icon="Plus">
+          <BaseButton variant="primary" @click="createVacancy" size="large">
+            <el-icon><Plus /></el-icon>
             Создать вакансию
           </BaseButton>
         </div>
@@ -63,10 +64,12 @@
             </el-form-item>
             
             <el-form-item>
-              <BaseButton variant="primary" @click="applyFilters" :loading="loading" :icon="Search"  style="margin-right: 1rem;">
+              <BaseButton variant="primary" @click="applyFilters" :loading="loading" style="margin-right: 1rem;">
+                <el-icon><Search /></el-icon>
                 Применить
               </BaseButton>
-              <BaseButton variant="ghost" @click="clearFilters" :icon="Refresh">
+              <BaseButton variant="ghost" @click="clearFilters">
+                <el-icon><Refresh /></el-icon>
                 Очистить
               </BaseButton>
             </el-form-item>
@@ -94,10 +97,12 @@
             <div class="table-header">
               <span>Список вакансий</span>
               <div class="table-actions">
-                <BaseButton @click="refreshData" :loading="loading" size="small" variant="ghost" :icon="Refresh">
+                <BaseButton @click="refreshData" :loading="loading" size="small" variant="ghost">
+                  <el-icon><Refresh /></el-icon>
                   Обновить
                 </BaseButton>
-                <BaseButton @click="exportVacancies" size="small" variant="secondary" :icon="Download">
+                <BaseButton @click="exportVacancies" size="small" variant="secondary">
+                  <el-icon><Download /></el-icon>
                   Экспорт
                 </BaseButton>
               </div>
@@ -168,11 +173,32 @@
             
             <el-table-column label="Действия" width="200" fixed="right">
               <template #default="{ row }">
-                <div class="action-buttons">
-                  <BaseButton size="small" @click.stop="viewVacancy(row)" variant="primary" :icon="View" />
-                  <BaseButton size="small" @click.stop="editVacancy(row)" variant="secondary" :icon="Edit" />
-                  <BaseButton size="small" @click.stop="deleteVacancy(row)" variant="danger" :icon="Delete" />
-                </div>
+                <el-button-group>
+                  <el-button 
+                    type="primary" 
+                    size="small" 
+                    @click.stop="viewVacancy(row)"
+                    title="Просмотр"
+                  >
+                    <el-icon><View /></el-icon>
+                  </el-button>
+                  <el-button 
+                    type="warning" 
+                    size="small" 
+                    @click.stop="editVacancy(row)"
+                    title="Редактировать"
+                  >
+                    <el-icon><Edit /></el-icon>
+                  </el-button>
+                  <el-button 
+                    type="danger" 
+                    size="small" 
+                    @click.stop="deleteVacancy(row)"
+                    title="Удалить"
+                  >
+                    <el-icon><Delete /></el-icon>
+                  </el-button>
+                </el-button-group>
               </template>
             </el-table-column>
           </el-table>

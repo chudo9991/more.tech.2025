@@ -4,10 +4,12 @@
                   <h1>Управление резюме</h1>
                   <div class="header-buttons">
                     <ExportButtons @export-completed="handleExportCompleted" />
-                    <BaseButton variant="primary" @click="$router.push('/resumes/upload')" :icon="Plus">
+                    <BaseButton variant="primary" @click="$router.push('/resumes/upload')">
+                      <el-icon><Plus /></el-icon>
                       Загрузить резюме
                     </BaseButton>
-                    <BaseButton variant="secondary" @click="$router.push('/resumes/batch-upload')" :icon="Upload">
+                    <BaseButton variant="secondary" @click="$router.push('/resumes/batch-upload')">
+                      <el-icon><Upload /></el-icon>
                       Пакетная загрузка
                     </BaseButton>
                   </div>
@@ -32,11 +34,13 @@
           <el-option label="Ошибка" value="error" />
         </el-select>
         
-        <BaseButton @click="loadResumes" variant="primary" :icon="Search">
+        <BaseButton @click="loadResumes" variant="primary">
+          <el-icon><Search /></el-icon>
           Применить фильтры
         </BaseButton>
         
-        <BaseButton @click="clearFilters" variant="ghost" :icon="Refresh">
+        <BaseButton @click="clearFilters" variant="ghost">
+          <el-icon><Refresh /></el-icon>
           Сбросить
         </BaseButton>
       </div>
@@ -83,7 +87,8 @@
       <template #header>
         <div class="table-header">
           <span>Список резюме</span>
-          <BaseButton @click="loadResumes" variant="ghost" :icon="Refresh" size="small">
+          <BaseButton @click="loadResumes" variant="ghost" size="small">
+            <el-icon><Refresh /></el-icon>
             Обновить
           </BaseButton>
         </div>
@@ -156,59 +161,65 @@
         
         <el-table-column label="Действия" width="280" fixed="right">
           <template #default="{ row }">
-            <div class="action-buttons">
-              <BaseButton
+            <el-button-group>
+              <el-button
+                type="primary"
                 size="small"
                 @click="$router.push(`/resumes/${row.id}`)"
-                variant="primary"
-                :icon="View"
                 title="Просмотр"
-              />
+              >
+                <el-icon><View /></el-icon>
+              </el-button>
               
-              <BaseButton
+              <el-button
                 v-if="row.status === 'uploaded'"
+                type="warning"
                 size="small"
-                variant="secondary"
                 @click="processResume(row.id)"
                 :loading="processingResume === row.id"
-                :icon="VideoPlay"
                 title="Обработать"
-              />
+              >
+                <el-icon><VideoPlay /></el-icon>
+              </el-button>
               
-              <BaseButton
+              <el-button
                 v-if="row.status === 'analyzed' && !row.total_score"
+                type="success"
                 size="small"
-                variant="primary"
                 @click="calculateScore(row.id)"
                 :loading="calculatingScore === row.id"
-                :icon="TrendCharts"
                 title="Оценить"
-              />
+              >
+                <el-icon><TrendCharts /></el-icon>
+              </el-button>
               
-              <BaseButton
+              <el-button
+                type="info"
                 size="small"
                 @click="downloadResume(row.id)"
-                variant="ghost"
-                :icon="Download"
                 title="Скачать"
-              />
+              >
+                <el-icon><Download /></el-icon>
+              </el-button>
               
-              <BaseButton
+              <el-button
+                type="warning"
                 size="small"
                 @click="generateInterviewCode(row.id)"
-                variant="secondary"
-                :icon="Key"
                 title="Создать код"
-              />
+              >
+                <el-icon><Key /></el-icon>
+              </el-button>
               
-              <BaseButton
+              <el-button
+                type="danger"
                 size="small"
                 @click="deleteResume(row.id)"
-                variant="danger"
-                :icon="Delete"
                 title="Удалить"
-              />
-            </div>
+              >
+                <el-icon><Delete /></el-icon>
+              </el-button>
+            </el-button-group>
           </template>
         </el-table-column>
       </el-table>
@@ -374,10 +385,16 @@ export default {
     const loadStatistics = async () => {
       try {
         const response = await fetch('/api/v1/resumes/statistics')
+        
+        if (!response.ok) {
+          const errorText = await response.text()
+          throw new Error(`HTTP ${response.status}: ${errorText}`)
+        }
+        
         const data = await response.json()
         Object.assign(statistics, data)
       } catch (error) {
-        console.error('Ошибка загрузки статистики:', error)
+        console.error('Ошибка загрузки статистики:', error.message)
       }
     }
     
@@ -402,6 +419,12 @@ export default {
         const response = await fetch(`/api/v1/resumes/${resumeId}/process`, {
           method: 'POST'
         })
+        
+        if (!response.ok) {
+          const errorText = await response.text()
+          throw new Error(`HTTP ${response.status}: ${errorText}`)
+        }
+        
         const data = await response.json()
         
         if (data.success) {
@@ -412,8 +435,8 @@ export default {
           ElMessage.error(data.error || 'Ошибка обработки')
         }
       } catch (error) {
-        ElMessage.error('Ошибка обработки резюме')
-        console.error(error)
+        ElMessage.error(`Ошибка обработки резюме: ${error.message}`)
+        console.error('Process resume error:', error)
       } finally {
         processingResume.value = null
       }
@@ -425,6 +448,12 @@ export default {
         const response = await fetch(`/api/v1/resumes/${resumeId}/calculate-score`, {
           method: 'POST'
         })
+        
+        if (!response.ok) {
+          const errorText = await response.text()
+          throw new Error(`HTTP ${response.status}: ${errorText}`)
+        }
+        
         const data = await response.json()
         
         if (data.success) {
@@ -435,8 +464,8 @@ export default {
           ElMessage.error(data.error || 'Ошибка расчета оценки')
         }
       } catch (error) {
-        ElMessage.error('Ошибка расчета оценки')
-        console.error(error)
+        ElMessage.error(`Ошибка расчета оценки: ${error.message}`)
+        console.error('Calculate score error:', error)
       } finally {
         calculatingScore.value = null
       }
@@ -445,14 +474,22 @@ export default {
     const downloadResume = async (resumeId) => {
       try {
         const response = await fetch(`/api/v1/resumes/${resumeId}/download`)
+        
+        if (!response.ok) {
+          const errorText = await response.text()
+          throw new Error(`HTTP ${response.status}: ${errorText}`)
+        }
+        
         const data = await response.json()
         
         if (data.download_url) {
           window.open(data.download_url, '_blank')
+        } else {
+          throw new Error('URL для скачивания не получен')
         }
       } catch (error) {
-        ElMessage.error('Ошибка скачивания файла')
-        console.error(error)
+        ElMessage.error(`Ошибка скачивания файла: ${error.message}`)
+        console.error('Download resume error:', error)
       }
     }
     
@@ -472,17 +509,18 @@ export default {
           method: 'DELETE'
         })
         
-        if (response.ok) {
-          ElMessage.success('Резюме удалено')
-          await loadResumes()
-          await loadStatistics()
-        } else {
-          ElMessage.error('Ошибка удаления')
+        if (!response.ok) {
+          const errorText = await response.text()
+          throw new Error(`HTTP ${response.status}: ${errorText}`)
         }
+        
+        ElMessage.success('Резюме удалено')
+        await loadResumes()
+        await loadStatistics()
       } catch (error) {
         if (error !== 'cancel') {
-          ElMessage.error('Ошибка удаления резюме')
-          console.error(error)
+          ElMessage.error(`Ошибка удаления резюме: ${error.message}`)
+          console.error('Delete resume error:', error)
         }
       }
     }
@@ -494,7 +532,8 @@ export default {
         })
         
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
+          const errorText = await response.text()
+          throw new Error(`HTTP ${response.status}: ${errorText}`)
         }
         
         const data = await response.json()
@@ -504,7 +543,7 @@ export default {
         
         ElMessage.success('Код для интервью создан')
       } catch (error) {
-        ElMessage.error('Ошибка создания кода: ' + error.message)
+        ElMessage.error(`Ошибка создания кода: ${error.message}`)
         console.error('Generate code error:', error)
       }
     }
@@ -725,6 +764,13 @@ export default {
 
 .code-dialog-content {
   text-align: center;
+  color: #e2e8f0;
+}
+
+.code-dialog-content p {
+  color: #e2e8f0;
+  margin-bottom: 1rem;
+  font-size: 16px;
 }
 
 .code-display {
@@ -733,16 +779,19 @@ export default {
   align-items: center;
   margin: 20px 0;
   padding: 20px;
-  background-color: #f5f7fa;
+  background-color: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(0, 255, 255, 0.3);
   border-radius: 8px;
+  backdrop-filter: blur(10px);
 }
 
 .code-text {
   font-size: 32px;
   font-weight: bold;
-  color: #409EFF;
+  color: #00ffff;
   letter-spacing: 4px;
   font-family: 'Courier New', monospace;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
 }
 
 .code-instructions {
@@ -752,7 +801,8 @@ export default {
 
 .code-instructions h4 {
   margin-bottom: 10px;
-  color: #303133;
+  color: #e2e8f0;
+  font-weight: 600;
 }
 
 .code-instructions ol {
@@ -762,21 +812,36 @@ export default {
 
 .code-instructions li {
   margin: 5px 0;
-  color: #606266;
+  color: #cbd5e1;
+}
+
+.code-instructions strong {
+  color: #00ffff;
+  font-weight: 600;
 }
 
 .note {
   margin-top: 15px;
-  padding: 10px;
-  background-color: #fff3cd;
-  border: 1px solid #ffeaa7;
-  border-radius: 4px;
-  color: #856404;
+  padding: 15px;
+  background-color: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 8px;
+  color: #fbbf24;
   font-size: 14px;
+  backdrop-filter: blur(10px);
+}
+
+.note strong {
+  color: #f59e0b;
+  font-weight: 600;
 }
 
 .dialog-footer {
   text-align: right;
+}
+
+.dialog-footer .el-button {
+  margin-left: 10px;
 }
 
 .file-info {
@@ -810,4 +875,14 @@ export default {
   display: flex;
   gap: 0.25rem;
   flex-wrap: wrap;
+}
+
+.action-btn {
+  min-width: 32px !important;
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
