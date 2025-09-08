@@ -5,13 +5,17 @@
 ```
 KeyError: '0006_add_vacancy_section_keywords'
 ```
+или
+```
+ERROR: relation "alembic_version" does not exist
+```
 
 ## 🔍 **Причина**
-Проблема с цепочкой миграций Alembic. В базе данных есть неправильная запись о версии миграции, которая ссылается на несуществующий revision ID.
+Таблица `alembic_version` не существует в базе данных, что означает, что миграции не были инициализированы.
 
 ## ✅ **Решение**
 
-### **Вариант 1: Исправление цепочки миграций (рекомендуется)**
+### **Вариант 1: Инициализация миграций (рекомендуется)**
 
 1. **Обновите код на сервере:**
 ```bash
@@ -20,10 +24,10 @@ cd /opt/interview-ai
 git pull origin main
 ```
 
-2. **Используйте скрипт исправления:**
+2. **Используйте скрипт инициализации:**
 ```bash
-chmod +x scripts/fix-migration-chain.sh
-./scripts/fix-migration-chain.sh
+chmod +x scripts/init-migrations.sh
+./scripts/init-migrations.sh
 ```
 
 3. **Или выполните вручную:**
@@ -34,9 +38,13 @@ docker compose -f docker-compose.yml stop orchestrator
 # Удаляем контейнер
 docker compose -f docker-compose.yml rm -f orchestrator
 
-# Исправляем запись в базе данных
+# Создаем таблицу alembic_version
 docker compose -f docker-compose.yml exec -T db psql -U interview_user -d interview_ai << 'EOF'
-UPDATE alembic_version SET version_num = '0005' WHERE version_num = '0006_add_vacancy_section_keywords';
+CREATE TABLE IF NOT EXISTS alembic_version (
+    version_num VARCHAR(32) NOT NULL,
+    CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)
+);
+INSERT INTO alembic_version (version_num) VALUES ('0001') ON CONFLICT (version_num) DO NOTHING;
 EOF
 
 # Пересобираем
@@ -46,7 +54,7 @@ docker compose -f docker-compose.yml build orchestrator
 docker compose -f docker-compose.yml up -d orchestrator
 
 # Ждем запуска
-sleep 10
+sleep 15
 
 # Проверяем миграции
 docker compose -f docker-compose.yml exec orchestrator alembic current
