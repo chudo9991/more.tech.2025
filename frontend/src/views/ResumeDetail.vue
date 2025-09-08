@@ -377,7 +377,8 @@ export default {
         })
         
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
+          const errorText = await response.text()
+          throw new Error(`HTTP ${response.status}: ${errorText}`)
         }
         
         const data = await response.json()
@@ -389,7 +390,7 @@ export default {
           ElMessage.error(data.error || 'Ошибка расчета оценки')
         }
       } catch (err) {
-        ElMessage.error('Ошибка расчета оценки')
+        ElMessage.error(`Ошибка расчета оценки: ${err.message}`)
         console.error('Calculate score error:', err)
       } finally {
         calculating.value = false

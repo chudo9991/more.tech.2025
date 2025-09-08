@@ -9,6 +9,7 @@
 @import './global-inputs.css';
 @import './text-color-fix.css';
 @import './buttons.css';
+@import './message-box-fix.css';
 
 @tailwind base;
 @tailwind components;

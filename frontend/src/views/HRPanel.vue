@@ -4,7 +4,8 @@
       <el-header>
         <div class="header-content">
           <h1>HR Панель - Управление интервью</h1>
-          <BaseButton variant="primary" @click="refreshData" :icon="Refresh">
+          <BaseButton variant="primary" @click="refreshData">
+            <el-icon><Refresh /></el-icon>
             Обновить
           </BaseButton>
         </div>
@@ -50,10 +51,12 @@
               </el-select>
             </el-form-item>
             <el-form-item>
-              <BaseButton variant="primary" @click="applyFilters" :loading="loading" :icon="Search" style="margin-right: 1rem;">
+              <BaseButton variant="primary" @click="applyFilters" :loading="loading" style="margin-right: 1rem;">
+                <el-icon><Search /></el-icon>
                 Применить
               </BaseButton>
-              <BaseButton @click="clearFilters" variant="ghost" :icon="Refresh">
+              <BaseButton @click="clearFilters" variant="ghost">
+                <el-icon><Refresh /></el-icon>
                 Очистить
               </BaseButton>
             </el-form-item>
@@ -66,13 +69,16 @@
             <div class="table-header">
               <span>Сессии интервью</span>
               <div class="table-actions">
-                <BaseButton variant="primary" @click="showCreateSession" size="small" :icon="Plus">
+                <BaseButton variant="primary" @click="showCreateSession" size="small">
+                  <el-icon><Plus /></el-icon>
                   Новая сессия
                 </BaseButton>
-                <BaseButton @click="refreshData" :loading="loading" size="small" variant="secondary" :icon="Refresh">
+                <BaseButton @click="refreshData" :loading="loading" size="small" variant="secondary">
+                  <el-icon><Refresh /></el-icon>
                   Обновить
                 </BaseButton>
-                <BaseButton variant="secondary" @click="exportAllSessions" size="small" :icon="Download">
+                <BaseButton variant="secondary" @click="exportAllSessions" size="small">
+                  <el-icon><Download /></el-icon>
                   Экспорт всех
                 </BaseButton>
               </div>
@@ -120,25 +126,35 @@
                 {{ formatDate(row.created_at) }}
               </template>
             </el-table-column>
-            <el-table-column label="Действия" width="250" fixed="right">
+            <el-table-column label="Действия" width="200" fixed="right">
               <template #default="{ row }">
-                <BaseButton size="small" @click.stop="viewSession(row)" variant="primary">
-                  Просмотр
-                </BaseButton>
-                <BaseButton 
-                  size="small" 
-                  variant="secondary" 
-                  @click.stop="exportSession(row)"
-                  :disabled="row.status !== 'completed'"
-                >
-                  Экспорт
-                </BaseButton>
-                <BaseButton 
-                  size="small" 
-                  variant="danger" 
-                  @click.stop="deleteSession(row)"
-                  :icon="Delete"
-                />
+                <el-button-group>
+                  <el-button 
+                    type="primary" 
+                    size="small" 
+                    @click.stop="viewSession(row)"
+                    title="Просмотр"
+                  >
+                    <el-icon><View /></el-icon>
+                  </el-button>
+                  <el-button 
+                    type="warning" 
+                    size="small" 
+                    @click.stop="exportSession(row)"
+                    :disabled="row.status !== 'completed'"
+                    title="Экспорт"
+                  >
+                    <el-icon><Download /></el-icon>
+                  </el-button>
+                  <el-button 
+                    type="danger" 
+                    size="small" 
+                    @click.stop="deleteSession(row)"
+                    title="Удалить"
+                  >
+                    <el-icon><Delete /></el-icon>
+                  </el-button>
+                </el-button-group>
               </template>
             </el-table-column>
           </el-table>
@@ -183,25 +199,25 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Refresh, Download, Delete, Search, Plus, Document, Check, Clock, Star } from '@element-plus/icons-vue'
+import { Refresh, Download, Delete, Search, Plus, View } from '@element-plus/icons-vue'
 import { BaseButton, BaseMetricCard } from '@/components/base'
 import SessionDetail from '@/components/SessionDetail.vue'
 import CreateSession from '@/components/CreateSession.vue'
 import { useHRStore } from '@/stores/hr'
+import { IconDocument, IconUser, IconProgress, IconStar } from '@/components/icons'
 
 const hrStore = useHRStore()
 
 // Reactive data
 const loading = ref(false)
 const statistics = ref([
-  { title: 'Всего сессий', value: 42, icon: 'Document', type: 'primary' },
-  { title: 'Завершено', value: 28, icon: 'User', type: 'success' },
-  { title: 'В процессе', value: 14, icon: 'Briefcase', type: 'warning' },
-  { title: 'Средний балл', value: 85, icon: 'Money', type: 'info' }
+  { title: 'Всего сессий', value: 1, icon: 'Document', type: 'primary' },
+  { title: 'Завершено', value: 1, icon: 'User', type: 'success' },
+  { title: 'В процессе', value: 0, icon: 'Clock', type: 'warning' },
+  { title: 'Средний балл', value: 85, icon: 'Star', type: 'info' }
 ])
 
-// Use store data
-const sessions = computed(() => hrStore.sessions)
+const sessions = computed(() => hrStore.sessions || [])
 const vacancies = computed(() => hrStore.vacancies)
 
 const filters = reactive({
@@ -502,7 +518,20 @@ onMounted(async () => {
   display: flex;
   gap: 8px;
 }
-</style><style scoped>
+
+
+
+:deep(.base-button) {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.button-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
 /* Fix metric values visibility */
 :deep(.metric-value) {
   color: #00ffff !important;
@@ -532,8 +561,8 @@ onMounted(async () => {
   color: #3b82f6 !important;
   -webkit-text-fill-color: #3b82f6 !important;
 }
-</style>/
-* Fix primary button colors in HR Panel */
+
+/* Fix primary button colors in HR Panel */
 :deep(.base-button.primary),
 :deep(.el-button--primary) {
   background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(138, 43, 226, 0.2)) !important;
@@ -567,8 +596,9 @@ onMounted(async () => {
   transform: translateY(-3px) !important;
   box-shadow: 0 12px 40px rgba(138, 43, 226, 0.4) !important;
   text-shadow: 0 0 15px rgba(138, 43, 226, 1) !important;
-}/* O
-verride primary button colors with higher specificity */
+}
+
+/* Override primary button colors with higher specificity */
 .hr-panel :deep(.base-button--primary) {
   background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(138, 43, 226, 0.2)) !important;
   border: 1px solid rgba(0, 255, 255, 0.5) !important;
@@ -582,8 +612,9 @@ verride primary button colors with higher specificity */
   transform: translateY(-3px) !important;
   box-shadow: 0 12px 40px rgba(0, 255, 255, 0.5) !important;
   text-shadow: 0 0 15px rgba(0, 255, 255, 1) !important;
-}/*
- Force primary button text color */
+}
+
+/* Force primary button text color */
 .hr-panel :deep(.base-button--primary),
 .hr-panel :deep(.base-button--primary *),
 .hr-panel :deep(.base-button--primary .button-text),
@@ -597,3 +628,94 @@ verride primary button colors with higher specificity */
 .hr-panel :deep(.base-button--primary:hover span) {
   color: #00ffff !important;
 }
+
+/* Copy table styles from VacanciesList to ensure buttons work the same */
+:deep(.el-table) {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+}
+
+:deep(.el-table th) {
+  background: rgba(0, 255, 255, 0.1) !important;
+  color: #00ffff !important;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2) !important;
+}
+
+:deep(.el-table td) {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.1) !important;
+}
+
+:deep(.el-table--striped .el-table__body tr.el-table__row--striped td) {
+  background: rgba(0, 255, 255, 0.05) !important;
+}
+
+:deep(.el-table__body tr:hover > td) {
+  background: rgba(0, 255, 255, 0.1) !important;
+}
+
+/* FORCE FIX for HR Panel buttons - URGENT */
+.hr-panel :deep(.el-button-group .el-button--primary) {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(138, 43, 226, 0.2)) !important;
+  border: 1px solid rgba(0, 255, 255, 0.5) !important;
+  color: #00ffff !important;
+  box-shadow: 0 8px 32px rgba(0, 255, 255, 0.3) !important;
+  text-shadow: none !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.hr-panel :deep(.el-button-group .el-button--primary::before) {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: -100% !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.4), transparent) !important;
+  transition: left 0.6s ease !important;
+  z-index: 0 !important;
+}
+
+.hr-panel :deep(.el-button-group .el-button--primary:hover) {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.35), rgba(138, 43, 226, 0.35)) !important;
+  border-color: rgba(0, 255, 255, 0.7) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 8px 24px rgba(0, 255, 255, 0.4) !important;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.8) !important;
+}
+
+.hr-panel :deep(.el-button-group .el-button--primary:hover::before) {
+  left: 100% !important;
+}
+
+.hr-panel :deep(.el-button-group .el-button--warning) {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(251, 191, 36, 0.2)) !important;
+  border: 1px solid rgba(245, 158, 11, 0.5) !important;
+  color: #f59e0b !important;
+  box-shadow: 0 8px 32px rgba(245, 158, 11, 0.3) !important;
+}
+
+.hr-panel :deep(.el-button-group .el-button--warning:hover) {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.35), rgba(251, 191, 36, 0.35)) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4) !important;
+  text-shadow: 0 0 10px rgba(245, 158, 11, 0.8) !important;
+}
+
+.hr-panel :deep(.el-button-group .el-button--danger) {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(236, 72, 153, 0.2)) !important;
+  border: 1px solid rgba(239, 68, 68, 0.5) !important;
+  color: #ef4444 !important;
+  box-shadow: 0 8px 32px rgba(239, 68, 68, 0.3) !important;
+}
+
+.hr-panel :deep(.el-button-group .el-button--danger:hover) {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.35), rgba(236, 72, 153, 0.35)) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4) !important;
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.8) !important;
+}
+</style>

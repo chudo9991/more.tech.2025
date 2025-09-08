@@ -533,4 +533,55 @@ onMounted(() => {
   text-align: center;
   padding: 40px;
 }
+
+/* FORCE FIX for SessionDetail refresh button - URGENT */
+.session-detail :deep(.header-actions .el-button--primary) {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(138, 43, 226, 0.2)) !important;
+  border: 1px solid rgba(0, 255, 255, 0.5) !important;
+  color: #00ffff !important;
+  box-shadow: 0 8px 32px rgba(0, 255, 255, 0.3) !important;
+  text-shadow: none !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.session-detail :deep(.header-actions .el-button--primary::before) {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: -100% !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.4), transparent) !important;
+  transition: left 0.6s ease !important;
+  z-index: 0 !important;
+}
+
+.session-detail :deep(.header-actions .el-button--primary:hover) {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.35), rgba(138, 43, 226, 0.35)) !important;
+  border-color: rgba(0, 255, 255, 0.7) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 8px 24px rgba(0, 255, 255, 0.4) !important;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.8) !important;
+}
+
+.session-detail :deep(.header-actions .el-button--primary:hover::before) {
+  left: 100% !important;
+}
+
+/* Also fix export button */
+.session-detail :deep(.header-actions .el-button:not(.el-button--primary)) {
+  background: rgba(15, 23, 42, 0.7) !important;
+  border: 1px solid rgba(138, 43, 226, 0.5) !important;
+  color: #8a2be2 !important;
+  box-shadow: 0 8px 32px rgba(138, 43, 226, 0.2) !important;
+}
+
+.session-detail :deep(.header-actions .el-button:not(.el-button--primary):hover) {
+  background: rgba(138, 43, 226, 0.2) !important;
+  border-color: rgba(138, 43, 226, 0.7) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 8px 24px rgba(138, 43, 226, 0.3) !important;
+  text-shadow: 0 0 10px rgba(138, 43, 226, 0.8) !important;
+}
 </style>

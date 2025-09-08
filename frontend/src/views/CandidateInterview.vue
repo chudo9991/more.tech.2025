@@ -1,9 +1,9 @@
 <template>
   <div class="candidate-interview">
     <el-container>
-      <el-header>
+      <el-header style="padding-top: 0;">
         <div class="header-content">
-          <h1>Сессия ИИ-Интервью</h1>
+          <h1 style="margin-top: 0;">Сессия ИИ-Интервью</h1>
           <div class="session-info" v-if="sessionData">
             <span>Сессия: {{ sessionData.session_id }}</span>
             <span>Статус: {{ getStatusLabel(sessionData.status) }}</span>
@@ -11,155 +11,67 @@
         </div>
       </el-header>
       
-      <el-main>
-        <el-row :gutter="20" style="height: calc(100vh - 120px);">
+      <el-main style="padding: 0 20px 20px 20px;">
+        <el-row :gutter="20">
           <!-- Avatar Section -->
           <el-col :span="12">
-            <el-card class="avatar-card" style="height: 100%;">
-              <template #header>
-                <span>Аватар интервьюера</span>
-              </template>
+            <div style="display: flex; flex-direction: column;">
+              <!-- Avatar Card -->
+              <el-card class="avatar-card" style="margin-bottom: 15px; min-height: 400px;">
+                <template #header>
+                  <span>Аватар интервьюера</span>
+                </template>
+                
+                <div class="avatar-container">
+                  <StreamingAvatarPlayer 
+                    ref="avatarPlayerRef"
+                    :session-id="sessionId"
+                    @avatar-connected="handleAvatarConnected"
+                    @avatar-disconnected="handleAvatarDisconnected"
+                    @avatar-question="handleAvatarQuestion"
+                    @avatar-speak="handleAvatarSpeak"
+                  />
+                </div>
+              </el-card>
               
-              <div class="avatar-container">
-                <StreamingAvatarPlayer 
-                  ref="avatarPlayerRef"
-                  :session-id="sessionId"
-                  @avatar-connected="handleAvatarConnected"
-                  @avatar-disconnected="handleAvatarDisconnected"
-                  @avatar-question="handleAvatarQuestion"
-                  @avatar-speak="handleAvatarSpeak"
-                />
-              </div>
-            </el-card>
-          </el-col>
-          
-          <!-- Chat Section -->
-          <el-col :span="12">
-            <el-card class="chat-card" style="height: 100%; display: flex; flex-direction: column;">
-              <template #header>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <span>Диалог интервью</span>
-                  <div v-if="sessionData && interviewStarted" style="display: flex; align-items: center; gap: 10px;">
-                    <span style="font-size: 12px; color: #606266;">
-                      Вопрос {{ sessionData.current_step || 0 }}/{{ scenarioData?.total_nodes || '...' }}
-                    </span>
-                    <el-tag :type="getStatusType(sessionData.status)" size="small">
-                      {{ getStatusLabel(sessionData.status) }}
+              <!-- Voice Control Panel - ПОД АВАТАРОМ -->
+              <el-card style="flex-shrink: 0;">
+                <template #header>
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>Управление записью</span>
+                    <el-tag 
+                      :type="interviewStarted ? 'success' : 'info'" 
+                      size="small"
+                    >
+                      {{ interviewStarted ? 'Активно' : 'Ожидание' }}
                     </el-tag>
                   </div>
-                </div>
-              </template>
-              <!-- Code Input Section -->
-              <div v-if="!interviewStarted" class="code-input-section" style="margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 6px; font-size: 14px;">
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                  <el-input
-                    v-model="interviewCode"
-                    placeholder="Код (6 цифр)"
-                    maxlength="6"
-                    style="flex: 1;"
-                    size="small"
-                    @keyup.enter="validateCode"
-                  >
-                    <template #prefix>
-                      <el-icon><Key /></el-icon>
-                    </template>
-                  </el-input>
-                  <el-button 
-                    type="primary" 
-                    @click="validateCode"
-                    :loading="validatingCode"
-                    size="small"
-                  >
-                    ✓
-                  </el-button>
-                </div>
+                </template>
                 
-                <div style="display: flex; gap: 8px;">
-                  <el-button 
-                    type="success" 
-                    @click="startInterview"
-                    :disabled="interviewStarted || !resumeLinked"
-                    style="flex: 1;"
-                    size="small"
-                  >
-                    Начать
-                  </el-button>
-                  <el-button 
-                    type="danger" 
-                    @click="endInterview"
-                    :disabled="!interviewStarted"
-                    style="flex: 1;"
-                    size="small"
-                  >
-                    Стоп
-                  </el-button>
-                </div>
-                
-                <div v-if="codeError" class="code-error" style="color: #f56c6c; font-size: 12px; margin-top: 8px;">
-                  {{ codeError }}
-                </div>
-                
-                <!-- Compact Microphone Settings -->
-                <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
-                  <el-tag 
-                    :type="availableMicrophones.length > 0 ? 'success' : 'warning'"
-                    size="small"
-                  >
-                    {{ availableMicrophones.length > 0 ? '🎤' : '⚠️' }}
-                  </el-tag>
-                  <el-select 
-                    v-model="selectedMicrophone" 
-                    placeholder="Микрофон"
-                    size="small"
-                    style="flex: 1;"
-                  >
-                    <el-option key="default" label="По умолчанию" value="default" />
-                    <el-option
-                      v-for="mic in availableMicrophones"
-                      :key="mic.deviceId"
-                      :label="mic.label || 'Микрофон'"
-                      :value="mic.deviceId"
+                <!-- Recording Progress -->
+                <div v-if="isRecording" style="margin-bottom: 15px; padding: 12px; background-color: #fff2f0; border-radius: 6px; border: 1px solid #ffccc7;">
+                  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                    <el-progress 
+                      :percentage="recordingProgress" 
+                      :show-text="false"
+                      :stroke-width="6"
+                      status="exception"
+                      style="flex: 1;"
                     />
-                  </el-select>
-                </div>
-              </div>
-              
-              <!-- Resume Info -->
-              <div v-if="resumeLinked && linkedResume" style="margin-bottom: 10px;">
-                <el-tag type="success" size="small" style="width: 100%; padding: 6px; text-align: center; font-size: 12px;">
-                  <el-icon><Document /></el-icon>
-                  {{ linkedResume.original_filename }}
-                </el-tag>
-              </div>
-              
-              <!-- Chat Messages -->
-              <div class="chat-messages" ref="chatContainer" style="flex: 1; overflow-y: auto; height: calc(100vh - 400px); margin-bottom: 20px; padding: 15px; border: 1px solid #e4e7ed; border-radius: 8px; background-color: #fafafa;">
-                <div 
-                  v-for="message in chatMessages" 
-                  :key="message.id"
-                  :class="['message', message.type]"
-                  style="margin-bottom: 15px;"
-                >
-                  <div class="message-content">
-                    <div class="message-text" style="padding: 10px 15px; border-radius: 12px; max-width: 80%; word-wrap: break-word;">{{ message.text }}</div>
-                    <div class="message-time" style="font-size: 12px; color: #909399; margin-top: 5px;">{{ formatTime(message.timestamp) }}</div>
+                    <span style="font-weight: bold; color: #cf1322; min-width: 40px;">{{ recordingDuration }}s</span>
+                  </div>
+                  <div style="text-align: center; font-size: 12px; color: #8c8c8c;">
+                    Говорите четко в микрофон
                   </div>
                 </div>
-                <div v-if="chatMessages.length === 0" style="text-align: center; color: #909399; padding: 40px;">
-                  Диалог появится здесь после начала интервью
-                </div>
-              </div>
-              
-              <!-- Voice Input -->
-              <div class="voice-input-horizontal" v-if="interviewStarted">
-                <!-- Voice Control Buttons -->
-                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
                   <el-button 
                     type="primary" 
                     @click="startRecording"
-                    :disabled="isRecording || !resumeLinked || isVideoPlaying || isWaitingForVideo"
+                    :disabled="!interviewStarted || isRecording || !resumeLinked"
                     style="flex: 1;"
-                    size="default"
+                    size="large"
                   >
                     {{ isRecording ? '🎤 Запись...' : '🎤 Ответить' }}
                   </el-button>
@@ -167,39 +79,158 @@
                   <el-button 
                     type="danger" 
                     @click="stopRecording"
-                    :disabled="!isRecording || isVideoPlaying || isWaitingForVideo"
+                    :disabled="!isRecording"
                     style="flex: 1;"
-                    size="default"
+                    size="large"
                   >
-                    🛑 Стоп
+                    🛑 Стоп запись
                   </el-button>
                 </div>
                 
                 <!-- Status indicators -->
-                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #909399;">
-                  <span>{{ availableMicrophones.length > 0 ? '🎤 Микрофон готов' : '⚠️ Проверьте микрофон' }}</span>
-                  <span v-if="isVideoPlaying || isWaitingForVideo">🎬 Аватар говорит...</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #606266;">
+                  <span>
+                    {{ availableMicrophones.length > 0 ? '🎤 Микрофон готов' : '⚠️ Проверьте микрофон' }}
+                  </span>
+                  <span v-if="isVideoPlaying || isWaitingForVideo" style="color: #409eff;">
+                    🎬 Аватар говорит...
+                  </span>
+                  <span v-else-if="!interviewStarted" style="color: #909399;">
+                    Начните интервью для записи
+                  </span>
                 </div>
-              </div>
+              </el-card>
+            </div>
+          </el-col>
+          
+          <!-- Chat Section -->
+          <el-col :span="12">
+            <div style="display: flex; flex-direction: column;">
+              <!-- Chat Header -->
+              <el-card style="margin-bottom: 15px; flex-shrink: 0;">
+                <template #header>
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>Диалог интервью</span>
+                    <div v-if="sessionData && interviewStarted" style="display: flex; align-items: center; gap: 10px;">
+                      <span style="font-size: 12px; color: #606266;">
+                        Вопрос {{ sessionData.current_step || 0 }}/{{ scenarioData?.total_nodes || '...' }}
+                      </span>
+                      <el-tag :type="getStatusType(sessionData.status)" size="small">
+                        {{ getStatusLabel(sessionData.status) }}
+                      </el-tag>
+                    </div>
+                  </div>
+                </template>
+                <!-- Code Input Section -->
+                <div v-if="!interviewStarted" class="code-input-section" style="padding: 15px; background-color: #f8f9fa; border-radius: 6px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                    <el-input
+                      v-model="interviewCode"
+                      placeholder="Код (6 цифр)"
+                      maxlength="6"
+                      style="flex: 1;"
+                      size="default"
+                      @keyup.enter="validateCode"
+                    >
+                      <template #prefix>
+                        <el-icon><Key /></el-icon>
+                      </template>
+                    </el-input>
+                    <el-button 
+                      type="primary" 
+                      @click="validateCode"
+                      :loading="validatingCode"
+                      size="default"
+                    >
+                      ✓
+                    </el-button>
+                  </div>
+                  
+                  <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+                    <el-button 
+                      type="success" 
+                      @click="startInterview"
+                      :disabled="interviewStarted || !resumeLinked"
+                      style="flex: 1;"
+                      size="default"
+                    >
+                      Начать интервью
+                    </el-button>
+                    <el-button 
+                      type="danger" 
+                      @click="endInterview"
+                      :disabled="!interviewStarted"
+                      style="flex: 1;"
+                      size="default"
+                    >
+                      Завершить
+                    </el-button>
+                  </div>
+                  
+                  <div v-if="codeError" class="code-error" style="color: #f56c6c; font-size: 12px; margin-bottom: 12px;">
+                    {{ codeError }}
+                  </div>
+                  
+                  <!-- Microphone Settings -->
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <el-tag 
+                      :type="availableMicrophones.length > 0 ? 'success' : 'warning'"
+                      size="default"
+                    >
+                      {{ availableMicrophones.length > 0 ? '🎤 Готов' : '⚠️ Проверьте' }}
+                    </el-tag>
+                    <el-select 
+                      v-model="selectedMicrophone" 
+                      placeholder="Выберите микрофон"
+                      size="default"
+                      style="flex: 1;"
+                    >
+                      <el-option key="default" label="По умолчанию" value="default" />
+                      <el-option
+                        v-for="mic in availableMicrophones"
+                        :key="mic.deviceId"
+                        :label="mic.label || 'Микрофон'"
+                        :value="mic.deviceId"
+                      />
+                    </el-select>
+                  </div>
+                </div>
+              </el-card>
+              
+              <!-- Chat Messages Card -->
+              <el-card style="margin-bottom: 15px;">
+                <template #header>
+                  <span>Сообщения</span>
+                </template>
+                <!-- Resume Info -->
+                <div v-if="resumeLinked && linkedResume" style="margin-bottom: 15px;">
+                  <el-tag type="success" size="default" style="width: 100%; padding: 8px; text-align: center;">
+                    <el-icon><Document /></el-icon>
+                    {{ linkedResume.original_filename }}
+                  </el-tag>
+                </div>
                 
-              <div class="recording-status" v-if="isRecording" style="margin-top: 10px; padding: 10px; background-color: #fff2f0; border-radius: 6px; border: 1px solid #ffccc7;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                  <el-progress 
-                    :percentage="recordingProgress" 
-                    :show-text="false"
-                    :stroke-width="6"
-                    status="exception"
-                    style="flex: 1;"
-                  />
-                  <span style="font-weight: bold; color: #cf1322;">{{ recordingDuration }}s</span>
+                <!-- Chat Messages -->
+                <div class="chat-messages" ref="chatContainer" style="padding: 15px; background-color: #fafafa; border-radius: 6px; min-height: 300px; max-height: 500px; overflow-y: auto;">
+                  <div 
+                    v-for="message in chatMessages" 
+                    :key="message.id"
+                    :class="['message', message.type]"
+                    style="margin-bottom: 15px;"
+                  >
+                    <div class="message-content">
+                      <div class="message-text" style="padding: 10px 15px; border-radius: 12px; max-width: 80%; word-wrap: break-word;">{{ message.text }}</div>
+                      <div class="message-time" style="font-size: 12px; color: #909399; margin-top: 5px;">{{ formatTime(message.timestamp) }}</div>
+                    </div>
+                  </div>
+                  <div v-if="chatMessages.length === 0" style="text-align: center; color: #909399; padding: 40px;">
+                    {{ interviewStarted ? 'Диалог появится здесь' : 'Введите код и начните интервью' }}
+                  </div>
                 </div>
-                <div style="text-align: center; margin-top: 5px; font-size: 12px; color: #8c8c8c;">
-                  Говорите четко в микрофон
-                </div>
-              </div>
+              </el-card>
               
 
-            </el-card>
+            </div>
           </el-col>
         </el-row>
       </el-main>
