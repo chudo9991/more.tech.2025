@@ -45,6 +45,9 @@ jobs:
           echo "✅ Checking service status..."
           docker compose -f docker-compose.yml ps
           
+          echo "🔄 Checking database migrations..."
+          docker compose -f docker-compose.yml exec -T orchestrator alembic current || echo "⚠️  Could not check migrations"
+          
           echo "🌐 Testing application..."
           curl -f http://localhost:80 || echo "⚠️  Application not responding on port 80"
         EOF
