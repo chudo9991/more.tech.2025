@@ -11,7 +11,7 @@
 
 ## ✅ **Решение**
 
-### **Вариант 1: Автоматическое исправление (рекомендуется)**
+### **Вариант 1: Исправление ошибки миграций (рекомендуется)**
 
 1. **Обновите код на сервере:**
 ```bash
@@ -20,14 +20,34 @@ cd /opt/interview-ai
 git pull origin main
 ```
 
-2. **Пересоберите и перезапустите контейнеры:**
+2. **Используйте скрипт исправления:**
 ```bash
-docker compose -f docker-compose.yml down
-docker compose -f docker-compose.yml build orchestrator
-docker compose -f docker-compose.yml up -d
+chmod +x scripts/fix-migrations.sh
+./scripts/fix-migrations.sh
 ```
 
-3. **Проверьте логи orchestrator:**
+3. **Или выполните вручную:**
+```bash
+# Останавливаем orchestrator
+docker compose -f docker-compose.yml stop orchestrator
+
+# Удаляем контейнер
+docker compose -f docker-compose.yml rm -f orchestrator
+
+# Пересобираем
+docker compose -f docker-compose.yml build orchestrator
+
+# Запускаем
+docker compose -f docker-compose.yml up -d orchestrator
+
+# Ждем запуска
+sleep 10
+
+# Проверяем миграции
+docker compose -f docker-compose.yml exec orchestrator alembic current
+```
+
+4. **Проверьте логи orchestrator:**
 ```bash
 docker compose -f docker-compose.yml logs orchestrator
 ```

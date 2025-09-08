@@ -1,7 +1,7 @@
 """add contextual questions table
 
 Revision ID: 0007
-Revises: 0006_add_vacancy_section_keywords
+Revises: 0006
 Create Date: 2025-01-27 12:00:00.000000
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '0007'
-down_revision = '0006_add_vacancy_section_keywords'
+down_revision = '0006'
 branch_labels = None
 depends_on = None
 
