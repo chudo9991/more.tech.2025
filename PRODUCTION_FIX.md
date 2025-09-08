@@ -11,15 +11,16 @@ ERROR: relation "alembic_version" does not exist
 ```
 
 ## 🔍 **Анализ проблемы**
-1. **Цепочка миграций**: 0001 → 0002 → 0003 → 0004 → 0005 → 0006 → 0007
-2. **Возможные причины**:
-   - Таблица `alembic_version` не существует (миграции не инициализированы)
-   - В таблице `alembic_version` неправильная запись с несуществующим revision ID
-   - Проблема с зависимостями между миграциями
+**Диагностика показала:**
+- Таблица `alembic_version` НЕ существует
+- НО все таблицы из миграций УЖЕ созданы (23 таблицы)
+- Orchestrator не запускается из-за отсутствия `alembic_version`
+
+**Причина:** Миграции были применены вручную или через другой механизм, но таблица `alembic_version` не была создана.
 
 ## ✅ **Решение**
 
-### **Вариант 1: Диагностика и исправление (рекомендуется)**
+### **Вариант 1: Исправление таблицы alembic_version (рекомендуется)**
 
 1. **Обновите код на сервере:**
 ```bash
@@ -28,16 +29,10 @@ cd /opt/interview-ai
 git pull origin main
 ```
 
-2. **Сначала диагностируйте проблему:**
+2. **Исправьте проблему:**
 ```bash
-chmod +x scripts/debug-migrations.sh
-./scripts/debug-migrations.sh
-```
-
-3. **Затем исправьте проблему:**
-```bash
-chmod +x scripts/fix-migrations-properly.sh
-./scripts/fix-migrations-properly.sh
+chmod +x scripts/fix-alembic-version.sh
+./scripts/fix-alembic-version.sh
 ```
 
 3. **Или выполните вручную:**
@@ -48,13 +43,13 @@ docker compose -f docker-compose.yml stop orchestrator
 # Удаляем контейнер
 docker compose -f docker-compose.yml rm -f orchestrator
 
-# Создаем таблицу alembic_version
+# Создаем таблицу alembic_version и устанавливаем версию 0007
 docker compose -f docker-compose.yml exec -T db psql -U interview_user -d interview_ai << 'EOF'
-CREATE TABLE IF NOT EXISTS alembic_version (
+CREATE TABLE alembic_version (
     version_num VARCHAR(32) NOT NULL,
     CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)
 );
-INSERT INTO alembic_version (version_num) VALUES ('0001') ON CONFLICT (version_num) DO NOTHING;
+INSERT INTO alembic_version (version_num) VALUES ('0007');
 EOF
 
 # Пересобираем
