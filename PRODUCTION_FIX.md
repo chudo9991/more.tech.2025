@@ -3,15 +3,15 @@
 ## ❌ **Проблема**
 На продакшене возникает ошибка:
 ```
-(psycopg2.errors.UndefinedColumn) column vacancies.vacancy_code does not exist
+KeyError: '0006_add_vacancy_section_keywords'
 ```
 
 ## 🔍 **Причина**
-Миграции базы данных не были применены на продакшене. Колонка `vacancy_code` добавляется в миграции `0002_extend_vacancies_table.py`, но она не была выполнена.
+Проблема с цепочкой миграций Alembic. В базе данных есть неправильная запись о версии миграции, которая ссылается на несуществующий revision ID.
 
 ## ✅ **Решение**
 
-### **Вариант 1: Исправление ошибки миграций (рекомендуется)**
+### **Вариант 1: Исправление цепочки миграций (рекомендуется)**
 
 1. **Обновите код на сервере:**
 ```bash
@@ -22,8 +22,8 @@ git pull origin main
 
 2. **Используйте скрипт исправления:**
 ```bash
-chmod +x scripts/fix-migrations.sh
-./scripts/fix-migrations.sh
+chmod +x scripts/fix-migration-chain.sh
+./scripts/fix-migration-chain.sh
 ```
 
 3. **Или выполните вручную:**
@@ -33,6 +33,11 @@ docker compose -f docker-compose.yml stop orchestrator
 
 # Удаляем контейнер
 docker compose -f docker-compose.yml rm -f orchestrator
+
+# Исправляем запись в базе данных
+docker compose -f docker-compose.yml exec -T db psql -U interview_user -d interview_ai << 'EOF'
+UPDATE alembic_version SET version_num = '0005' WHERE version_num = '0006_add_vacancy_section_keywords';
+EOF
 
 # Пересобираем
 docker compose -f docker-compose.yml build orchestrator
