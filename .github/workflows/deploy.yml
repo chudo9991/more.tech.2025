@@ -1,0 +1,66 @@
+name: Simple VPS Deployment
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup SSH
+      uses: webfactory/ssh-agent@v0.8.0
+      with:
+        ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
+
+    - name: Deploy to VPS
+      run: |
+        echo "🚀 Deploying to VPS server..."
+        
+        # Подключаемся к серверу и выполняем деплой
+        ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+          echo "📁 Creating project directory..."
+          mkdir -p /opt/interview-ai
+          cd /opt/interview-ai
+          
+          echo "🛑 Stopping existing containers..."
+          docker compose -f docker-compose.yml down || true
+          
+          echo "📥 Cloning repository..."
+          rm -rf more.tech.2025
+          git clone https://github.com/${{ github.repository }}.git more.tech.2025
+          cd more.tech.2025
+          
+          echo "🔧 Building and starting services..."
+          docker compose -f docker-compose.yml build
+          docker compose -f docker-compose.yml up -d
+          
+          echo "⏳ Waiting for services to start..."
+          sleep 30
+          
+          echo "✅ Checking service status..."
+          docker compose -f docker-compose.yml ps
+          
+          echo "🌐 Testing application..."
+          curl -f http://localhost:80 || echo "⚠️  Application not responding on port 80"
+        EOF
+        
+    - name: Verify deployment
+      run: |
+        echo "🔍 Verifying deployment..."
+        sleep 10
+        
+        # Проверяем доступность приложения
+        curl -f https://moretech2025clvb.ru || echo "⚠️  HTTPS not responding"
+        curl -f http://moretech2025clvb.ru || echo "⚠️  HTTP not responding"
+        
+    - name: Deployment summary
+      run: |
+        echo "🎉 Deployment completed!"
+        echo "🌐 Application URL: https://moretech2025clvb.ru"
+        echo "📊 Server IP: ${{ secrets.SERVER_HOST }}"
+        echo "📝 Commit: ${{ github.sha }}"

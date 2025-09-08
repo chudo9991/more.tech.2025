@@ -1,4 +1,4 @@
-# Временная конфигурация для тестирования без SSL
+# Тестовая конфигурация Caddy для локального тестирования
 :80 {
     # API routes - proxy to orchestrator backend
     handle /api/* {
@@ -28,9 +28,5 @@
         -Server
     }
     
-    # Logging
-    log {
-        output file /var/log/caddy/access.log
-        format json
-    }
+    # Logging disabled to avoid format issues
 }
