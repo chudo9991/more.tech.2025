@@ -4,12 +4,12 @@
                   <h1>Управление резюме</h1>
                   <div class="header-buttons">
                     <ExportButtons @export-completed="handleExportCompleted" />
-                    <el-button type="primary" @click="$router.push('/resumes/upload')" icon="Plus">
+                    <BaseButton variant="primary" @click="$router.push('/resumes/upload')" :icon="Plus">
                       Загрузить резюме
-                    </el-button>
-                    <el-button type="success" @click="$router.push('/resumes/batch-upload')" icon="Upload">
+                    </BaseButton>
+                    <BaseButton variant="secondary" @click="$router.push('/resumes/batch-upload')" :icon="Upload">
                       Пакетная загрузка
-                    </el-button>
+                    </BaseButton>
                   </div>
                 </div>
 
@@ -32,60 +32,60 @@
           <el-option label="Ошибка" value="error" />
         </el-select>
         
-        <el-button @click="loadResumes" type="primary" icon="Search">
+        <BaseButton @click="loadResumes" variant="primary" :icon="Search">
           Применить фильтры
-        </el-button>
+        </BaseButton>
         
-        <el-button @click="clearFilters" icon="Refresh">
+        <BaseButton @click="clearFilters" variant="ghost" :icon="Refresh">
           Сбросить
-        </el-button>
+        </BaseButton>
       </div>
     </el-card>
 
     <!-- Статистика -->
     <el-row :gutter="20" class="stats-row">
       <el-col :span="6">
-        <el-card class="stat-card">
-          <div class="stat-content">
-            <div class="stat-number">{{ statistics.total_resumes }}</div>
-            <div class="stat-label">Всего резюме</div>
-          </div>
-        </el-card>
+        <BaseMetricCard
+          title="Всего резюме"
+          :value="statistics.total_resumes"
+          icon="Document"
+          variant="primary"
+        />
       </el-col>
       <el-col :span="6">
-        <el-card class="stat-card">
-          <div class="stat-content">
-            <div class="stat-number">{{ statistics.processed_resumes }}</div>
-            <div class="stat-label">Обработано</div>
-          </div>
-        </el-card>
+        <BaseMetricCard
+          title="Обработано"
+          :value="statistics.processed_resumes"
+          icon="Check"
+          variant="success"
+        />
       </el-col>
       <el-col :span="6">
-        <el-card class="stat-card">
-          <div class="stat-content">
-            <div class="stat-number">{{ statistics.average_score }}%</div>
-            <div class="stat-label">Средняя оценка</div>
-          </div>
-        </el-card>
+        <BaseMetricCard
+          title="Средняя оценка"
+          :value="`${statistics.average_score}%`"
+          icon="Star"
+          variant="info"
+        />
       </el-col>
       <el-col :span="6">
-        <el-card class="stat-card">
-          <div class="stat-content">
-            <div class="stat-number">{{ statistics.error_resumes }}</div>
-            <div class="stat-label">Ошибки</div>
-          </div>
-        </el-card>
+        <BaseMetricCard
+          title="Ошибки"
+          :value="statistics.error_resumes"
+          icon="Warning"
+          variant="error"
+        />
       </el-col>
     </el-row>
 
     <!-- Таблица резюме -->
-    <el-card>
+    <el-card style="margin-top: 2rem;">
       <template #header>
         <div class="table-header">
           <span>Список резюме</span>
-          <el-button @click="loadResumes" icon="Refresh" size="small">
+          <BaseButton @click="loadResumes" variant="ghost" :icon="Refresh" size="small">
             Обновить
-          </el-button>
+          </BaseButton>
         </div>
       </template>
       
@@ -156,65 +156,59 @@
         
         <el-table-column label="Действия" width="280" fixed="right">
           <template #default="{ row }">
-            <el-button-group>
-              <el-button
+            <div class="action-buttons">
+              <BaseButton
                 size="small"
                 @click="$router.push(`/resumes/${row.id}`)"
-                type="primary"
+                variant="primary"
+                :icon="View"
                 title="Просмотр"
-              >
-                <el-icon><View /></el-icon>
-              </el-button>
+              />
               
-              <el-button
+              <BaseButton
                 v-if="row.status === 'uploaded'"
                 size="small"
-                type="warning"
+                variant="secondary"
                 @click="processResume(row.id)"
                 :loading="processingResume === row.id"
+                :icon="VideoPlay"
                 title="Обработать"
-              >
-                <el-icon><VideoPlay /></el-icon>
-              </el-button>
+              />
               
-              <el-button
+              <BaseButton
                 v-if="row.status === 'analyzed' && !row.total_score"
                 size="small"
-                type="success"
+                variant="primary"
                 @click="calculateScore(row.id)"
                 :loading="calculatingScore === row.id"
+                :icon="TrendCharts"
                 title="Оценить"
-              >
-                <el-icon><TrendCharts /></el-icon>
-              </el-button>
+              />
               
-              <el-button
+              <BaseButton
                 size="small"
                 @click="downloadResume(row.id)"
-                type="info"
+                variant="ghost"
+                :icon="Download"
                 title="Скачать"
-              >
-                <el-icon><Download /></el-icon>
-              </el-button>
+              />
               
-              <el-button
+              <BaseButton
                 size="small"
                 @click="generateInterviewCode(row.id)"
-                type="success"
+                variant="secondary"
+                :icon="Key"
                 title="Создать код"
-              >
-                <el-icon><Key /></el-icon>
-              </el-button>
+              />
               
-              <el-button
+              <BaseButton
                 size="small"
                 @click="deleteResume(row.id)"
-                type="danger"
+                variant="danger"
+                :icon="Delete"
                 title="Удалить"
-              >
-                <el-icon><Delete /></el-icon>
-              </el-button>
-            </el-button-group>
+              />
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -282,7 +276,8 @@
 <script>
 import { ref, onMounted, reactive, toRaw } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Document, Download, Delete, Plus, Search, Refresh, View, VideoPlay, TrendCharts, Key } from '@element-plus/icons-vue'
+import { Document, Download, Delete, Plus, Search, Refresh, View, VideoPlay, TrendCharts, Key, Upload, Check, Star, Warning } from '@element-plus/icons-vue'
+import { BaseButton, BaseMetricCard } from '@/components/base'
 import ExportButtons from '@/components/ExportButtons.vue'
 
 export default {
@@ -298,6 +293,12 @@ export default {
     VideoPlay,
     TrendCharts,
     Key,
+    Upload,
+    Check,
+    Star,
+    Warning,
+    BaseButton,
+    BaseMetricCard,
     ExportButtons
   },
   setup() {
@@ -805,3 +806,8 @@ export default {
   justify-content: center;
 }
 </style>
+.action-buttons {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}

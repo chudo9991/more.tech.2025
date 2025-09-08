@@ -4,22 +4,22 @@
     <div class="scenario-header">
       <h2>Управление сценариями интервью</h2>
       <div class="scenario-actions">
-        <el-button 
-          type="primary" 
+        <BaseButton 
+          variant="primary" 
           :icon="Plus"
           @click="showGenerateDialog = true"
           :loading="generating"
         >
           Создать сценарий
-        </el-button>
-        <el-button 
-          type="info" 
+        </BaseButton>
+        <BaseButton 
+          variant="ghost" 
           :icon="View"
           @click="previewScenario"
           :disabled="!selectedVacancy"
         >
           Предварительный просмотр
-        </el-button>
+        </BaseButton>
       </div>
     </div>
 
@@ -48,9 +48,9 @@
     <div class="scenarios-list" v-if="selectedVacancy">
       <el-card v-if="scenarios.length === 0" class="empty-state">
         <el-empty description="Сценарии не найдены">
-          <el-button type="primary" @click="showGenerateDialog = true">
+          <BaseButton variant="primary" @click="showGenerateDialog = true">
             Создать первый сценарий
-          </el-button>
+          </BaseButton>
         </el-empty>
       </el-card>
 
@@ -76,41 +76,41 @@
               </div>
             </div>
             <div class="scenario-actions">
-              <el-button-group>
-                <el-button 
+              <div class="action-buttons">
+                <BaseButton 
                   size="small" 
-                  type="primary" 
+                  variant="primary" 
                   :icon="View"
                   @click="viewScenario(scenario)"
                 >
                   Просмотр
-                </el-button>
-                <el-button 
+                </BaseButton>
+                <BaseButton 
                   size="small" 
-                  type="success" 
+                  variant="secondary" 
                   :icon="DataAnalysis"
                   @click="visualizeScenario(scenario)"
                 >
                   Визуализация
-                </el-button>
-                <el-button 
+                </BaseButton>
+                <BaseButton 
                   size="small" 
-                  type="warning" 
+                  variant="ghost" 
                   :icon="Refresh"
                   @click="regenerateScenario(scenario)"
                   :loading="regenerating === scenario.id"
                 >
                   Перегенерировать
-                </el-button>
-                <el-button 
+                </BaseButton>
+                <BaseButton 
                   size="small" 
-                  type="danger" 
+                  variant="danger" 
                   :icon="Delete"
                   @click="deleteScenario(scenario)"
                 >
                   Удалить
-                </el-button>
-              </el-button-group>
+                </BaseButton>
+              </div>
             </div>
           </div>
         </template>
@@ -188,14 +188,14 @@
 
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="showGenerateDialog = false">Отмена</el-button>
-          <el-button 
-            type="primary" 
+          <BaseButton @click="showGenerateDialog = false" variant="ghost">Отмена</BaseButton>
+          <BaseButton 
+            variant="primary" 
             @click="generateScenario"
             :loading="generating"
           >
             Создать сценарий
-          </el-button>
+          </BaseButton>
         </div>
       </template>
     </el-dialog>

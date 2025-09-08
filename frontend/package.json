@@ -1,6 +1,7 @@
 {
   "name": "interview-ai-frontend",
   "version": "1.0.0",
+  "type": "module",
   "description": "Frontend for AI-powered interview system",
   "scripts": {
     "dev": "vite",

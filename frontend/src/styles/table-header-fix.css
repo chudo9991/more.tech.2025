@@ -1,0 +1,145 @@
+/* High Priority Table Header Fixes */
+
+/* Force dark theme for all table headers */
+.el-table th.el-table__cell,
+.el-table__header th,
+.el-table__header-wrapper th,
+.el-table__header-wrapper .el-table__cell,
+.el-table .el-table__header th.el-table__cell {
+  background-color: rgba(0, 255, 255, 0.15) !important;
+  background-image: none !important;
+  color: #00ffff !important;
+  border-bottom: 2px solid rgba(0, 255, 255, 0.3) !important;
+  font-weight: 600 !important;
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.5) !important;
+}
+
+/* Force dark theme for table header wrapper */
+.el-table__header-wrapper,
+.el-table .el-table__header-wrapper {
+  background-color: rgba(0, 255, 255, 0.15) !important;
+  background-image: none !important;
+}
+
+/* Force dark theme for table header */
+.el-table__header,
+.el-table .el-table__header {
+  background-color: rgba(0, 255, 255, 0.15) !important;
+  background-image: none !important;
+}
+
+/* Force dark theme for table header row */
+.el-table__header tr,
+.el-table .el-table__header tr {
+  background-color: rgba(0, 255, 255, 0.15) !important;
+  background-image: none !important;
+}
+
+/* Ensure table body has dark theme */
+.el-table__body-wrapper,
+.el-table .el-table__body-wrapper {
+  background-color: transparent !important;
+}
+
+.el-table__body,
+.el-table .el-table__body {
+  background-color: transparent !important;
+}
+
+.el-table__body tr,
+.el-table .el-table__body tr {
+  background-color: transparent !important;
+}
+
+.el-table__body td.el-table__cell,
+.el-table .el-table__body td.el-table__cell {
+  background-color: transparent !important;
+  color: #e2e8f0 !important;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.1) !important;
+}
+
+/* Hover effects */
+.el-table__body tr:hover,
+.el-table .el-table__body tr:hover {
+  background-color: rgba(0, 255, 255, 0.05) !important;
+}
+
+.el-table__body tr:hover td.el-table__cell,
+.el-table .el-table__body tr:hover td.el-table__cell {
+  background-color: rgba(0, 255, 255, 0.05) !important;
+}
+
+/* Striped table rows */
+.el-table--striped .el-table__body tr.el-table__row--striped,
+.el-table.el-table--striped .el-table__body tr.el-table__row--striped {
+  background-color: rgba(0, 255, 255, 0.02) !important;
+}
+
+.el-table--striped .el-table__body tr.el-table__row--striped:hover,
+.el-table.el-table--striped .el-table__body tr.el-table__row--striped:hover {
+  background-color: rgba(0, 255, 255, 0.08) !important;
+}
+
+.el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell,
+.el-table.el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell {
+  background-color: rgba(0, 255, 255, 0.02) !important;
+}
+
+.el-table--striped .el-table__body tr.el-table__row--striped:hover td.el-table__cell,
+.el-table.el-table--striped .el-table__body tr.el-table__row--striped:hover td.el-table__cell {
+  background-color: rgba(0, 255, 255, 0.08) !important;
+}
+
+/* Fixed columns */
+.el-table__fixed,
+.el-table .el-table__fixed {
+  background-color: rgba(15, 23, 42, 0.9) !important;
+  backdrop-filter: blur(20px) !important;
+}
+
+.el-table__fixed-right,
+.el-table .el-table__fixed-right {
+  background-color: rgba(15, 23, 42, 0.9) !important;
+  backdrop-filter: blur(20px) !important;
+}
+
+/* Empty table */
+.el-table__empty-block,
+.el-table .el-table__empty-block {
+  background-color: transparent !important;
+  color: #94a3b8 !important;
+}
+
+.el-table__empty-text,
+.el-table .el-table__empty-text {
+  color: #94a3b8 !important;
+}
+
+/* Table container */
+.el-table,
+.el-table.el-table {
+  background-color: rgba(15, 23, 42, 0.8) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  border-radius: 12px !important;
+  color: #e2e8f0 !important;
+  overflow: hidden !important;
+}
+
+/* Force override any inline styles */
+.el-table[style*="background"],
+.el-table__header[style*="background"],
+.el-table__header-wrapper[style*="background"],
+.el-table th[style*="background"] {
+  background-color: rgba(0, 255, 255, 0.15) !important;
+  background-image: none !important;
+}
+
+/* Additional specificity for stubborn elements */
+div.el-table th.el-table__cell,
+div.el-table__header th.el-table__cell,
+div.el-table__header-wrapper th.el-table__cell {
+  background-color: rgba(0, 255, 255, 0.15) !important;
+  background-image: none !important;
+  color: #00ffff !important;
+}

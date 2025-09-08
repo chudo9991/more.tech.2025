@@ -5,10 +5,9 @@
         <div class="header-content">
           <h1>Статус моделей</h1>
           <div class="header-actions">
-            <el-button type="primary" @click="refreshAllStatus" :loading="loading">
-              <el-icon><Refresh /></el-icon>
+            <BaseButton variant="primary" @click="refreshAllStatus" :loading="loading" :icon="Refresh">
               Обновить все
-            </el-button>
+            </BaseButton>
           </div>
         </div>
       </el-header>
@@ -180,10 +179,9 @@
               <div class="action-item">
                 <h4>Обновить статус</h4>
                 <p>Получить актуальную информацию о состоянии моделей</p>
-                <el-button type="primary" @click="refreshAllStatus" :loading="loading">
-                  <el-icon><Refresh /></el-icon>
+                <BaseButton variant="primary" @click="refreshAllStatus" :loading="loading" :icon="Refresh">
                   Обновить все
-                </el-button>
+                </BaseButton>
               </div>
             </el-col>
             
@@ -230,6 +228,7 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Refresh, Delete } from '@element-plus/icons-vue'
+import { BaseButton } from '@/components/base'
 import axios from 'axios'
 import AvatarStatus from '@/components/AvatarStatus.vue'
 

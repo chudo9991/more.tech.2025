@@ -1,0 +1,179 @@
+/* Global Input Styles - No Borders */
+
+/* All HTML inputs, textareas, and selects */
+input:not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not(.no-style),
+textarea:not(.no-style),
+select:not(.no-style) {
+  background: rgba(30, 41, 59, 0.9) !important;
+  border: none !important;
+  color: #e2e8f0 !important;
+  border-radius: 8px !important;
+  padding: 12px 16px !important;
+  min-height: 44px !important;
+  font-size: 14px !important;
+  font-family: inherit !important;
+  transition: all 0.3s ease !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Hover states */
+input:not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not(.no-style):hover,
+textarea:not(.no-style):hover,
+select:not(.no-style):hover {
+  background: rgba(51, 65, 85, 0.9) !important;
+}
+
+/* Focus states */
+input:not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not(.no-style):focus,
+textarea:not(.no-style):focus,
+select:not(.no-style):focus {
+  background: rgba(51, 65, 85, 0.9) !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Placeholder styles */
+input:not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not(.no-style)::placeholder,
+textarea:not(.no-style)::placeholder {
+  color: #94a3b8 !important;
+  opacity: 1 !important;
+}
+
+/* Disabled states */
+input:not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not(.no-style):disabled,
+textarea:not(.no-style):disabled,
+select:not(.no-style):disabled {
+  background: rgba(15, 23, 42, 0.5) !important;
+  color: rgba(148, 163, 184, 0.6) !important;
+  cursor: not-allowed !important;
+}
+
+/* Textarea specific */
+textarea:not(.no-style) {
+  min-height: 100px !important;
+  resize: vertical !important;
+  line-height: 1.5 !important;
+}
+
+/* Select specific */
+select:not(.no-style) {
+  cursor: pointer !important;
+  appearance: none !important;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 12px center !important;
+  background-size: 16px !important;
+  padding-right: 40px !important;
+}
+
+/* Search inputs */
+input[type="search"]:not(.no-style) {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+
+/* Number inputs */
+input[type="number"]:not(.no-style) {
+  -moz-appearance: textfield !important;
+}
+
+input[type="number"]:not(.no-style)::-webkit-outer-spin-button,
+input[type="number"]:not(.no-style)::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+}
+
+/* Date inputs */
+input[type="date"]:not(.no-style),
+input[type="datetime-local"]:not(.no-style),
+input[type="time"]:not(.no-style) {
+  color-scheme: dark !important;
+}
+
+/* File inputs */
+input[type="file"]:not(.no-style) {
+  padding: 8px !important;
+  cursor: pointer !important;
+}
+
+input[type="file"]:not(.no-style)::file-selector-button {
+  background: rgba(0, 255, 255, 0.2) !important;
+  border: none !important;
+  border-radius: 4px !important;
+  color: #00ffff !important;
+  padding: 6px 12px !important;
+  margin-right: 12px !important;
+  cursor: pointer !important;
+  font-size: 12px !important;
+  transition: all 0.3s ease !important;
+}
+
+input[type="file"]:not(.no-style)::file-selector-button:hover {
+  background: rgba(0, 255, 255, 0.3) !important;
+}
+
+/* Range inputs */
+input[type="range"]:not(.no-style) {
+  background: transparent !important;
+  padding: 0 !important;
+  height: 6px !important;
+}
+
+input[type="range"]:not(.no-style)::-webkit-slider-track {
+  background: rgba(30, 41, 59, 0.9) !important;
+  height: 6px !important;
+  border-radius: 3px !important;
+}
+
+input[type="range"]:not(.no-style)::-webkit-slider-thumb {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  background: #00ffff !important;
+  height: 18px !important;
+  width: 18px !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  margin-top: -6px !important;
+}
+
+input[type="range"]:not(.no-style)::-moz-range-track {
+  background: rgba(30, 41, 59, 0.9) !important;
+  height: 6px !important;
+  border-radius: 3px !important;
+  border: none !important;
+}
+
+input[type="range"]:not(.no-style)::-moz-range-thumb {
+  background: #00ffff !important;
+  height: 18px !important;
+  width: 18px !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  border: none !important;
+}
+
+/* Color inputs */
+input[type="color"]:not(.no-style) {
+  padding: 4px !important;
+  cursor: pointer !important;
+  width: 60px !important;
+  height: 44px !important;
+}
+
+/* Remove any conflicting styles */
+input:not(.no-style),
+textarea:not(.no-style),
+select:not(.no-style) {
+  box-sizing: border-box !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+}
+
+/* Force remove any background images */
+input[style*="background-image"]:not(.no-style),
+textarea[style*="background-image"]:not(.no-style),
+select[style*="background-image"]:not(.no-style) {
+  background-image: none !important;
+}

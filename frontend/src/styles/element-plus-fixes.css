@@ -1,0 +1,470 @@
+/* Element Plus Dark Theme Fixes */
+
+/* ===== TABLE FIXES ===== */
+.el-table {
+  --el-table-bg-color: rgba(15, 23, 42, 0.8) !important;
+  --el-table-tr-bg-color: transparent !important;
+  --el-table-header-bg-color: rgba(0, 255, 255, 0.1) !important;
+  --el-table-row-hover-bg-color: rgba(0, 255, 255, 0.05) !important;
+  --el-table-text-color: #e2e8f0 !important;
+  --el-table-header-text-color: #00ffff !important;
+  --el-table-border-color: rgba(0, 255, 255, 0.2) !important;
+  
+  background: rgba(15, 23, 42, 0.8) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  border-radius: 12px !important;
+  color: #e2e8f0 !important;
+  overflow: hidden !important;
+}
+
+.el-table .el-table__header-wrapper {
+  background: rgba(0, 255, 255, 0.1) !important;
+}
+
+.el-table .el-table__header {
+  background: rgba(0, 255, 255, 0.1) !important;
+}
+
+.el-table .el-table__header th {
+  background: rgba(0, 255, 255, 0.1) !important;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.3) !important;
+  color: #00ffff !important;
+  font-weight: 600 !important;
+}
+
+.el-table .el-table__header th.el-table__cell {
+  background: rgba(0, 255, 255, 0.1) !important;
+  color: #00ffff !important;
+}
+
+.el-table .el-table__body-wrapper {
+  background: transparent !important;
+}
+
+.el-table .el-table__body {
+  background: transparent !important;
+}
+
+.el-table .el-table__body tr {
+  background: transparent !important;
+}
+
+.el-table .el-table__body td {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.1) !important;
+  color: #e2e8f0 !important;
+}
+
+.el-table .el-table__body tr:hover {
+  background: rgba(0, 255, 255, 0.05) !important;
+}
+
+.el-table .el-table__body tr:hover td {
+  background: rgba(0, 255, 255, 0.05) !important;
+}
+
+.el-table--striped .el-table__body tr.el-table__row--striped {
+  background: rgba(0, 255, 255, 0.02) !important;
+}
+
+.el-table--striped .el-table__body tr.el-table__row--striped:hover {
+  background: rgba(0, 255, 255, 0.08) !important;
+}
+
+.el-table--striped .el-table__body tr.el-table__row--striped td {
+  background: rgba(0, 255, 255, 0.02) !important;
+}
+
+.el-table--striped .el-table__body tr.el-table__row--striped:hover td {
+  background: rgba(0, 255, 255, 0.08) !important;
+}
+
+.el-table .el-table__empty-block {
+  background: transparent !important;
+  color: #94a3b8 !important;
+}
+
+.el-table .el-table__empty-text {
+  color: #94a3b8 !important;
+}
+
+/* ===== INPUT FIXES ===== */
+.el-input {
+  --el-input-bg-color: rgba(30, 41, 59, 0.9) !important;
+  --el-input-border-color: transparent !important;
+  --el-input-hover-border-color: transparent !important;
+  --el-input-focus-border-color: transparent !important;
+  --el-input-text-color: #e2e8f0 !important;
+  --el-input-placeholder-color: #94a3b8 !important;
+}
+
+.el-input .el-input__wrapper {
+  background: rgba(30, 41, 59, 0.9) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  transition: all 0.3s ease !important;
+}
+
+.el-input .el-input__wrapper:hover {
+  background: rgba(51, 65, 85, 0.9) !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.el-input.is-focus .el-input__wrapper {
+  background: rgba(51, 65, 85, 0.9) !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.el-input .el-input__inner {
+  background: transparent !important;
+  border: none !important;
+  color: #e2e8f0 !important;
+  font-size: 14px !important;
+}
+
+.el-input .el-input__inner::placeholder {
+  color: #94a3b8 !important;
+}
+
+.el-input .el-input__prefix,
+.el-input .el-input__suffix {
+  color: #94a3b8 !important;
+}
+
+/* ===== TEXTAREA FIXES ===== */
+.el-textarea {
+  --el-input-bg-color: rgba(30, 41, 59, 0.9) !important;
+  --el-input-border-color: transparent !important;
+  --el-input-hover-border-color: transparent !important;
+  --el-input-focus-border-color: transparent !important;
+  --el-input-text-color: #e2e8f0 !important;
+  --el-input-placeholder-color: #94a3b8 !important;
+}
+
+.el-textarea .el-textarea__inner {
+  background: rgba(30, 41, 59, 0.9) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  color: #e2e8f0 !important;
+  box-shadow: none !important;
+  transition: all 0.3s ease !important;
+}
+
+.el-textarea .el-textarea__inner:hover {
+  background: rgba(51, 65, 85, 0.9) !important;
+  border: none !important;
+}
+
+.el-textarea .el-textarea__inner:focus {
+  background: rgba(51, 65, 85, 0.9) !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.el-textarea .el-textarea__inner::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* ===== SELECT FIXES ===== */
+.el-select {
+  --el-select-input-bg-color: rgba(30, 41, 59, 0.9) !important;
+  --el-select-input-border-color: transparent !important;
+  --el-select-input-hover-border-color: transparent !important;
+  --el-select-input-focus-border-color: transparent !important;
+  --el-select-input-text-color: #e2e8f0 !important;
+  --el-select-input-placeholder-color: #94a3b8 !important;
+}
+
+.el-select .el-select__wrapper {
+  background: rgba(30, 41, 59, 0.9) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+
+.el-select .el-select__wrapper:hover {
+  background: rgba(51, 65, 85, 0.9) !important;
+  border: none !important;
+}
+
+.el-select.is-focus .el-select__wrapper {
+  background: rgba(51, 65, 85, 0.9) !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.el-select .el-input .el-input__wrapper {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.el-select .el-input .el-input__inner {
+  background: transparent !important;
+  border: none !important;
+  color: #e2e8f0 !important;
+}
+
+.el-select .el-input .el-input__inner::placeholder {
+  color: #94a3b8 !important;
+}
+
+.el-select .el-select__caret {
+  color: #94a3b8 !important;
+}
+
+/* ===== SELECT DROPDOWN FIXES ===== */
+.el-select-dropdown {
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(30px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+}
+
+.el-select-dropdown .el-select-dropdown__item {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+  transition: all 0.2s ease !important;
+}
+
+.el-select-dropdown .el-select-dropdown__item:hover {
+  background: rgba(0, 255, 255, 0.1) !important;
+  color: #00ffff !important;
+}
+
+.el-select-dropdown .el-select-dropdown__item.is-selected {
+  background: rgba(0, 255, 255, 0.2) !important;
+  color: #00ffff !important;
+  font-weight: 600 !important;
+}
+
+/* ===== BUTTON FIXES ===== */
+.el-button {
+  --el-button-bg-color: rgba(15, 23, 42, 0.8) !important;
+  --el-button-border-color: rgba(0, 255, 255, 0.3) !important;
+  --el-button-hover-bg-color: rgba(0, 255, 255, 0.1) !important;
+  --el-button-hover-border-color: rgba(0, 255, 255, 0.5) !important;
+  --el-button-text-color: #e2e8f0 !important;
+  --el-button-hover-text-color: #00ffff !important;
+  
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  border-radius: 8px !important;
+  color: #e2e8f0 !important;
+  font-weight: 500 !important;
+  transition: all 0.3s ease !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.el-button:hover {
+  background: rgba(0, 255, 255, 0.1) !important;
+  border-color: rgba(0, 255, 255, 0.5) !important;
+  color: #00ffff !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0, 255, 255, 0.2) !important;
+}
+
+.el-button--primary {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.3), rgba(138, 43, 226, 0.3)) !important;
+  border: 1px solid rgba(0, 255, 255, 0.5) !important;
+  color: #00ffff !important;
+  box-shadow: 0 4px 16px rgba(0, 255, 255, 0.2) !important;
+}
+
+.el-button--primary:hover {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.4), rgba(138, 43, 226, 0.4)) !important;
+  border-color: rgba(0, 255, 255, 0.7) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 24px rgba(0, 255, 255, 0.4) !important;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.8) !important;
+}
+
+.el-button--success {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.3), rgba(16, 185, 129, 0.3)) !important;
+  border: 1px solid rgba(34, 197, 94, 0.5) !important;
+  color: #22c55e !important;
+}
+
+.el-button--success:hover {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.4), rgba(16, 185, 129, 0.4)) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.4) !important;
+}
+
+.el-button--warning {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(251, 191, 36, 0.3)) !important;
+  border: 1px solid rgba(245, 158, 11, 0.5) !important;
+  color: #f59e0b !important;
+}
+
+.el-button--warning:hover {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.4), rgba(251, 191, 36, 0.4)) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4) !important;
+}
+
+.el-button--danger {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(236, 72, 153, 0.3)) !important;
+  border: 1px solid rgba(239, 68, 68, 0.5) !important;
+  color: #ef4444 !important;
+}
+
+.el-button--danger:hover {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.4), rgba(236, 72, 153, 0.4)) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4) !important;
+}
+
+.el-button--info {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(99, 102, 241, 0.3)) !important;
+  border: 1px solid rgba(59, 130, 246, 0.5) !important;
+  color: #3b82f6 !important;
+}
+
+.el-button--info:hover {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.4), rgba(99, 102, 241, 0.4)) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4) !important;
+}
+
+/* ===== PAGINATION FIXES ===== */
+.el-pagination {
+  --el-pagination-bg-color: transparent !important;
+  --el-pagination-text-color: #e2e8f0 !important;
+  --el-pagination-button-bg-color: rgba(15, 23, 42, 0.8) !important;
+  --el-pagination-button-border-color: rgba(0, 255, 255, 0.3) !important;
+  --el-pagination-button-hover-bg-color: rgba(0, 255, 255, 0.1) !important;
+  --el-pagination-button-hover-border-color: rgba(0, 255, 255, 0.5) !important;
+  --el-pagination-button-active-bg-color: rgba(0, 255, 255, 0.3) !important;
+  --el-pagination-button-active-border-color: rgba(0, 255, 255, 0.7) !important;
+  
+  background: transparent !important;
+  color: #e2e8f0 !important;
+}
+
+.el-pagination .el-pager li {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  color: #e2e8f0 !important;
+  border-radius: 6px !important;
+  margin: 0 2px !important;
+  transition: all 0.3s ease !important;
+}
+
+.el-pagination .el-pager li:hover {
+  background: rgba(0, 255, 255, 0.1) !important;
+  border-color: rgba(0, 255, 255, 0.5) !important;
+  color: #00ffff !important;
+}
+
+.el-pagination .el-pager li.is-active {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.3), rgba(138, 43, 226, 0.3)) !important;
+  border-color: rgba(0, 255, 255, 0.7) !important;
+  color: #00ffff !important;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3) !important;
+}
+
+.el-pagination .btn-prev,
+.el-pagination .btn-next {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  color: #e2e8f0 !important;
+  border-radius: 6px !important;
+  transition: all 0.3s ease !important;
+}
+
+.el-pagination .btn-prev:hover,
+.el-pagination .btn-next:hover {
+  background: rgba(0, 255, 255, 0.1) !important;
+  border-color: rgba(0, 255, 255, 0.5) !important;
+  color: #00ffff !important;
+}
+
+.el-pagination .el-pagination__total,
+.el-pagination .el-pagination__jump {
+  color: #e2e8f0 !important;
+}
+
+/* ===== FORM FIXES ===== */
+.el-form-item__label {
+  color: #e2e8f0 !important;
+  font-weight: 500 !important;
+}
+
+.el-form-item__error {
+  color: #ef4444 !important;
+}
+
+/* ===== TAG FIXES ===== */
+.el-tag {
+  background: rgba(0, 255, 255, 0.2) !important;
+  border: 1px solid rgba(0, 255, 255, 0.4) !important;
+  color: #00ffff !important;
+  border-radius: 6px !important;
+}
+
+.el-tag--success {
+  background: rgba(34, 197, 94, 0.2) !important;
+  border-color: rgba(34, 197, 94, 0.4) !important;
+  color: #22c55e !important;
+}
+
+.el-tag--warning {
+  background: rgba(245, 158, 11, 0.2) !important;
+  border-color: rgba(245, 158, 11, 0.4) !important;
+  color: #f59e0b !important;
+}
+
+.el-tag--danger {
+  background: rgba(239, 68, 68, 0.2) !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+  color: #ef4444 !important;
+}
+
+.el-tag--info {
+  background: rgba(59, 130, 246, 0.2) !important;
+  border-color: rgba(59, 130, 246, 0.4) !important;
+  color: #3b82f6 !important;
+}
+
+/* ===== CARD FIXES ===== */
+.el-card {
+  background: rgba(15, 23, 42, 0.8) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  border-radius: 12px !important;
+  color: #e2e8f0 !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+}
+
+.el-card__header {
+  background: rgba(0, 255, 255, 0.1) !important;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2) !important;
+  color: #00ffff !important;
+  font-weight: 600 !important;
+}
+
+.el-card__body {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+}
+
+/* ===== LOADING FIXES ===== */
+.el-loading-mask {
+  background: rgba(0, 0, 0, 0.8) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.el-loading-spinner {
+  color: #00ffff !important;
+}
+
+.el-loading-text {
+  color: #00ffff !important;
+}

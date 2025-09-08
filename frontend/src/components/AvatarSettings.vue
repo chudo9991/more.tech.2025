@@ -17,60 +17,22 @@
       >
         <!-- Выбор персонажа -->
         <el-form-item label="Персонаж" prop="avatar_id">
-          <el-select 
+          <BaseSelect 
             v-model="settings.avatar_id" 
+            :options="characterOptions"
             placeholder="Выберите персонажа"
             @change="onAvatarChange"
-            style="width: 100%"
-          >
-            <el-option
-              v-for="character in characters"
-              :key="character.id"
-              :label="character.name"
-              :value="character.id"
-            >
-              <div class="character-option">
-                <img 
-                  :src="character.preview_url" 
-                  :alt="character.name"
-                  class="character-preview"
-                />
-                <div class="character-info">
-                  <div class="character-name">{{ character.name }}</div>
-                  <div class="character-type">{{ character.type }}</div>
-                </div>
-              </div>
-            </el-option>
-          </el-select>
+          />
         </el-form-item>
 
         <!-- Выбор голоса -->
         <el-form-item label="Голос" prop="voice_id">
-          <el-select 
-            v-model="settings.voice_id" 
+          <BaseSelect 
+            v-model="settings.voice_id"
+            :options="voiceOptions" 
             placeholder="Выберите голос"
             @change="onVoiceChange"
-            style="width: 100%"
-          >
-            <el-option
-              v-for="voice in voices"
-              :key="voice.id"
-              :label="voice.name"
-              :value="voice.id"
-            >
-              <div class="voice-option">
-                <el-icon class="voice-icon">
-                  <Microphone />
-                </el-icon>
-                <div class="voice-info">
-                  <div class="voice-name">{{ voice.name }}</div>
-                  <div class="voice-details">
-                    {{ voice.gender }} • {{ voice.lang }}
-                  </div>
-                </div>
-              </div>
-            </el-option>
-          </el-select>
+          />
         </el-form-item>
 
         <!-- Разрешение видео -->
@@ -100,11 +62,11 @@
 
         <!-- Качество -->
         <el-form-item label="Качество" prop="quality">
-          <el-select v-model="settings.quality" @change="onQualityChange">
-            <el-option label="Высокое" value="high" />
-            <el-option label="Среднее" value="medium" />
-            <el-option label="Низкое" value="low" />
-          </el-select>
+          <BaseSelect 
+            v-model="settings.quality" 
+            :options="qualityOptions"
+            @change="onQualityChange"
+          />
         </el-form-item>
 
         <!-- Предпросмотр -->
@@ -130,20 +92,30 @@
 
         <!-- Кнопки действий -->
         <el-form-item>
-          <el-button 
-            type="primary" 
-            @click="saveSettings"
-            :loading="saving"
-            :icon="Check"
-          >
-            Сохранить настройки
-          </el-button>
-          <el-button @click="resetSettings" :icon="Refresh">
-            Сбросить
-          </el-button>
-          <el-button @click="testSettings" :icon="VideoPlay">
-            Тест
-          </el-button>
+          <div class="action-buttons">
+            <BaseButton 
+              variant="primary"
+              :loading="saving"
+              :icon="Check"
+              @click="saveSettings"
+            >
+              Сохранить настройки
+            </BaseButton>
+            <BaseButton 
+              variant="ghost"
+              :icon="Refresh"
+              @click="resetSettings"
+            >
+              Сбросить
+            </BaseButton>
+            <BaseButton 
+              variant="secondary"
+              :icon="VideoPlay"
+              @click="testSettings"
+            >
+              Тест
+            </BaseButton>
+          </div>
         </el-form-item>
       </el-form>
     </el-card>
@@ -188,6 +160,7 @@ import {
   VideoPlay, 
   Loading 
 } from '@element-plus/icons-vue'
+import { BaseSelect, BaseButton } from '@/components/base'
 import axios from 'axios'
 
 // Props
@@ -236,6 +209,28 @@ const rules = {
 const selectedCharacter = computed(() => {
   return characters.value.find(c => c.id === settings.value.avatar_id)
 })
+
+const characterOptions = computed(() => {
+  return characters.value.map(character => ({
+    label: character.name,
+    value: character.id,
+    description: character.type
+  }))
+})
+
+const voiceOptions = computed(() => {
+  return voices.value.map(voice => ({
+    label: voice.name,
+    value: voice.id,
+    description: `${voice.gender} • ${voice.lang}`
+  }))
+})
+
+const qualityOptions = computed(() => [
+  { label: 'Высокое', value: 'high' },
+  { label: 'Среднее', value: 'medium' },
+  { label: 'Низкое', value: 'low' }
+])
 
 // Methods
 const loadCharacters = async () => {
@@ -524,6 +519,12 @@ watch(settings, (newSettings) => {
   text-align: center;
   padding: 40px;
   color: #666;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 @keyframes spin {

@@ -84,15 +84,15 @@
 
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="handleClose">Отмена</el-button>
-        <el-button
-          type="primary"
+        <BaseButton @click="handleClose" variant="ghost">Отмена</BaseButton>
+        <BaseButton
+          variant="primary"
           @click="handleSubmit"
           :loading="loading"
           :disabled="!form.vacancy_id"
         >
           Создать сессию
-        </el-button>
+        </BaseButton>
       </div>
     </template>
   </el-dialog>
@@ -101,6 +101,7 @@
 <script setup>
 import { ref, reactive, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
+import { BaseButton } from '@/components/base'
 import { useHRStore } from '@/stores/hr'
 
 const props = defineProps({

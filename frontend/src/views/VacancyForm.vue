@@ -1,444 +1,590 @@
 <template>
   <div class="vacancy-form">
-    <el-container>
-      <el-header>
-        <div class="header-content">
-          <div class="header-left">
-            <h1>{{ isEdit ? 'Редактирование вакансии' : 'Создание вакансии' }}</h1>
-          </div>
-          <div class="header-actions">
-            <el-button @click="goBack" size="large">
-              <el-icon><ArrowLeft /></el-icon>
-              Назад
-            </el-button>
-            <el-button 
-              v-if="isEdit && route?.params?.id"
-              type="success" 
-              @click="generateScenario" 
-              :loading="generatingScenario"
-              size="large"
-            >
-              <el-icon><Star /></el-icon>
-              Сгенерировать сценарий
-            </el-button>
-            <el-button 
-              type="primary" 
-              @click="saveVacancy" 
-              :loading="saving"
-              size="large"
-            >
-              <el-icon><Check /></el-icon>
-              {{ isEdit ? 'Сохранить' : 'Создать' }}
-            </el-button>
+    <!-- Header -->
+    <div class="page-header">
+      <div class="header-content">
+        <div class="header-left">
+          <h1>{{ isEdit ? 'Редактирование вакансии' : 'Создание вакансии' }}</h1>
+          <p class="header-subtitle">{{ autoSaveText }}</p>
+        </div>
+        <div class="header-actions">
+          <BaseButton variant="secondary" @click="goBack">
+            <el-icon><ArrowLeft /></el-icon>
+            Назад
+          </BaseButton>
+          <BaseButton 
+            v-if="isEdit && hasVacancyId"
+            variant="secondary"
+            :loading="generatingScenario"
+            @click="generateScenario"
+          >
+            <el-icon><Star /></el-icon>
+            Сгенерировать сценарий
+          </BaseButton>
+          <BaseButton 
+            variant="primary"
+            :loading="saving"
+            @click="saveVacancy"
+          >
+            <el-icon><Check /></el-icon>
+            {{ isEdit ? 'Сохранить' : 'Создать' }}
+          </BaseButton>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress Indicator -->
+    <div class="progress-container">
+      <div class="progress-bar">
+        <div 
+          class="progress-fill" 
+          :style="{ width: `${formProgress}%` }"
+        ></div>
+      </div>
+      <div class="progress-text">
+        Заполнено {{ formProgress }}% формы
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="form-content">
+      <!-- Step Navigation -->
+      <div class="steps-navigation">
+        <div class="steps-container">
+          <div
+            v-for="(step, index) in steps"
+            :key="step.id"
+            class="step-item"
+            :class="{ 
+              'active': currentStep === index, 
+              'completed': isStepCompleted(index),
+              'error': hasStepErrors(index)
+            }"
+            @click="goToStep(index)"
+          >
+            <div class="step-indicator">
+              <el-icon v-if="isStepCompleted(index)"><Check /></el-icon>
+              <el-icon v-else-if="hasStepErrors(index)"><Warning /></el-icon>
+              <span v-else>{{ index + 1 }}</span>
+            </div>
+            <div class="step-info">
+              <div class="step-title">{{ step.title }}</div>
+              <div class="step-description">{{ step.description }}</div>
+            </div>
           </div>
         </div>
-      </el-header>
-      
-      <el-main>
-        <el-form
-          ref="formRef"
-          :model="form"
-          :rules="rules"
-          label-width="200px"
-          class="vacancy-form-content"
-          @submit.prevent="saveVacancy"
-        >
-          <!-- Основная информация -->
-          <el-card class="form-section">
-            <template #header>
-              <div class="section-header">
-                <el-icon><Document /></el-icon>
-                <span>Основная информация</span>
-              </div>
-            </template>
-            
-            <el-row :gutter="20">
-              <el-col :span="12">
-                <el-form-item label="Название вакансии" prop="title">
-                  <el-input 
-                    v-model="form.title" 
+      </div>
+
+      <!-- Form Steps -->
+      <div class="form-steps">
+        <form @submit.prevent="saveVacancy" class="vacancy-form-content">
+          <!-- Step 1: Basic Information -->
+          <div v-show="currentStep === 0" class="form-step">
+            <el-card class="step-card">
+              <template #header>
+                <div class="step-header">
+                  <div class="step-header-info">
+                    <h2 class="step-title">Основная информация</h2>
+                    <p class="step-subtitle">Базовые данные о вакансии</p>
+                  </div>
+                  <div class="step-progress">
+                    <span class="progress-fraction">{{ getStepProgress(0) }}%</span>
+                  </div>
+                </div>
+              </template>
+
+              <div class="form-grid">
+                <div class="form-group span-2">
+                  <label class="form-label required">Название вакансии</label>
+                  <el-input
+                    v-model="form.title"
                     placeholder="Введите название вакансии"
                     maxlength="255"
                     show-word-limit
+                    :class="{ 'error': getFieldError('title') }"
+                    @blur="validateField('title')"
                   />
-                </el-form-item>
-              </el-col>
-              <el-col :span="12">
-                <el-form-item label="Статус" prop="status">
-                  <el-select v-model="form.status" placeholder="Выберите статус" style="width: 100%">
+                  <div v-if="getFieldError('title')" class="field-error">{{ getFieldError('title') }}</div>
+                  <div class="field-hint">Краткое и понятное название должности</div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label required">Статус</label>
+                  <el-select
+                    v-model="form.status"
+                    placeholder="Выберите статус"
+                    style="width: 100%"
+                    :class="{ 'error': getFieldError('status') }"
+                  >
+                    <el-option label="Черновик" value="draft" />
                     <el-option label="Активная" value="active" />
                     <el-option label="Закрытая" value="closed" />
-                    <el-option label="Черновик" value="draft" />
                   </el-select>
-                </el-form-item>
-              </el-col>
-            </el-row>
-            
-            <el-row :gutter="20">
-              <el-col :span="8">
-                <el-form-item label="Регион" prop="region">
-                  <el-input v-model="form.region" placeholder="Регион" />
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="Город" prop="city">
-                  <el-input v-model="form.city" placeholder="Город" />
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="Адрес" prop="address">
-                  <el-input v-model="form.address" placeholder="Адрес" />
-                </el-form-item>
-              </el-col>
-            </el-row>
-          </el-card>
+                  <div v-if="getFieldError('status')" class="field-error">{{ getFieldError('status') }}</div>
+                </div>
 
-          <!-- Условия труда -->
-          <el-card class="form-section">
-            <template #header>
-              <div class="section-header">
-                <el-icon><Briefcase /></el-icon>
-                <span>Условия труда</span>
+                <div class="form-group">
+                  <label class="form-label">Код вакансии</label>
+                  <el-input
+                    v-model="form.vacancy_code"
+                    placeholder="Автоматически"
+                    disabled
+                  />
+                  <div class="field-hint">Генерируется автоматически при сохранении</div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Регион</label>
+                  <el-input
+                    v-model="form.region"
+                    placeholder="Укажите регион"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Город</label>
+                  <el-input
+                    v-model="form.city"
+                    placeholder="Укажите город"
+                  />
+                </div>
+
+                <div class="form-group span-2">
+                  <label class="form-label">Адрес</label>
+                  <el-input
+                    v-model="form.address"
+                    placeholder="Полный адрес офиса"
+                  />
+                </div>
               </div>
-            </template>
-            
-            <el-row :gutter="20">
-              <el-col :span="8">
-                <el-form-item label="Тип занятости" prop="employment_type">
-                  <el-select v-model="form.employment_type" placeholder="Выберите тип" style="width: 100%">
-                    <el-option label="Полная" value="full" />
-                    <el-option label="Частичная" value="part" />
-                    <el-option label="Удаленная" value="remote" />
-                  </el-select>
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="Тип договора" prop="contract_type">
-                  <el-select v-model="form.contract_type" placeholder="Выберите тип" style="width: 100%">
-                    <el-option label="Трудовой" value="employment" />
-                    <el-option label="ГПХ" value="contract" />
+            </el-card>
+          </div>
+
+          <!-- Step 2: Employment Conditions -->
+          <div v-show="currentStep === 1" class="form-step">
+            <el-card class="step-card">
+              <template #header>
+                <div class="step-header">
+                  <div class="step-header-info">
+                    <h2 class="step-title">Условия труда</h2>
+                    <p class="step-subtitle">Тип занятости и рабочие условия</p>
+                  </div>
+                  <div class="step-progress">
+                    <span class="progress-fraction">{{ getStepProgress(1) }}%</span>
+                  </div>
+                </div>
+              </template>
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label">Тип занятости</label>
+                  <el-select
+                    v-model="form.employment_type"
+                    placeholder="Выберите тип"
+                    style="width: 100%"
+                  >
+                    <el-option label="Полная занятость" value="full_time" />
+                    <el-option label="Частичная занятость" value="part_time" />
+                    <el-option label="Контракт" value="contract" />
                     <el-option label="Стажировка" value="internship" />
                   </el-select>
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="Командировки" prop="business_trips">
-                  <el-switch v-model="form.business_trips" />
-                </el-form-item>
-              </el-col>
-            </el-row>
-            
-            <el-form-item label="График работы" prop="work_schedule">
-              <el-input
-                v-model="form.work_schedule"
-                type="textarea"
-                :rows="3"
-                placeholder="Опишите график работы"
-              />
-            </el-form-item>
-          </el-card>
+                </div>
 
-          <!-- Финансовые условия -->
-          <el-card class="form-section">
-            <template #header>
-              <div class="section-header">
-                <el-icon><Money /></el-icon>
-                <span>Финансовые условия</span>
-              </div>
-            </template>
-            
-            <el-row :gutter="20">
-              <el-col :span="8">
-                <el-form-item label="Оклад мин. (руб/мес)" prop="salary_min">
-                  <el-input-number
-                    v-model="form.salary_min"
-                    :min="0"
-                    :precision="0"
+                <div class="form-group">
+                  <label class="form-label">Уровень опыта</label>
+                  <el-select
+                    v-model="form.experience_required"
+                    placeholder="Выберите уровень"
                     style="width: 100%"
-                    placeholder="Минимальный оклад"
-                  />
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="Оклад макс. (руб/мес)" prop="salary_max">
-                  <el-input-number
-                    v-model="form.salary_max"
-                    :min="0"
-                    :precision="0"
-                    style="width: 100%"
-                    placeholder="Максимальный оклад"
-                  />
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="Общий доход (руб/мес)" prop="total_income">
-                  <el-input-number
-                    v-model="form.total_income"
-                    :min="0"
-                    :precision="0"
-                    style="width: 100%"
-                    placeholder="Общий доход"
-                  />
-                </el-form-item>
-              </el-col>
-            </el-row>
-            
-            <el-row :gutter="20">
-              <el-col :span="12">
-                <el-form-item label="Годовая премия (%)" prop="annual_bonus_percent">
-                  <el-input-number
-                    v-model="form.annual_bonus_percent"
-                    :min="0"
-                    :max="100"
-                    :precision="1"
-                    style="width: 100%"
-                    placeholder="Процент премии"
-                  />
-                </el-form-item>
-              </el-col>
-            </el-row>
-            
-            <el-form-item label="Описание премирования" prop="bonus_description">
-              <el-input
-                v-model="form.bonus_description"
-                type="textarea"
-                :rows="3"
-                placeholder="Опишите систему премирования"
-              />
-            </el-form-item>
-          </el-card>
-
-          <!-- Требования к кандидату -->
-          <el-card class="form-section">
-            <template #header>
-              <div class="section-header">
-                <el-icon><User /></el-icon>
-                <span>Требования к кандидату</span>
-              </div>
-            </template>
-            
-            <el-form-item label="Обязанности" prop="responsibilities">
-              <el-input
-                v-model="form.responsibilities"
-                type="textarea"
-                :rows="5"
-                placeholder="Опишите обязанности кандидата"
-                maxlength="2000"
-                show-word-limit
-              />
-              <!-- Keywords Section for Responsibilities -->
-              <KeywordsSection
-                v-if="isEdit && hasVacancyId"
-                :vacancy-id="vacancyId"
-                section-type="responsibilities"
-                section-title="Обязанности"
-                :section-text="form.responsibilities"
-                @keywords-updated="handleKeywordsUpdated"
-              />
-            </el-form-item>
-            
-            <el-form-item label="Требования" prop="requirements">
-              <el-input
-                v-model="form.requirements"
-                type="textarea"
-                :rows="5"
-                placeholder="Опишите требования к кандидату"
-                maxlength="2000"
-                show-word-limit
-              />
-              <!-- Keywords Section for Requirements -->
-              <KeywordsSection
-                v-if="isEdit && hasVacancyId"
-                :vacancy-id="vacancyId"
-                section-type="requirements"
-                section-title="Требования"
-                :section-text="form.requirements"
-                @keywords-updated="handleKeywordsUpdated"
-              />
-            </el-form-item>
-            
-            <el-row :gutter="20">
-              <el-col :span="12">
-                <el-form-item label="Уровень образования" prop="education_level">
-                  <el-select v-model="form.education_level" placeholder="Выберите уровень" style="width: 100%">
-                    <el-option label="Среднее" value="secondary" />
-                    <el-option label="Среднее специальное" value="vocational" />
-                    <el-option label="Высшее" value="higher" />
-                    <el-option label="Магистратура" value="masters" />
-                    <el-option label="Аспирантура" value="phd" />
-                  </el-select>
-                </el-form-item>
-              </el-col>
-              <el-col :span="12">
-                <el-form-item label="Опыт работы" prop="experience_required">
-                  <el-select v-model="form.experience_required" placeholder="Выберите опыт" style="width: 100%">
+                  >
                     <el-option label="Без опыта" value="no_experience" />
                     <el-option label="От 1 года" value="1_year" />
                     <el-option label="От 3 лет" value="3_years" />
                     <el-option label="От 5 лет" value="5_years" />
                     <el-option label="Более 5 лет" value="more_5_years" />
                   </el-select>
-                </el-form-item>
-              </el-col>
-            </el-row>
-            
-            <el-form-item label="Специальные программы" prop="special_programs">
-              <el-input
-                v-model="form.special_programs"
-                type="textarea"
-                :rows="3"
-                placeholder="Укажите требуемые программы"
-              />
-              <!-- Keywords Section for Special Programs -->
-              <KeywordsSection
-                v-if="isEdit && hasVacancyId"
-                :vacancy-id="vacancyId"
-                section-type="programs"
-                section-title="Специальные программы"
-                :section-text="form.special_programs"
-                @keywords-updated="handleKeywordsUpdated"
-              />
-            </el-form-item>
-            
-            <el-form-item label="Компьютерные навыки" prop="computer_skills">
-              <el-input
-                v-model="form.computer_skills"
-                type="textarea"
-                :rows="3"
-                placeholder="Опишите требуемые компьютерные навыки"
-              />
-              <!-- Keywords Section for Computer Skills -->
-              <KeywordsSection
-                v-if="isEdit && hasVacancyId"
-                :vacancy-id="vacancyId"
-                section-type="skills"
-                section-title="Компьютерные навыки"
-                :section-text="form.computer_skills"
-                @keywords-updated="handleKeywordsUpdated"
-              />
-            </el-form-item>
-            
-            <el-row :gutter="20">
-              <el-col :span="12">
-                <el-form-item label="Иностранные языки" prop="foreign_languages">
-                  <el-input v-model="form.foreign_languages" placeholder="Укажите языки" />
-                  <!-- Keywords Section for Languages -->
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Тип договора</label>
+                  <el-select
+                    v-model="form.contract_type"
+                    placeholder="Выберите тип"
+                    style="width: 100%"
+                  >
+                    <el-option label="Трудовой договор" value="employment" />
+                    <el-option label="ГПХ" value="contract" />
+                    <el-option label="Стажировка" value="internship" />
+                  </el-select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Командировки</label>
+                  <el-switch
+                    v-model="form.business_trips"
+                    active-text="Возможны"
+                    inactive-text="Нет"
+                  />
+                </div>
+
+                <div class="form-group span-2">
+                  <label class="form-label">График работы</label>
+                  <el-input
+                    v-model="form.work_schedule"
+                    type="textarea"
+                    :rows="3"
+                    placeholder="Опишите график работы (например: пн-пт 9:00-18:00)"
+                  />
+                </div>
+              </div>
+            </el-card>
+          </div>
+
+          <!-- Step 3: Salary and Benefits -->
+          <div v-show="currentStep === 2" class="form-step">
+            <el-card class="step-card">
+              <template #header>
+                <div class="step-header">
+                  <div class="step-header-info">
+                    <h2 class="step-title">Зарплата и льготы</h2>
+                    <p class="step-subtitle">Финансовые условия и компенсации</p>
+                  </div>
+                  <div class="step-progress">
+                    <span class="progress-fraction">{{ getStepProgress(2) }}%</span>
+                  </div>
+                </div>
+              </template>
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label">Зарплата от (₽/мес)</label>
+                  <el-input-number
+                    v-model="form.salary_min"
+                    :min="0"
+                    :precision="0"
+                    style="width: 100%"
+                    placeholder="0"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Зарплата до (₽/мес)</label>
+                  <el-input-number
+                    v-model="form.salary_max"
+                    :min="0"
+                    :precision="0"
+                    style="width: 100%"
+                    placeholder="0"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Общий доход (₽/мес)</label>
+                  <el-input-number
+                    v-model="form.total_income"
+                    :min="0"
+                    :precision="0"
+                    style="width: 100%"
+                    placeholder="0"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Годовая премия (%)</label>
+                  <el-input-number
+                    v-model="form.annual_bonus_percent"
+                    :min="0"
+                    :max="100"
+                    :precision="1"
+                    style="width: 100%"
+                    placeholder="0"
+                  />
+                </div>
+
+                <div class="form-group span-2">
+                  <label class="form-label">Описание премирования</label>
+                  <el-input
+                    v-model="form.bonus_description"
+                    type="textarea"
+                    :rows="3"
+                    placeholder="Опишите систему премирования и дополнительные льготы"
+                  />
+                </div>
+              </div>
+            </el-card>
+          </div>
+
+          <!-- Step 4: Job Description -->
+          <div v-show="currentStep === 3" class="form-step">
+            <el-card class="step-card">
+              <template #header>
+                <div class="step-header">
+                  <div class="step-header-info">
+                    <h2 class="step-title">Описание работы</h2>
+                    <p class="step-subtitle">Обязанности и требования к кандидату</p>
+                  </div>
+                  <div class="step-progress">
+                    <span class="progress-fraction">{{ getStepProgress(3) }}%</span>
+                  </div>
+                </div>
+              </template>
+
+              <div class="form-grid single-column">
+                <div class="form-group">
+                  <label class="form-label">Описание вакансии</label>
+                  <el-input
+                    v-model="form.description"
+                    type="textarea"
+                    :rows="4"
+                    placeholder="Подробное описание вакансии, компании и условий работы"
+                    maxlength="1000"
+                    show-word-limit
+                  />
+                  <div class="field-hint">Привлекательное описание поможет найти лучших кандидатов</div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label required">Обязанности</label>
+                  <el-input
+                    v-model="form.responsibilities"
+                    type="textarea"
+                    :rows="5"
+                    placeholder="Опишите основные обязанности и задачи"
+                    maxlength="2000"
+                    show-word-limit
+                    :class="{ 'error': getFieldError('responsibilities') }"
+                    @blur="validateField('responsibilities')"
+                  />
+                  <div v-if="getFieldError('responsibilities')" class="field-error">{{ getFieldError('responsibilities') }}</div>
                   <KeywordsSection
                     v-if="isEdit && hasVacancyId"
                     :vacancy-id="vacancyId"
-                    section-type="languages"
-                    section-title="Иностранные языки"
-                    :section-text="form.foreign_languages"
+                    section-type="responsibilities"
+                    section-title="Обязанности"
+                    :section-text="form.responsibilities"
                     @keywords-updated="handleKeywordsUpdated"
                   />
-                </el-form-item>
-              </el-col>
-              <el-col :span="12">
-                <el-form-item label="Уровень языка" prop="language_level">
-                  <el-select v-model="form.language_level" placeholder="Выберите уровень" style="width: 100%">
-                    <el-option label="Базовый" value="basic" />
-                    <el-option label="Средний" value="intermediate" />
-                    <el-option label="Продвинутый" value="advanced" />
-                    <el-option label="Свободный" value="fluent" />
-                  </el-select>
-                </el-form-item>
-              </el-col>
-            </el-row>
-          </el-card>
+                </div>
 
-          <!-- Дополнительная информация -->
-          <el-card class="form-section">
-            <template #header>
-              <div class="section-header">
-                <el-icon><InfoFilled /></el-icon>
-                <span>Дополнительная информация</span>
+                <div class="form-group">
+                  <label class="form-label required">Требования</label>
+                  <el-input
+                    v-model="form.requirements"
+                    type="textarea"
+                    :rows="5"
+                    placeholder="Опишите требования к кандидату"
+                    maxlength="2000"
+                    show-word-limit
+                    :class="{ 'error': getFieldError('requirements') }"
+                    @blur="validateField('requirements')"
+                  />
+                  <div v-if="getFieldError('requirements')" class="field-error">{{ getFieldError('requirements') }}</div>
+                  <KeywordsSection
+                    v-if="isEdit && hasVacancyId"
+                    :vacancy-id="vacancyId"
+                    section-type="requirements"
+                    section-title="Требования"
+                    :section-text="form.requirements"
+                    @keywords-updated="handleKeywordsUpdated"
+                  />
+                </div>
               </div>
-            </template>
-            
-            <el-form-item label="Описание вакансии" prop="description">
-              <el-input
-                v-model="form.description"
-                type="textarea"
-                :rows="4"
-                placeholder="Подробное описание вакансии"
-                maxlength="1000"
-                show-word-limit
-              />
-              <!-- Keywords Section for Description -->
-              <KeywordsSection
-                v-if="isEdit && hasVacancyId"
-                :vacancy-id="vacancyId"
-                section-type="description"
-                section-title="Описание вакансии"
-                :section-text="form.description"
-                @keywords-updated="handleKeywordsUpdated"
-              />
-            </el-form-item>
-            
-            <el-form-item label="Дополнительная информация" prop="additional_info">
-              <el-input
-                v-model="form.additional_info"
-                type="textarea"
-                :rows="4"
-                placeholder="Любая дополнительная информация"
-              />
-              <!-- Keywords Section for Additional Info -->
-              <KeywordsSection
-                v-if="isEdit && hasVacancyId"
-                :vacancy-id="vacancyId"
-                section-type="additional"
-                section-title="Дополнительная информация"
-                :section-text="form.additional_info"
-                @keywords-updated="handleKeywordsUpdated"
-              />
-            </el-form-item>
-          </el-card>
-        </el-form>
-      </el-main>
-    </el-container>
+            </el-card>
+          </div>
+
+          <!-- Step 5: Skills and Qualifications -->
+          <div v-show="currentStep === 4" class="form-step">
+            <el-card class="step-card">
+              <template #header>
+                <div class="step-header">
+                  <div class="step-header-info">
+                    <h2 class="step-title">Навыки и квалификация</h2>
+                    <p class="step-subtitle">Профессиональные и технические требования</p>
+                  </div>
+                  <div class="step-progress">
+                    <span class="progress-fraction">{{ getStepProgress(4) }}%</span>
+                  </div>
+                </div>
+              </template>
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label">Уровень образования</label>
+                  <el-select
+                    v-model="form.education_level"
+                    placeholder="Выберите уровень"
+                    style="width: 100%"
+                  >
+                    <el-option label="Среднее" value="secondary" />
+                    <el-option label="Среднее специальное" value="vocational" />
+                    <el-option label="Высшее" value="higher" />
+                    <el-option label="Магистратура" value="masters" />
+                    <el-option label="Аспирантура" value="phd" />
+                  </el-select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Иностранные языки</label>
+                  <el-input
+                    v-model="form.foreign_languages"
+                    placeholder="Английский, Немецкий"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Уровень языка</label>
+                  <el-select
+                    v-model="form.language_level"
+                    placeholder="Выберите уровень"
+                    style="width: 100%"
+                  >
+                    <el-option label="Базовый (A1-A2)" value="basic" />
+                    <el-option label="Средний (B1-B2)" value="intermediate" />
+                    <el-option label="Продвинутый (C1)" value="advanced" />
+                    <el-option label="Свободный (C2)" value="fluent" />
+                  </el-select>
+                </div>
+
+                <div class="form-group span-2">
+                  <label class="form-label">Компьютерные навыки</label>
+                  <el-input
+                    v-model="form.computer_skills"
+                    type="textarea"
+                    :rows="3"
+                    placeholder="Опишите требуемые компьютерные навыки и программы"
+                  />
+                  <KeywordsSection
+                    v-if="isEdit && hasVacancyId"
+                    :vacancy-id="vacancyId"
+                    section-type="skills"
+                    section-title="Компьютерные навыки"
+                    :section-text="form.computer_skills"
+                    @keywords-updated="handleKeywordsUpdated"
+                  />
+                </div>
+
+                <div class="form-group span-2">
+                  <label class="form-label">Специальные программы</label>
+                  <el-input
+                    v-model="form.special_programs"
+                    type="textarea"
+                    :rows="3"
+                    placeholder="Укажите специализированные программы и инструменты"
+                  />
+                  <KeywordsSection
+                    v-if="isEdit && hasVacancyId"
+                    :vacancy-id="vacancyId"
+                    section-type="programs"
+                    section-title="Специальные программы"
+                    :section-text="form.special_programs"
+                    @keywords-updated="handleKeywordsUpdated"
+                  />
+                </div>
+
+                <div class="form-group span-2">
+                  <label class="form-label">Дополнительная информация</label>
+                  <el-input
+                    v-model="form.additional_info"
+                    type="textarea"
+                    :rows="4"
+                    placeholder="Любая дополнительная информация о вакансии"
+                  />
+                  <KeywordsSection
+                    v-if="isEdit && hasVacancyId"
+                    :vacancy-id="vacancyId"
+                    section-type="additional"
+                    section-title="Дополнительная информация"
+                    :section-text="form.additional_info"
+                    @keywords-updated="handleKeywordsUpdated"
+                  />
+                </div>
+              </div>
+            </el-card>
+          </div>
+
+          <!-- Step Navigation -->
+          <div class="step-navigation">
+            <div class="nav-buttons">
+              <BaseButton
+                v-if="currentStep > 0"
+                variant="secondary"
+                @click="previousStep"
+              >
+                <el-icon><ArrowLeft /></el-icon>
+                Назад
+              </BaseButton>
+              
+              <div class="nav-spacer"></div>
+              
+              <BaseButton
+                v-if="currentStep < steps.length - 1"
+                variant="primary"
+                @click="nextStep"
+                :disabled="!canProceedToNextStep"
+              >
+                Далее
+                <el-icon><ArrowRight /></el-icon>
+              </BaseButton>
+              
+              <BaseButton
+                v-else
+                variant="primary"
+                :loading="saving"
+                @click="saveVacancy"
+              >
+                <el-icon><Check /></el-icon>
+                {{ isEdit ? 'Сохранить изменения' : 'Создать вакансию' }}
+              </BaseButton>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, computed, watch, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { 
-  ArrowLeft, Check, Document, Briefcase, Money, User, InfoFilled, Star
+  ArrowLeft, ArrowRight, Check, Warning, Star
 } from '@element-plus/icons-vue'
+import { BaseButton } from '@/components/base'
 import KeywordsSection from '@/components/KeywordsSection.vue'
 
 export default {
   name: 'VacancyForm',
   components: {
-    ArrowLeft, Check, Document, Briefcase, Money, User, InfoFilled, Star,
+    ArrowLeft, ArrowRight, Check, Warning, Star,
+    BaseButton,
     KeywordsSection
   },
   setup() {
     const route = useRoute()
     const router = useRouter()
-    const formRef = ref()
     const saving = ref(false)
     const generatingScenario = ref(false)
-    const isEdit = ref(false)
+    const autoSaving = ref(false)
+    const lastSaved = ref(null)
+    const currentStep = ref(0)
+    const validationErrors = ref({})
     
-    // Computed properties для безопасного доступа к route.params
+    // Computed properties
     const vacancyId = computed(() => route?.params?.id || null)
     const hasVacancyId = computed(() => !!vacancyId.value)
+    const isEdit = computed(() => !!vacancyId.value)
     
-    // Проверяем, что route доступен
-    if (!route) {
-      console.error('Route is not available')
-      return {}
-    }
-    
+    // Form data
     const form = reactive({
       title: '',
-      status: 'active',
+      status: 'draft',
+      vacancy_code: '',
       region: '',
       city: '',
       address: '',
       employment_type: '',
+      experience_required: '',
       contract_type: '',
       work_schedule: '',
       business_trips: false,
@@ -450,7 +596,6 @@ export default {
       responsibilities: '',
       requirements: '',
       education_level: '',
-      experience_required: '',
       special_programs: '',
       computer_skills: '',
       foreign_languages: '',
@@ -459,15 +604,201 @@ export default {
       description: ''
     })
 
-    const rules = {
-      title: [
-        { required: true, message: 'Введите название вакансии', trigger: 'blur' },
-        { min: 3, max: 255, message: 'Название должно быть от 3 до 255 символов', trigger: 'blur' }
-      ],
-      status: [
-        { required: true, message: 'Выберите статус', trigger: 'change' }
-      ]
+    // Form steps configuration
+    const steps = [
+      {
+        id: 'basic',
+        title: 'Основная информация',
+        description: 'Название, статус и местоположение',
+        fields: ['title', 'status', 'vacancy_code', 'region', 'city', 'address'],
+        required: ['title', 'status']
+      },
+      {
+        id: 'employment',
+        title: 'Условия труда',
+        description: 'Тип занятости и график работы',
+        fields: ['employment_type', 'experience_required', 'contract_type', 'work_schedule', 'business_trips'],
+        required: []
+      },
+      {
+        id: 'salary',
+        title: 'Зарплата и льготы',
+        description: 'Финансовые условия',
+        fields: ['salary_min', 'salary_max', 'total_income', 'annual_bonus_percent', 'bonus_description'],
+        required: []
+      },
+      {
+        id: 'description',
+        title: 'Описание работы',
+        description: 'Обязанности и требования',
+        fields: ['description', 'responsibilities', 'requirements'],
+        required: ['responsibilities', 'requirements']
+      },
+      {
+        id: 'skills',
+        title: 'Навыки и квалификация',
+        description: 'Образование и специальные навыки',
+        fields: ['education_level', 'foreign_languages', 'language_level', 'computer_skills', 'special_programs', 'additional_info'],
+        required: []
+      }
+    ]
+
+    // Auto-save functionality
+    let autoSaveTimeout = null
+    const autoSaveDelay = 2000 // 2 seconds
+
+    // Computed properties
+    const formProgress = computed(() => {
+      const totalFields = Object.keys(form).length
+      const filledFields = Object.values(form).filter(value => 
+        value !== '' && value !== null && value !== false
+      ).length
+      return Math.round((filledFields / totalFields) * 100)
+    })
+
+    const autoSaveText = computed(() => {
+      if (autoSaving.value) return 'Сохранение...'
+      if (lastSaved.value) {
+        const now = new Date()
+        const diff = Math.floor((now.getTime() - lastSaved.value.getTime()) / 1000)
+        if (diff < 60) return 'Сохранено только что'
+        if (diff < 3600) return `Сохранено ${Math.floor(diff / 60)} мин назад`
+        return `Сохранено ${Math.floor(diff / 3600)} ч назад`
+      }
+      return 'Не сохранено'
+    })
+
+    const canProceedToNextStep = computed(() => {
+      const step = steps[currentStep.value]
+      return step.required.every(field => {
+        const value = form[field]
+        return value !== '' && value !== null
+      })
+    })
+
+    // Validation methods
+    const validateField = (fieldName) => {
+      const value = form[fieldName]
+      
+      // Required field validation
+      const currentStepData = steps[currentStep.value]
+      if (currentStepData.required.includes(fieldName)) {
+        if (!value || value === '') {
+          validationErrors.value[fieldName] = 'Это поле обязательно для заполнения'
+          return false
+        }
+      }
+      
+      // Specific field validations
+      if (fieldName === 'title' && value) {
+        if (typeof value === 'string' && (value.length < 3 || value.length > 255)) {
+          validationErrors.value[fieldName] = 'Название должно быть от 3 до 255 символов'
+          return false
+        }
+      }
+      
+      // Clear error if validation passes
+      delete validationErrors.value[fieldName]
+      return true
     }
+
+    const getFieldError = (fieldName) => {
+      return validationErrors.value[fieldName] || ''
+    }
+
+    const isStepCompleted = (stepIndex) => {
+      const step = steps[stepIndex]
+      const requiredFilled = step.required.every(field => {
+        const value = form[field]
+        return value !== '' && value !== null && value !== false
+      })
+      
+      if (step.required.length === 0) {
+        const filledFields = step.fields.filter(field => {
+          const value = form[field]
+          return value !== '' && value !== null && value !== false
+        }).length
+        return filledFields >= Math.ceil(step.fields.length / 2)
+      }
+      
+      return requiredFilled
+    }
+
+    const hasStepErrors = (stepIndex) => {
+      const step = steps[stepIndex]
+      return step.fields.some(field => validationErrors.value[field])
+    }
+
+    const getStepProgress = (stepIndex) => {
+      const step = steps[stepIndex]
+      const totalFields = step.fields.length
+      const filledFields = step.fields.filter(field => {
+        const value = form[field]
+        return value !== '' && value !== null && value !== false
+      }).length
+      return Math.round((filledFields / totalFields) * 100)
+    }
+
+    // Navigation methods
+    const goToStep = (stepIndex) => {
+      if (stepIndex >= 0 && stepIndex < steps.length) {
+        currentStep.value = stepIndex
+      }
+    }
+
+    const nextStep = () => {
+      if (canProceedToNextStep.value && currentStep.value < steps.length - 1) {
+        currentStep.value++
+      }
+    }
+
+    const previousStep = () => {
+      if (currentStep.value > 0) {
+        currentStep.value--
+      }
+    }
+
+    // Auto-save functionality
+    const triggerAutoSave = () => {
+      if (autoSaveTimeout) {
+        clearTimeout(autoSaveTimeout)
+      }
+      
+      autoSaveTimeout = setTimeout(async () => {
+        if (isEdit.value && vacancyId.value) {
+          await autoSave()
+        }
+      }, autoSaveDelay)
+    }
+
+    const autoSave = async () => {
+      if (autoSaving.value || saving.value) return
+      
+      try {
+        autoSaving.value = true
+        
+        const response = await fetch(`/api/v1/vacancies/${vacancyId.value}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(form)
+        })
+        
+        if (response.ok) {
+          lastSaved.value = new Date()
+        }
+      } catch (error) {
+        console.error('Auto-save failed:', error)
+      } finally {
+        autoSaving.value = false
+      }
+    }
+
+    // Watch for form changes to trigger auto-save
+    watch(form, () => {
+      if (isEdit.value) {
+        triggerAutoSave()
+      }
+    }, { deep: true })
 
     const loadVacancy = async (id) => {
       try {
@@ -484,7 +815,21 @@ export default {
 
     const saveVacancy = async () => {
       try {
-        await formRef.value.validate()
+        // Validate all required fields
+        let hasErrors = false
+        steps.forEach(step => {
+          step.required.forEach(field => {
+            if (!validateField(field)) {
+              hasErrors = true
+            }
+          })
+        })
+        
+        if (hasErrors) {
+          ElMessage.error('Пожалуйста, заполните все обязательные поля')
+          return
+        }
+        
         saving.value = true
         
         const url = isEdit.value && vacancyId.value
@@ -512,9 +857,7 @@ export default {
         
         router.push(`/vacancies/${data.id}`)
       } catch (error) {
-        if (error.message !== 'validation failed') {
-          ElMessage.error('Ошибка сохранения вакансии: ' + error.message)
-        }
+        ElMessage.error('Ошибка сохранения вакансии: ' + error.message)
       } finally {
         saving.value = false
       }
@@ -568,20 +911,44 @@ export default {
 
     onMounted(() => {
       if (vacancyId.value) {
-        isEdit.value = true
         loadVacancy(vacancyId.value)
       }
     })
 
+    onUnmounted(() => {
+      if (autoSaveTimeout) {
+        clearTimeout(autoSaveTimeout)
+      }
+    })
+
     return {
-      formRef,
+      // Data
       form,
-      rules,
       saving,
       generatingScenario,
-      isEdit,
+      autoSaving,
+      lastSaved,
+      currentStep,
+      validationErrors,
+      steps,
+      
+      // Computed
       vacancyId,
       hasVacancyId,
+      isEdit,
+      formProgress,
+      autoSaveText,
+      canProceedToNextStep,
+      
+      // Methods
+      validateField,
+      getFieldError,
+      isStepCompleted,
+      hasStepErrors,
+      getStepProgress,
+      goToStep,
+      nextStep,
+      previousStep,
       saveVacancy,
       goBack,
       handleKeywordsUpdated,
@@ -594,45 +961,64 @@ export default {
 <style scoped>
 .vacancy-form {
   min-height: 100vh;
-  background-color: #f5f7fa;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #0f172a 50%, #1e293b 75%, #0f172a 100%);
+  position: relative;
 }
 
-:deep(.el-header) {
-  background-color: #409eff;
+.vacancy-form::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(0, 255, 255, 0.1) 0%, transparent 60%),
+    radial-gradient(circle at 80% 20%, rgba(138, 43, 226, 0.1) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Header */
+.page-header {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.15), rgba(138, 43, 226, 0.15));
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2);
   color: white;
-  height: 80px;
+  padding: 20px 0;
 }
 
+.el-textarea .el-input__count {
+    background: transparent;
+    bottom: 5px;
+    color: var(--el-color-info);
+    font-size: 12px;
+    line-height: 14px;
+    position: absolute;
+    right: 10px;
+}
 .header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 100%;
-  padding: 0 20px;
-}
-
-.header-left {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  height: 100%;
 }
 
 .header-left h1 {
   margin: 0;
-  color: #303133;
+  color: #e2e8f0;
   font-size: 28px;
   font-weight: 600;
-  line-height: 1.2;
+  text-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
 }
 
 .header-subtitle {
   margin: 8px 0 0 0;
-  color: #909399;
+  color: #94a3b8;
   font-size: 14px;
 }
-
-
 
 .header-actions {
   display: flex;
@@ -640,81 +1026,329 @@ export default {
   align-items: center;
 }
 
-.vacancy-form-content {
+/* Progress Bar */
+.progress-container {
   max-width: 1200px;
   margin: 0 auto;
+  padding: 20px;
 }
 
-.form-section {
-  margin-bottom: 24px;
-  border: none;
-  border-radius: 8px;
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(30, 41, 59, 0.8);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
 }
 
-.section-header {
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ffff, #8a2be2);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+/* Form Content */
+.form-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Steps Navigation */
+.steps-navigation {
+  margin-bottom: 30px;
+}
+
+.steps-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  overflow-x: auto;
+  padding: 20px 0;
+}
+
+.step-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  color: #303133;
-}
-
-.section-header .el-icon {
-  font-size: 18px;
-  color: #409eff;
-}
-
-:deep(.el-card__header) {
+  gap: 12px;
   padding: 16px 20px;
-  border-bottom: 1px solid #ebeef5;
-  background-color: #fafafa;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 200px;
+  backdrop-filter: blur(10px);
+}
+
+.step-item:hover {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(0, 255, 255, 0.4);
+}
+
+.step-item.active {
+  background: rgba(0, 255, 255, 0.1);
+  border-color: rgba(0, 255, 255, 0.5);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+}
+
+.step-item.completed {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+.step-item.error {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.step-indicator {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(30, 41, 59, 0.8);
+  border: 2px solid rgba(100, 116, 139, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: #e2e8f0;
+  flex-shrink: 0;
+}
+
+.step-item.active .step-indicator {
+  background: rgba(0, 255, 255, 0.2);
+  border-color: rgba(0, 255, 255, 0.6);
+  color: #00ffff;
+}
+
+.step-item.completed .step-indicator {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: rgba(34, 197, 94, 0.6);
+  color: #22c55e;
+}
+
+.step-item.error .step-indicator {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.6);
+  color: #ef4444;
+}
+
+.step-info {
+  flex: 1;
+}
+
+.step-title {
+  font-weight: 600;
+  color: #e2e8f0;
+  margin-bottom: 4px;
+}
+
+.step-description {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* Form Steps */
+.form-steps {
+  margin-bottom: 30px;
+}
+
+.form-step {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.step-card {
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.step-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.step-header-info h2 {
+  margin: 0;
+  color: #e2e8f0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.step-subtitle {
+  margin: 4px 0 0 0;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.progress-fraction {
+  background: rgba(0, 255, 255, 0.2);
+  color: #00ffff;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Form Grid */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.form-grid.single-column {
+  grid-template-columns: 1fr;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group.span-2 {
+  grid-column: span 2;
+}
+
+.form-label {
+  font-weight: 500;
+  color: #e2e8f0;
+  font-size: 14px;
+}
+
+.form-label.required::after {
+  content: ' *';
+  color: #ef4444;
+}
+
+.field-hint {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+.field-error {
+  font-size: 12px;
+  color: #ef4444;
+  margin-top: 4px;
+}
+
+/* Step Navigation */
+.step-navigation {
+  margin-top: 40px;
+  padding: 20px 0;
+  border-top: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-spacer {
+  flex: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .steps-container {
+    flex-direction: column;
+  }
+  
+  .step-item {
+    min-width: auto;
+  }
+  
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-group.span-2 {
+    grid-column: span 1;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+  
+  .header-actions {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+/* Element Plus Overrides */
+:deep(.el-card__header) {
+  background: rgba(0, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+  color: #00ffff;
 }
 
 :deep(.el-card__body) {
-  padding: 24px;
+  background: transparent;
+  color: #e2e8f0;
 }
 
-:deep(.el-form-item__label) {
-  font-weight: 500;
-  color: #606266;
+:deep(.el-switch.is-checked .el-switch__core) {
+  background-color: #00ffff;
+  border-color: #00ffff;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
 }
 
 :deep(.el-input-number) {
   width: 100%;
 }
 
-:deep(.el-textarea__inner) {
-  font-family: inherit;
-}
-
-:deep(.el-switch) {
-  margin-top: 8px;
-}
-
 /* Keywords section styling */
 :deep(.keywords-section) {
   margin-top: 12px;
-  border: 1px solid #e4e7ed;
-  border-radius: 6px;
-  background-color: #fafafa;
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.6);
 }
 
 :deep(.keywords-header) {
   padding: 12px 16px;
-  border-bottom: 1px solid #e4e7ed;
-  background-color: #f5f7fa;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+  background: rgba(0, 255, 255, 0.1);
+  color: #00ffff;
 }
 
 :deep(.keywords-content) {
   padding: 16px;
+  color: #e2e8f0;
 }
 
 :deep(.keywords-empty) {
   padding: 20px;
   text-align: center;
+  color: #94a3b8;
 }
 
 :deep(.keywords-loading) {
   padding: 16px;
+  color: #94a3b8;
 }
 </style>

@@ -2,9 +2,9 @@
   <div class="resume-upload">
     <div class="page-header">
       <h1>Загрузка резюме</h1>
-      <el-button @click="$router.push('/resumes')" icon="ArrowLeft">
+      <BaseButton @click="$router.push('/resumes')" variant="ghost" :icon="ArrowLeft">
         Назад к списку
-      </el-button>
+      </BaseButton>
     </div>
 
     <el-row :gutter="20">
@@ -87,19 +87,21 @@
 
             <!-- Кнопки действий -->
             <el-form-item>
-              <el-button
-                type="primary"
-                @click="uploadResume"
-                :loading="uploading"
-                :disabled="!selectedFile"
-                icon="Upload"
-              >
-                Загрузить резюме
-              </el-button>
-              
-              <el-button @click="resetForm" icon="Refresh">
-                Сбросить
-              </el-button>
+              <div class="action-buttons">
+                <BaseButton
+                  variant="primary"
+                  @click="uploadResume"
+                  :loading="uploading"
+                  :disabled="!selectedFile"
+                  :icon="Upload"
+                >
+                  Загрузить резюме
+                </BaseButton>
+                
+                <BaseButton @click="resetForm" variant="ghost" :icon="Refresh">
+                  Сбросить
+                </BaseButton>
+              </div>
             </el-form-item>
           </el-form>
         </el-card>
@@ -175,14 +177,18 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { UploadFilled, Document, ArrowLeft } from '@element-plus/icons-vue'
+import { UploadFilled, Document, ArrowLeft, Upload, Refresh } from '@element-plus/icons-vue'
+import { BaseButton } from '@/components/base'
 
 export default {
   name: 'ResumeUpload',
   components: {
     UploadFilled,
     Document,
-    ArrowLeft
+    ArrowLeft,
+    Upload,
+    Refresh,
+    BaseButton
   },
   setup() {
     const router = useRouter()
@@ -369,6 +375,23 @@ export default {
 <style scoped>
 .resume-upload {
   padding: 20px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #0f172a 50%, #1e293b 75%, #0f172a 100%);
+  position: relative;
+}
+
+.resume-upload::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(0, 255, 255, 0.1) 0%, transparent 60%),
+    radial-gradient(circle at 80% 20%, rgba(138, 43, 226, 0.1) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: -1;
 }
 
 .page-header {
@@ -380,7 +403,8 @@ export default {
 
 .page-header h1 {
   margin: 0;
-  color: #303133;
+  color: #e2e8f0;
+  text-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
 }
 
 .resume-uploader {
@@ -408,10 +432,12 @@ export default {
 }
 
 .file-info {
-  border: 1px solid #DCDFE6;
-  border-radius: 4px;
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 8px;
   padding: 15px;
-  background-color: #FAFAFA;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 4px 16px rgba(0, 255, 255, 0.1);
 }
 
 .file-details {
@@ -425,22 +451,25 @@ export default {
   align-items: center;
   gap: 8px;
   font-weight: bold;
+  color: #00ffff;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
 }
 
 .file-size, .file-type {
-  color: #606266;
+  color: #cbd5e1;
   font-size: 14px;
 }
 
 .info-content h4 {
   margin: 15px 0 8px 0;
-  color: #303133;
+  color: #00ffff;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
 }
 
 .process-steps, .supported-formats, .limitations {
   margin: 0;
   padding-left: 20px;
-  color: #606266;
+  color: #cbd5e1;
   line-height: 1.6;
 }
 
@@ -450,7 +479,7 @@ export default {
 
 .no-recent {
   text-align: center;
-  color: #909399;
+  color: #94a3b8;
   padding: 20px;
 }
 
@@ -462,21 +491,25 @@ export default {
 
 .recent-upload-item {
   padding: 10px;
-  border: 1px solid #DCDFE6;
-  border-radius: 4px;
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(10px);
 }
 
 .recent-upload-item:hover {
-  background-color: #F5F7FA;
-  border-color: #C0C4CC;
+  background: rgba(0, 255, 255, 0.1);
+  border-color: rgba(0, 255, 255, 0.4);
+  box-shadow: 0 4px 16px rgba(0, 255, 255, 0.2);
+  transform: translateY(-2px);
 }
 
 .upload-file-name {
   font-weight: bold;
   margin-bottom: 5px;
-  color: #303133;
+  color: #e2e8f0;
 }
 
 .upload-status {
@@ -485,6 +518,10 @@ export default {
 
 .upload-date {
   font-size: 12px;
-  color: #909399;
+  color: #94a3b8;
 }
 </style>
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+}

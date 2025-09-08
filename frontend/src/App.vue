@@ -1,42 +1,56 @@
 <template>
-  <div id="app">
-    <el-container>
-      <el-header>
-        <nav-bar />
-      </el-header>
-      <el-main>
-        <router-view />
-      </el-main>
-    </el-container>
-  </div>
+  <AppLayout 
+    :user="user"
+    :show-search="true"
+    @search="handleSearch"
+    @logout="handleLogout"
+  >
+    <router-view />
+  </AppLayout>
 </template>
 
-<script>
-import NavBar from '@/components/NavBar.vue'
+<script setup>
+import { ref } from 'vue'
+import AppLayout from '@/components/layout/AppLayout.vue'
 
-export default {
-  name: 'App',
-  components: {
-    NavBar
-  }
+// User data (можно заменить на реальные данные из store)
+const user = ref({
+  name: 'Администратор',
+  role: 'admin',
+  avatar: null
+})
+
+// Methods
+const handleSearch = (query) => {
+  console.log('Search query:', query)
+  // Здесь можно добавить логику поиска
+}
+
+const handleLogout = () => {
+  console.log('Logout')
+  // Здесь можно добавить логику выхода
 }
 </script>
 
 <style>
 #app {
-  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+  font-family: var(--font-family-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
 }
 
+::-webkit-scrollbar {
+  width: 0;
+}
+
+/* Убираем стили Element Plus header */
 .el-header {
-  background-color: #409EFF;
-  color: white;
-  line-height: 60px;
+  background-color: transparent !important;
+  color: inherit !important;
+  line-height: inherit !important;
 }
 
 .el-main {
-  padding: 20px;
+  padding: 0 !important;
 }
 </style>

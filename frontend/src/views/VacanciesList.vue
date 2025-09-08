@@ -4,31 +4,22 @@
       <el-header>
         <div class="header-content">
           <h1>Управление вакансиями</h1>
-          <el-button type="primary" @click="createVacancy" size="large">
-            <el-icon><Plus /></el-icon>
+          <BaseButton variant="primary" @click="createVacancy" size="large" :icon="Plus">
             Создать вакансию
-          </el-button>
+          </BaseButton>
         </div>
       </el-header>
       
       <el-main>
-        <div class="page-description">
-          <p>Создавайте и управляйте вакансиями для автоматизированных интервью</p>
-        </div>
         <!-- Статистические карточки -->
         <el-row :gutter="20" class="stats-row">
           <el-col :span="6" v-for="stat in statistics" :key="stat.title">
-            <el-card class="stat-card" shadow="hover">
-              <div class="stat-content">
-                <div class="stat-icon" :class="stat.type">
-                  <el-icon><component :is="stat.icon" /></el-icon>
-                </div>
-                <div class="stat-info">
-                  <div class="stat-value">{{ stat.value }}</div>
-                  <div class="stat-title">{{ stat.title }}</div>
-                </div>
-              </div>
-            </el-card>
+            <BaseMetricCard
+              :title="stat.title"
+              :value="stat.value"
+              :icon="stat.icon"
+              :variant="stat.type"
+            />
           </el-col>
         </el-row>
 
@@ -36,38 +27,48 @@
         <el-card class="filter-card" shadow="never">
           <el-form :model="filters" inline class="filter-form">
             <el-form-item label="Статус">
-              <el-select v-model="filters.status" placeholder="Все статусы" clearable style="width: 150px">
-                <el-option label="Активные" value="active" />
-                <el-option label="Закрытые" value="closed" />
-                <el-option label="Черновики" value="draft" />
-              </el-select>
+              <BaseSelect 
+                v-model="filters.status" 
+                :options="statusOptions"
+                placeholder="Все статусы" 
+                clearable 
+                size="sm"
+              />
             </el-form-item>
             
             <el-form-item label="Регион">
-              <el-input v-model="filters.region" placeholder="Поиск по региону" style="width: 200px" />
+              <BaseInput 
+                v-model="filters.region" 
+                placeholder="Поиск по региону" 
+                size="sm"
+              />
             </el-form-item>
             
             <el-form-item label="Город">
-              <el-input v-model="filters.city" placeholder="Поиск по городу" style="width: 200px" />
+              <BaseInput 
+                v-model="filters.city" 
+                placeholder="Поиск по городу" 
+                size="sm"
+              />
             </el-form-item>
             
             <el-form-item label="Тип занятости">
-              <el-select v-model="filters.employment_type" placeholder="Все типы" clearable style="width: 150px">
-                <el-option label="Полная" value="full" />
-                <el-option label="Частичная" value="part" />
-                <el-option label="Удаленная" value="remote" />
-              </el-select>
+              <BaseSelect 
+                v-model="filters.employment_type" 
+                :options="employmentOptions"
+                placeholder="Все типы" 
+                clearable 
+                size="sm"
+              />
             </el-form-item>
             
             <el-form-item>
-              <el-button type="primary" @click="applyFilters" :loading="loading">
-                <el-icon><Search /></el-icon>
+              <BaseButton variant="primary" @click="applyFilters" :loading="loading" :icon="Search"  style="margin-right: 1rem;">
                 Применить
-              </el-button>
-              <el-button @click="clearFilters">
-                <el-icon><Refresh /></el-icon>
+              </BaseButton>
+              <BaseButton variant="ghost" @click="clearFilters" :icon="Refresh">
                 Очистить
-              </el-button>
+              </BaseButton>
             </el-form-item>
           </el-form>
           
@@ -93,14 +94,12 @@
             <div class="table-header">
               <span>Список вакансий</span>
               <div class="table-actions">
-                <el-button @click="refreshData" :loading="loading" size="small">
-                  <el-icon><Refresh /></el-icon>
+                <BaseButton @click="refreshData" :loading="loading" size="small" variant="ghost" :icon="Refresh">
                   Обновить
-                </el-button>
-                <el-button @click="exportVacancies" size="small">
-                  <el-icon><Download /></el-icon>
+                </BaseButton>
+                <BaseButton @click="exportVacancies" size="small" variant="secondary" :icon="Download">
                   Экспорт
-                </el-button>
+                </BaseButton>
               </div>
             </div>
           </template>
@@ -169,17 +168,11 @@
             
             <el-table-column label="Действия" width="200" fixed="right">
               <template #default="{ row }">
-                <el-button-group>
-                  <el-button size="small" @click.stop="viewVacancy(row)" type="primary">
-                    <el-icon><View /></el-icon>
-                  </el-button>
-                  <el-button size="small" @click.stop="editVacancy(row)" type="warning">
-                    <el-icon><Edit /></el-icon>
-                  </el-button>
-                  <el-button size="small" @click.stop="deleteVacancy(row)" type="danger">
-                    <el-icon><Delete /></el-icon>
-                  </el-button>
-                </el-button-group>
+                <div class="action-buttons">
+                  <BaseButton size="small" @click.stop="viewVacancy(row)" variant="primary" :icon="View" />
+                  <BaseButton size="small" @click.stop="editVacancy(row)" variant="secondary" :icon="Edit" />
+                  <BaseButton size="small" @click.stop="deleteVacancy(row)" variant="danger" :icon="Delete" />
+                </div>
               </template>
             </el-table-column>
           </el-table>
@@ -210,12 +203,15 @@ import {
   Plus, Search, Refresh, Download, View, Edit, Delete,
   Document, User, Briefcase, Money
 } from '@element-plus/icons-vue'
+import { BaseSelect, BaseInput, BaseButton, BaseMetricCard } from '@/components/base'
 
 export default {
   name: 'VacanciesList',
   components: {
     Plus, Search, Refresh, Download, View, Edit, Delete,
-    Document, User, Briefcase, Money
+    Document, User, Briefcase, Money,
+    BaseButton,
+    BaseSelect, BaseInput, BaseMetricCard
   },
   setup() {
     const router = useRouter()
@@ -241,6 +237,18 @@ export default {
       { title: 'Активные', value: 0, icon: 'User', type: 'success' },
       { title: 'Закрытые', value: 0, icon: 'Briefcase', type: 'warning' },
       { title: 'Черновики', value: 0, icon: 'Money', type: 'info' }
+    ])
+
+    const statusOptions = computed(() => [
+      { label: 'Активные', value: 'active' },
+      { label: 'Закрытые', value: 'closed' },
+      { label: 'Черновики', value: 'draft' }
+    ])
+
+    const employmentOptions = computed(() => [
+      { label: 'Полная', value: 'full' },
+      { label: 'Частичная', value: 'part' },
+      { label: 'Удаленная', value: 'remote' }
     ])
 
     const loadVacancies = async () => {
@@ -405,6 +413,8 @@ export default {
       filters,
       pagination,
       statistics,
+      statusOptions,
+      employmentOptions,
       createVacancy,
       viewVacancy,
       editVacancy,
@@ -428,7 +438,9 @@ export default {
 <style scoped>
 .vacancies-list {
   min-height: 100vh;
-  background-color: #f5f7fa;
+  background: transparent;
+  padding: 0;
+  overflow: visible;
 }
 
 .header-content {
@@ -436,13 +448,16 @@ export default {
   justify-content: space-between;
   align-items: center;
   height: 100%;
+  padding: 1rem 0;
+  margin-bottom: 1rem;
 }
 
 .header-content h1 {
   margin: 0;
-  color: #303133;
-  font-size: 28px;
-  font-weight: 600;
+  color: #00ffff;
+  font-size: 2rem;
+  font-weight: 700;
+  text-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
 }
 
 .page-description {
@@ -458,7 +473,10 @@ export default {
 }
 
 .stats-row {
-  margin-bottom: 24px;
+  margin-bottom: 2rem;
+  margin-top: 1rem;
+  padding-top: 2rem;
+  padding-bottom: 1rem;
 }
 
 .stat-card {
@@ -502,9 +520,12 @@ export default {
 }
 
 .filter-card {
-  margin-bottom: 24px;
+  margin-bottom: 2rem;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 255, 255, 0.2);
 }
 
 .filter-form {
@@ -518,7 +539,11 @@ export default {
 
 .table-card {
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  margin-bottom: 2rem;
 }
 
 .table-header {
@@ -578,11 +603,76 @@ export default {
 }
 
 :deep(.el-card__header) {
-  padding: 16px 20px;
-  border-bottom: 1px solid #ebeef5;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+  background: transparent;
+  color: #e2e8f0;
 }
 
 :deep(.el-card__body) {
-  padding: 20px;
+  padding: 1.5rem;
+  background: transparent;
+}
+
+:deep(.el-table) {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+}
+
+:deep(.el-table th) {
+  background: rgba(0, 255, 255, 0.1) !important;
+  color: #00ffff !important;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2) !important;
+}
+
+:deep(.el-table td) {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.1) !important;
+}
+
+:deep(.el-table--striped .el-table__body tr.el-table__row--striped td) {
+  background: rgba(0, 255, 255, 0.05) !important;
+}
+
+:deep(.el-table__body tr:hover > td) {
+  background: rgba(0, 255, 255, 0.1) !important;
+}
+
+:deep(.el-container) {
+  background: transparent;
+}
+
+:deep(.el-header) {
+  background: transparent;
+  padding: 0;
+  height: auto;
+}
+
+:deep(.el-main) {
+  padding: 0;
+  overflow: visible !important;
+}
+
+:deep(.el-container) {
+  overflow: visible !important;
+}
+
+:deep(.stats-row .el-col) {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+:deep(.stats-row) {
+  overflow: visible !important;
+}
+
+:deep(.el-row) {
+  overflow: visible !important;
 }
 </style>
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}

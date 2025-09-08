@@ -1,0 +1,91 @@
+/* Pagination Fixes */
+
+.el-pagination {
+  --el-pagination-bg-color: transparent !important;
+  --el-pagination-text-color: #e2e8f0 !important;
+  --el-pagination-button-bg-color: rgba(15, 23, 42, 0.9) !important;
+  --el-pagination-button-border-color: rgba(100, 116, 139, 0.3) !important;
+  --el-pagination-button-hover-bg-color: rgba(30, 41, 59, 0.9) !important;
+  --el-pagination-button-hover-border-color: rgba(0, 255, 255, 0.4) !important;
+  --el-pagination-button-active-bg-color: rgba(0, 255, 255, 0.2) !important;
+  --el-pagination-button-active-border-color: rgba(0, 255, 255, 0.5) !important;
+  
+  background: transparent !important;
+  color: #e2e8f0 !important;
+}
+
+.el-pagination .el-pager li {
+  background: rgba(15, 23, 42, 0.9) !important;
+  border: 1px solid rgba(100, 116, 139, 0.3) !important;
+  color: #e2e8f0 !important;
+  border-radius: 4px !important;
+  margin: 0 2px !important;
+  transition: all 0.2s ease !important;
+  box-shadow: none !important;
+}
+
+.el-pagination .el-pager li:hover {
+  background: rgba(30, 41, 59, 0.9) !important;
+  border-color: rgba(0, 255, 255, 0.4) !important;
+  color: #00ffff !important;
+  box-shadow: none !important;
+}
+
+.el-pagination .el-pager li.is-active {
+  background: rgba(0, 255, 255, 0.2) !important;
+  border-color: rgba(0, 255, 255, 0.5) !important;
+  color: #00ffff !important;
+  box-shadow: none !important;
+}
+
+.el-pagination .btn-prev,
+.el-pagination .btn-next {
+  background: rgba(15, 23, 42, 0.9) !important;
+  border: 1px solid rgba(100, 116, 139, 0.3) !important;
+  color: #e2e8f0 !important;
+  border-radius: 4px !important;
+  transition: all 0.2s ease !important;
+  box-shadow: none !important;
+}
+
+.el-pagination .btn-prev:hover,
+.el-pagination .btn-next:hover {
+  background: rgba(30, 41, 59, 0.9) !important;
+  border-color: rgba(0, 255, 255, 0.4) !important;
+  color: #00ffff !important;
+  box-shadow: none !important;
+}
+
+.el-pagination .btn-prev:disabled,
+.el-pagination .btn-next:disabled {
+  background: rgba(15, 23, 42, 0.5) !important;
+  border-color: rgba(100, 116, 139, 0.2) !important;
+  color: rgba(148, 163, 184, 0.5) !important;
+  cursor: not-allowed !important;
+}
+
+.el-pagination .el-select .el-input__inner {
+  background: rgba(15, 23, 42, 0.9) !important;
+  border: 1px solid rgba(100, 116, 139, 0.3) !important;
+  color: #e2e8f0 !important;
+  border-radius: 4px !important;
+}
+
+.el-pagination .el-pagination__total,
+.el-pagination .el-pagination__jump {
+  color: #e2e8f0 !important;
+}
+
+.el-pagination .el-pagination__jump .el-input__inner {
+  background: rgba(15, 23, 42, 0.9) !important;
+  border: 1px solid rgba(100, 116, 139, 0.3) !important;
+  color: #e2e8f0 !important;
+  border-radius: 4px !important;
+}
+
+/* Remove any gradients or fancy effects */
+.el-pagination * {
+  background-image: none !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}

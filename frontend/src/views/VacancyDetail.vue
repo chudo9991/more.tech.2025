@@ -15,22 +15,18 @@
             </div>
           </div>
           <div class="header-actions">
-            <el-button @click="goBack" size="large">
-              <el-icon><ArrowLeft /></el-icon>
+            <BaseButton @click="goBack" size="large" variant="ghost" :icon="ArrowLeft">
               Назад
-            </el-button>
-            <el-button @click="openKeywordsManager" type="primary" size="large">
-              <el-icon><Star /></el-icon>
+            </BaseButton>
+            <BaseButton @click="openKeywordsManager" variant="primary" size="large" :icon="Star">
               Ключевые слова
-            </el-button>
-            <el-button @click="editVacancy" type="warning" size="large">
-              <el-icon><Edit /></el-icon>
+            </BaseButton>
+            <BaseButton @click="editVacancy" variant="secondary" size="large" :icon="Edit">
               Редактировать
-            </el-button>
-            <el-button @click="exportVacancy" type="success" size="large">
-              <el-icon><Download /></el-icon>
+            </BaseButton>
+            <BaseButton @click="exportVacancy" variant="primary" size="large" :icon="Download">
               Экспорт
-            </el-button>
+            </BaseButton>
           </div>
         </div>
       </el-header>
@@ -324,12 +320,14 @@ import { ElMessage } from 'element-plus'
 import { 
   ArrowLeft, Edit, Download, Document, Briefcase, Money, User, InfoFilled, Setting, Star
 } from '@element-plus/icons-vue'
+import { BaseButton } from '@/components/base'
 import KeywordsManager from '@/components/KeywordsManager.vue'
 
 export default {
   name: 'VacancyDetail',
   components: {
     ArrowLeft, Edit, Download, Document, Briefcase, Money, User, InfoFilled, Setting, Star,
+    BaseButton,
     KeywordsManager
   },
   setup() {

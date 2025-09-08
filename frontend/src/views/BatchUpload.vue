@@ -7,9 +7,9 @@
                       :batch-id="currentBatchId" 
                       @export-completed="handleExportCompleted" 
                     />
-                    <el-button @click="$router.push('/resumes')" icon="ArrowLeft">
+                    <BaseButton @click="$router.push('/resumes')" variant="ghost" :icon="ArrowLeft">
                       Назад к списку
-                    </el-button>
+                    </BaseButton>
                   </div>
                 </div>
 
@@ -75,15 +75,17 @@
             </el-form-item>
 
             <el-form-item>
-              <el-button 
-                type="primary" 
-                @click="startBatchUpload"
-                :loading="uploading"
-                :disabled="fileList.length === 0"
-              >
-                Начать обработку
-              </el-button>
-              <el-button @click="resetForm">Сбросить</el-button>
+              <div class="action-buttons">
+                <BaseButton 
+                  variant="primary" 
+                  @click="startBatchUpload"
+                  :loading="uploading"
+                  :disabled="fileList.length === 0"
+                >
+                  Начать обработку
+                </BaseButton>
+                <BaseButton @click="resetForm" variant="ghost">Сбросить</BaseButton>
+              </div>
             </el-form-item>
           </el-form>
         </el-card>
@@ -177,6 +179,7 @@
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowLeft, UploadFilled } from '@element-plus/icons-vue'
+import { BaseButton } from '@/components/base'
 import { useHRStore } from '@/stores/hr'
 import ExportButtons from '@/components/ExportButtons.vue'
 
@@ -185,6 +188,7 @@ export default {
   components: {
     ArrowLeft,
     UploadFilled,
+    BaseButton,
     ExportButtons
   },
   setup() {
@@ -474,3 +478,7 @@ export default {
   margin-top: 8px;
 }
 </style>
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+}

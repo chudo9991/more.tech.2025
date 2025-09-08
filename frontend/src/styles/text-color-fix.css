@@ -1,0 +1,296 @@
+/* Text Color Fixes */
+
+/* Fix blue text issues */
+* {
+  color: inherit !important;
+}
+
+/* Base text colors */
+body,
+html {
+  color: #e2e8f0 !important;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+  color: #e2e8f0 !important;
+}
+
+/* Paragraphs and spans */
+p, span, div:not(.el-button):not(.el-tag) {
+  color: inherit !important;
+}
+
+/* Links - remove blue color */
+a:not(.el-button):not(.nav-link):not(.brand-link) {
+  color: #e2e8f0 !important;
+  text-decoration: none !important;
+}
+
+a:not(.el-button):not(.nav-link):not(.brand-link):hover {
+  color: #00ffff !important;
+  text-decoration: none !important;
+}
+
+/* Table text */
+.el-table td,
+.el-table th,
+.el-table .el-table__cell {
+  color: inherit !important;
+}
+
+.el-table th,
+.el-table .el-table__header .el-table__cell {
+  color: #00ffff !important;
+}
+
+.el-table td,
+.el-table .el-table__body .el-table__cell {
+  color: #e2e8f0 !important;
+}
+
+/* Form labels */
+.el-form-item__label {
+  color: #e2e8f0 !important;
+}
+
+/* Input text */
+.el-input__inner,
+.el-textarea__inner {
+  color: #e2e8f0 !important;
+}
+
+.el-input__inner::placeholder,
+.el-textarea__inner::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Select text */
+.el-select .el-input__inner {
+  color: #e2e8f0 !important;
+}
+
+.el-select .el-select__placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Button text */
+.el-button {
+  color: inherit !important;
+}
+
+.el-button--primary {
+  color: #00ffff !important;
+}
+
+.el-button--success {
+  color: #22c55e !important;
+}
+
+.el-button--warning {
+  color: #f59e0b !important;
+}
+
+.el-button--danger {
+  color: #ef4444 !important;
+}
+
+.el-button--info {
+  color: #3b82f6 !important;
+}
+
+/* Pagination text */
+.el-pagination {
+  color: #e2e8f0 !important;
+}
+
+.el-pagination .el-pager li {
+  color: #e2e8f0 !important;
+}
+
+.el-pagination .el-pager li.is-active {
+  color: #00ffff !important;
+}
+
+.el-pagination .btn-prev,
+.el-pagination .btn-next {
+  color: #e2e8f0 !important;
+}
+
+.el-pagination .el-pagination__total,
+.el-pagination .el-pagination__jump {
+  color: #e2e8f0 !important;
+}
+
+/* Card text */
+.el-card {
+  color: #e2e8f0 !important;
+}
+
+.el-card__header {
+  color: #00ffff !important;
+}
+
+.el-card__body {
+  color: #e2e8f0 !important;
+}
+
+/* Tag text */
+.el-tag {
+  color: inherit !important;
+}
+
+/* Dropdown text */
+.el-select-dropdown .el-select-dropdown__item {
+  color: #e2e8f0 !important;
+}
+
+.el-select-dropdown .el-select-dropdown__item:hover {
+  color: #00ffff !important;
+}
+
+.el-select-dropdown .el-select-dropdown__item.is-selected {
+  color: #00ffff !important;
+}
+
+/* Dialog text */
+.el-dialog {
+  color: #e2e8f0 !important;
+}
+
+.el-dialog__title {
+  color: #00ffff !important;
+}
+
+.el-dialog__body {
+  color: #e2e8f0 !important;
+}
+
+/* Message text */
+.el-message {
+  color: #e2e8f0 !important;
+}
+
+/* Loading text */
+.el-loading-text {
+  color: #00ffff !important;
+}
+
+/* Breadcrumb text */
+.el-breadcrumb {
+  color: #e2e8f0 !important;
+}
+
+.el-breadcrumb__item {
+  color: #94a3b8 !important;
+}
+
+.el-breadcrumb__item:last-child {
+  color: #00ffff !important;
+}
+
+/* Menu text */
+.el-menu-item {
+  color: #e2e8f0 !important;
+}
+
+.el-menu-item:hover {
+  color: #00ffff !important;
+}
+
+.el-menu-item.is-active {
+  color: #00ffff !important;
+}
+
+/* Steps text */
+.el-step__title {
+  color: #e2e8f0 !important;
+}
+
+.el-step__description {
+  color: #94a3b8 !important;
+}
+
+.el-step.is-process .el-step__title {
+  color: #00ffff !important;
+}
+
+.el-step.is-finish .el-step__title {
+  color: #22c55e !important;
+}
+
+/* Tabs text */
+.el-tabs__item {
+  color: #94a3b8 !important;
+}
+
+.el-tabs__item:hover {
+  color: #00ffff !important;
+}
+
+.el-tabs__item.is-active {
+  color: #00ffff !important;
+}
+
+/* Alert text */
+.el-alert {
+  color: inherit !important;
+}
+
+.el-alert__title {
+  color: inherit !important;
+}
+
+.el-alert__description {
+  color: inherit !important;
+}
+
+/* Notification text */
+.el-notification__title {
+  color: #00ffff !important;
+}
+
+.el-notification__content {
+  color: #e2e8f0 !important;
+}
+
+/* Tooltip text */
+.el-tooltip__popper {
+  color: #e2e8f0 !important;
+}
+
+/* Popover text */
+.el-popover {
+  color: #e2e8f0 !important;
+}
+
+.el-popover__title {
+  color: #00ffff !important;
+}
+
+/* Force override any blue text */
+[style*="color: blue"],
+[style*="color: #0000ff"],
+[style*="color: rgb(0, 0, 255)"] {
+  color: #e2e8f0 !important;
+}
+
+/* Force override any default browser link colors */
+a[href] {
+  color: #e2e8f0 !important;
+}
+
+a[href]:hover {
+  color: #00ffff !important;
+}
+
+/* Remove any text-decoration */
+* {
+  text-decoration: none !important;
+}
+
+/* Ensure proper text rendering */
+* {
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+}

@@ -1,0 +1,3960 @@
+/* Component Fixes for Modern UI Theme */
+
+/* Fix for Resume Upload page */
+.resume-upload .page-header {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.6)) !important;
+  backdrop-filter: blur(30px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  border-radius: 16px !important;
+  padding: 1.5rem !important;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 40px rgba(0, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+.resume-upload .page-header h1 {
+  color: #00ffff !important;
+  font-weight: 700 !important;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5) !important;
+}
+
+/* Fix for Element Plus components */
+.el-row {
+  margin: 0 !important;
+}
+
+.el-col {
+  padding: 0 10px !important;
+}
+
+.el-card {
+  background: rgba(15, 23, 42, 0.6) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  border-radius: 16px !important;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 40px rgba(0, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  color: #e2e8f0 !important;
+}
+
+.el-card__header {
+  background: rgba(0, 255, 255, 0.1) !important;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2) !important;
+  color: #00ffff !important;
+  font-weight: 600 !important;
+}
+
+.el-card__body {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+}
+
+/* Fix for upload components */
+.el-upload {
+  width: 100% !important;
+}
+
+.el-upload-dragger {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 2px dashed rgba(0, 255, 255, 0.4) !important;
+  border-radius: 12px !important;
+  color: #e2e8f0 !important;
+  transition: all 0.3s ease !important;
+}
+
+.el-upload-dragger:hover {
+  border-color: rgba(0, 255, 255, 0.6) !important;
+  background: rgba(15, 23, 42, 0.9) !important;
+}
+
+.el-upload__text {
+  color: #94a3b8 !important;
+}
+
+.el-upload__tip {
+  color: #64748b !important;
+}
+
+/* Fix for form components */
+.el-form-item__label {
+  color: #e2e8f0 !important;
+  font-weight: 500 !important;
+}
+
+.el-input__inner,
+.el-textarea__inner,
+.el-select .el-input__inner {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  color: #e2e8f0 !important;
+  border-radius: 8px !important;
+}
+
+.el-input__inner:focus,
+.el-textarea__inner:focus,
+.el-select .el-input__inner:focus {
+  border-color: rgba(0, 255, 255, 0.6) !important;
+  box-shadow: 0 0 0 2px rgba(0, 255, 255, 0.1) !important;
+}
+
+.el-input__inner::placeholder,
+.el-textarea__inner::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Fix for select dropdown */
+.el-select-dropdown {
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+}
+
+.el-option {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+}
+
+.el-option:hover {
+  background: rgba(0, 255, 255, 0.1) !important;
+}
+
+.el-option.selected {
+  background: rgba(0, 255, 255, 0.2) !important;
+  color: #00ffff !important;
+}
+
+/* Fix for buttons - HomeView style */
+.el-button {
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+  transition: all 0.3s ease !important;
+  backdrop-filter: blur(20px) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  min-height: 44px !important;
+  padding: 0.75rem 1.5rem !important;
+}
+
+.el-button--primary {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(138, 43, 226, 0.2)) !important;
+  border: 1px solid rgba(0, 255, 255, 0.5) !important;
+  color: #00ffff !important;
+  box-shadow: 0 8px 32px rgba(0, 255, 255, 0.3) !important;
+  text-shadow: none !important;
+}
+
+.el-button--primary::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: -100% !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.4), transparent) !important;
+  transition: left 0.6s ease !important;
+  z-index: 0 !important;
+}
+
+.el-button--primary:hover {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.35), rgba(138, 43, 226, 0.35)) !important;
+  border-color: rgba(0, 255, 255, 0.7) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 8px 24px rgba(0, 255, 255, 0.4) !important;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.8) !important;
+}
+
+.el-button--primary:hover::before {
+  left: 100% !important;
+}
+
+.el-button--default,
+.el-button--secondary {
+  background: rgba(15, 23, 42, 0.7) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(138, 43, 226, 0.5) !important;
+  color: #8a2be2 !important;
+  box-shadow: 0 8px 32px rgba(138, 43, 226, 0.2) !important;
+}
+
+.el-button--default:hover,
+.el-button--secondary:hover {
+  background: rgba(138, 43, 226, 0.2) !important;
+  border-color: rgba(138, 43, 226, 0.7) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 8px 24px rgba(138, 43, 226, 0.3) !important;
+  text-shadow: 0 0 10px rgba(138, 43, 226, 0.8) !important;
+}
+
+.el-button--success {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2)) !important;
+  border: 1px solid rgba(34, 197, 94, 0.5) !important;
+  color: #22c55e !important;
+  box-shadow: 0 8px 32px rgba(34, 197, 94, 0.3) !important;
+}
+
+.el-button--success:hover {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.35), rgba(16, 185, 129, 0.35)) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.4) !important;
+  text-shadow: 0 0 10px rgba(34, 197, 94, 0.8) !important;
+}
+
+.el-button--warning {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(251, 191, 36, 0.2)) !important;
+  border: 1px solid rgba(245, 158, 11, 0.5) !important;
+  color: #f59e0b !important;
+  box-shadow: 0 8px 32px rgba(245, 158, 11, 0.3) !important;
+}
+
+.el-button--warning:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(245, 158, 11, 0.35),
+    rgba(251, 191, 36, 0.35)
+  ) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4) !important;
+  text-shadow: 0 0 10px rgba(245, 158, 11, 0.8) !important;
+}
+
+.el-button--danger {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(236, 72, 153, 0.2)) !important;
+  border: 1px solid rgba(239, 68, 68, 0.5) !important;
+  color: #ef4444 !important;
+  box-shadow: 0 8px 32px rgba(239, 68, 68, 0.3) !important;
+}
+
+.el-button--danger:hover {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.35), rgba(236, 72, 153, 0.35)) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4) !important;
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.8) !important;
+}
+
+.el-button--info {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(99, 102, 241, 0.2)) !important;
+  border: 1px solid rgba(59, 130, 246, 0.5) !important;
+  color: #3b82f6 !important;
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3) !important;
+}
+
+.el-button--info:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.35),
+    rgba(99, 102, 241, 0.35)
+  ) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4) !important;
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.8) !important;
+}
+
+/* Button text and icons */
+.el-button span,
+.el-button .el-icon {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Global button styles for HTML buttons */
+button:not(.el-button):not(.no-style):not(.base-button) {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+  transition: all 0.3s ease !important;
+  backdrop-filter: blur(20px) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  min-height: 44px !important;
+  cursor: pointer !important;
+  border: 1px solid transparent !important;
+
+  /* Default button style (secondary) */
+  background: rgba(15, 23, 42, 0.7) !important;
+  border: 1px solid rgba(138, 43, 226, 0.5) !important;
+  color: #8a2be2 !important;
+  box-shadow: 0 8px 32px rgba(138, 43, 226, 0.2) !important;
+}
+
+button:not(.el-button):not(.no-style):not(.base-button):hover {
+  background: rgba(138, 43, 226, 0.2) !important;
+  border-color: rgba(138, 43, 226, 0.7) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 8px 24px rgba(138, 43, 226, 0.3) !important;
+  text-shadow: 0 0 10px rgba(138, 43, 226, 0.8) !important;
+}
+
+/* Primary button class */
+button.btn-primary:not(.el-button):not(.base-button) {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(138, 43, 226, 0.2)) !important;
+  border: 1px solid rgba(0, 255, 255, 0.5) !important;
+  color: #00ffff !important;
+  box-shadow: 0 8px 32px rgba(0, 255, 255, 0.3) !important;
+}
+
+button.btn-primary:not(.el-button):not(.base-button)::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: -100% !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.4), transparent) !important;
+  transition: left 0.6s ease !important;
+  z-index: 0 !important;
+}
+
+button.btn-primary:not(.el-button):not(.base-button):hover {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.35), rgba(138, 43, 226, 0.35)) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 8px 24px rgba(0, 255, 255, 0.4) !important;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.8) !important;
+}
+
+button.btn-primary:not(.el-button):not(.base-button):hover::before {
+  left: 100% !important;
+}
+
+/* Danger button class */
+button.btn-danger:not(.el-button):not(.base-button) {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(236, 72, 153, 0.2)) !important;
+  border: 1px solid rgba(239, 68, 68, 0.5) !important;
+  color: #ef4444 !important;
+  box-shadow: 0 8px 32px rgba(239, 68, 68, 0.3) !important;
+}
+
+button.btn-danger:not(.el-button):not(.base-button):hover {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.35), rgba(236, 72, 153, 0.35)) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4) !important;
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.8) !important;
+}
+
+/* Success button class */
+button.btn-success:not(.el-button):not(.base-button) {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2)) !important;
+  border: 1px solid rgba(34, 197, 94, 0.5) !important;
+  color: #22c55e !important;
+  box-shadow: 0 8px 32px rgba(34, 197, 94, 0.3) !important;
+}
+
+button.btn-success:not(.el-button):not(.base-button):hover {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.35), rgba(16, 185, 129, 0.35)) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.4) !important;
+  text-shadow: 0 0 10px rgba(34, 197, 94, 0.8) !important;
+}
+
+/* Global link styles */
+a:not(.nav-link):not(.brand-link):not(.router-link-button):not(.cta-button):not(.btn-link):not(
+    .no-style
+  ) {
+  color: #00ffff !important;
+  text-decoration: none !important;
+  transition: all 0.3s ease !important;
+  position: relative !important;
+}
+
+a:not(.nav-link):not(.brand-link):not(.router-link-button):not(.cta-button):not(.btn-link):not(
+    .no-style
+  ):hover {
+  color: #00ffff !important;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.8) !important;
+  transform: translateY(-1px) !important;
+}
+
+a:not(.nav-link):not(.brand-link):not(.router-link-button):not(.cta-button):not(.btn-link):not(
+    .no-style
+  )::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: -2px !important;
+  left: 0 !important;
+  width: 0 !important;
+  height: 2px !important;
+  background: linear-gradient(90deg, #00ffff, #8a2be2) !important;
+  transition: width 0.3s ease !important;
+}
+
+a:not(.nav-link):not(.brand-link):not(.router-link-button):not(.cta-button):not(.btn-link):not(
+    .no-style
+  ):hover::after {
+  width: 100% !important;
+}
+
+/* Fix for tags */
+.el-tag {
+  background: rgba(0, 255, 255, 0.2) !important;
+  border-color: rgba(0, 255, 255, 0.4) !important;
+  color: #00ffff !important;
+  border-radius: 6px !important;
+}
+
+.el-tag--success {
+  background: rgba(34, 197, 94, 0.2) !important;
+  border-color: rgba(34, 197, 94, 0.4) !important;
+  color: #22c55e !important;
+}
+
+.el-tag--warning {
+  background: rgba(245, 158, 11, 0.2) !important;
+  border-color: rgba(245, 158, 11, 0.4) !important;
+  color: #f59e0b !important;
+}
+
+.el-tag--danger {
+  background: rgba(239, 68, 68, 0.2) !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+  color: #ef4444 !important;
+}
+
+.el-tag--info {
+  background: rgba(59, 130, 246, 0.2) !important;
+  border-color: rgba(59, 130, 246, 0.4) !important;
+  color: #3b82f6 !important;
+}
+
+/* Fix for switches */
+.el-switch {
+  --el-switch-on-color: #00ffff !important;
+  --el-switch-off-color: rgba(148, 163, 184, 0.3) !important;
+  --el-switch-border-color: rgba(0, 255, 255, 0.3) !important;
+}
+
+.el-switch__core {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.el-switch.is-checked .el-switch__core {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.8), rgba(138, 43, 226, 0.8)) !important;
+  border-color: rgba(0, 255, 255, 0.6) !important;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.3) !important;
+}
+
+.el-switch__action {
+  background: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Fix for radio buttons */
+.el-radio {
+  color: #e2e8f0 !important;
+}
+
+.el-radio__input.is-checked .el-radio__inner {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.8), rgba(138, 43, 226, 0.8)) !important;
+  border-color: rgba(0, 255, 255, 0.6) !important;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3) !important;
+}
+
+.el-radio__inner {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.el-radio__inner:hover {
+  border-color: rgba(0, 255, 255, 0.5) !important;
+}
+
+.el-radio__label {
+  color: #e2e8f0 !important;
+}
+
+/* Fix for checkboxes */
+.el-checkbox {
+  color: #e2e8f0 !important;
+}
+
+.el-checkbox__input.is-checked .el-checkbox__inner {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.8), rgba(138, 43, 226, 0.8)) !important;
+  border-color: rgba(0, 255, 255, 0.6) !important;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3) !important;
+}
+
+.el-checkbox__inner {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.el-checkbox__inner:hover {
+  border-color: rgba(0, 255, 255, 0.5) !important;
+}
+
+.el-checkbox__label {
+  color: #e2e8f0 !important;
+}
+
+/* Fix for sliders */
+.el-slider {
+  --el-slider-main-bg-color: #00ffff !important;
+  --el-slider-runway-bg-color: rgba(148, 163, 184, 0.3) !important;
+  --el-slider-button-bg-color: #ffffff !important;
+  --el-slider-button-border-color: #00ffff !important;
+}
+
+.el-slider__runway {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  border-radius: 4px !important;
+}
+
+.el-slider__bar {
+  background: linear-gradient(90deg, rgba(0, 255, 255, 0.8), rgba(138, 43, 226, 0.8)) !important;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3) !important;
+}
+
+.el-slider__button {
+  background: #ffffff !important;
+  border: 2px solid #00ffff !important;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.4) !important;
+}
+
+/* Fix for input numbers */
+.el-input-number {
+  --el-input-number-controls-color: #00ffff !important;
+}
+
+.el-input-number .el-input__inner {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  color: #e2e8f0 !important;
+}
+
+.el-input-number__increase,
+.el-input-number__decrease {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border-left: 1px solid rgba(0, 255, 255, 0.3) !important;
+  color: #00ffff !important;
+}
+
+.el-input-number__increase:hover,
+.el-input-number__decrease:hover {
+  background: rgba(0, 255, 255, 0.1) !important;
+  color: #00ffff !important;
+}
+
+/* Fix for tables */
+.el-table {
+  background: rgba(15, 23, 42, 0.6) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  border-radius: 16px !important;
+  color: #e2e8f0 !important;
+  overflow: hidden !important;
+}
+
+.el-table__header-wrapper {
+  background: rgba(0, 255, 255, 0.1) !important;
+}
+
+.el-table__header {
+  background: transparent !important;
+}
+
+.el-table th {
+  background: rgba(0, 255, 255, 0.1) !important;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2) !important;
+  color: #00ffff !important;
+  font-weight: 600 !important;
+}
+
+.el-table td {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.1) !important;
+  color: #e2e8f0 !important;
+}
+
+.el-table__body-wrapper {
+  background: transparent !important;
+}
+
+.el-table__body {
+  background: transparent !important;
+}
+
+.el-table__row {
+  background: transparent !important;
+  transition: all 0.3s ease !important;
+}
+
+.el-table__row:hover {
+  background: rgba(0, 255, 255, 0.05) !important;
+}
+
+.el-table--striped .el-table__row:nth-child(even) {
+  background: rgba(0, 255, 255, 0.02) !important;
+}
+
+.el-table--striped .el-table__row:nth-child(even):hover {
+  background: rgba(0, 255, 255, 0.08) !important;
+}
+
+.el-table__empty-block {
+  background: transparent !important;
+  color: #94a3b8 !important;
+}
+
+.el-table__empty-text {
+  color: #94a3b8 !important;
+}
+
+.el-table__fixed {
+  background: rgba(15, 23, 42, 0.8) !important;
+  backdrop-filter: blur(20px) !important;
+}
+
+.el-table__fixed-right {
+  background: rgba(15, 23, 42, 0.8) !important;
+  backdrop-filter: blur(20px) !important;
+}
+
+/* Fix for pagination */
+.el-pagination {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+}
+
+.el-pagination .el-pager li {
+  background: rgba(15, 23, 42, 0.6) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  color: #e2e8f0 !important;
+  border-radius: 6px !important;
+  margin: 0 2px !important;
+  transition: all 0.3s ease !important;
+}
+
+.el-pagination .el-pager li:hover {
+  background: rgba(0, 255, 255, 0.1) !important;
+  border-color: rgba(0, 255, 255, 0.4) !important;
+  color: #00ffff !important;
+}
+
+.el-pagination .el-pager li.is-active {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.3), rgba(138, 43, 226, 0.3)) !important;
+  border-color: rgba(0, 255, 255, 0.6) !important;
+  color: #00ffff !important;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3) !important;
+}
+
+.el-pagination .btn-prev,
+.el-pagination .btn-next {
+  background: rgba(15, 23, 42, 0.6) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  color: #e2e8f0 !important;
+  border-radius: 6px !important;
+  transition: all 0.3s ease !important;
+}
+
+.el-pagination .btn-prev:hover,
+.el-pagination .btn-next:hover {
+  background: rgba(0, 255, 255, 0.1) !important;
+  border-color: rgba(0, 255, 255, 0.4) !important;
+  color: #00ffff !important;
+}
+
+.el-pagination .el-select .el-input__inner {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  color: #e2e8f0 !important;
+}
+
+.el-pagination__total,
+.el-pagination__jump {
+  color: #e2e8f0 !important;
+}
+
+/* Fix for progress bars */
+.el-progress {
+  color: #e2e8f0 !important;
+}
+
+.el-progress__text {
+  color: #e2e8f0 !important;
+}
+
+.el-progress-bar__outer {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  border-radius: 6px !important;
+}
+
+.el-progress-bar__inner {
+  background: linear-gradient(90deg, rgba(0, 255, 255, 0.8), rgba(138, 43, 226, 0.8)) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3) !important;
+}
+
+/* Fix for dialogs */
+.el-dialog {
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(30px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6) !important;
+}
+
+.el-dialog__header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding-right: 0 !important;
+  background: rgba(0, 255, 255, 0.1) !important;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2) !important;
+  border-radius: 16px 16px 0 0 !important;
+}
+
+.el-dialog__title {
+  color: #00ffff !important;
+  font-weight: 600 !important;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5) !important;
+}
+
+.el-dialog__body {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+}
+
+.el-dialog__footer {
+  background: rgba(0, 255, 255, 0.05) !important;
+  border-top: 1px solid rgba(0, 255, 255, 0.2) !important;
+  border-radius: 0 0 16px 16px !important;
+}
+
+.el-overlay {
+  background: rgba(0, 0, 0, 0.8) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+/* Fix for drawer */
+.el-drawer {
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(30px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  color: #e2e8f0 !important;
+}
+
+.el-drawer__header {
+  background: rgba(0, 255, 255, 0.1) !important;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2) !important;
+  color: #00ffff !important;
+  font-weight: 600 !important;
+}
+
+.el-drawer__body {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+}
+
+/* Fix for popover */
+.el-popover {
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  border-radius: 8px !important;
+  color: #e2e8f0 !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+}
+
+.el-popover__title {
+  color: #00ffff !important;
+  font-weight: 600 !important;
+}
+
+/* Fix for tooltip */
+.el-tooltip__popper {
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  border-radius: 6px !important;
+  color: #e2e8f0 !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+}
+
+.el-tooltip__popper .el-tooltip__arrow::before {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+}
+
+/* Fix for icons */
+.el-icon {
+  color: inherit !important;
+}
+
+/* Fix for loading states */
+.el-loading-mask {
+  background: rgba(0, 0, 0, 0.8) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.el-loading-spinner {
+  color: #00ffff !important;
+}
+
+/* Fix for date picker */
+.el-date-editor {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  color: #e2e8f0 !important;
+  border-radius: 8px !important;
+}
+
+.el-date-editor:hover {
+  border-color: rgba(0, 255, 255, 0.5) !important;
+}
+
+.el-date-editor.is-active {
+  border-color: rgba(0, 255, 255, 0.6) !important;
+  box-shadow: 0 0 0 2px rgba(0, 255, 255, 0.1) !important;
+}
+
+.el-date-editor .el-input__inner {
+  background: transparent !important;
+  border: none !important;
+  color: #e2e8f0 !important;
+}
+
+.el-date-editor .el-input__prefix,
+.el-date-editor .el-input__suffix {
+  color: #94a3b8 !important;
+}
+
+/* Fix for picker panels */
+.el-picker-panel {
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(30px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6) !important;
+  color: #e2e8f0 !important;
+}
+
+.el-picker-panel__body {
+  background: transparent !important;
+}
+
+.el-picker-panel__content {
+  background: transparent !important;
+}
+
+.el-date-table {
+  background: transparent !important;
+}
+
+.el-date-table th {
+  background: transparent !important;
+  color: #94a3b8 !important;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2) !important;
+}
+
+.el-date-table td {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+}
+
+.el-date-table td.available:hover {
+  background: rgba(0, 255, 255, 0.1) !important;
+  color: #00ffff !important;
+}
+
+.el-date-table td.current:not(.disabled) {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.3), rgba(138, 43, 226, 0.3)) !important;
+  color: #00ffff !important;
+  border-radius: 6px !important;
+}
+
+.el-date-table td.today {
+  background: rgba(0, 255, 255, 0.1) !important;
+  color: #00ffff !important;
+  border-radius: 6px !important;
+}
+
+/* Fix for time picker */
+.el-time-panel {
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(30px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  border-radius: 12px !important;
+  color: #e2e8f0 !important;
+}
+
+.el-time-panel__content {
+  background: transparent !important;
+}
+
+/* .el-scrollbar__wrap {
+  background: transparent !important;
+} */
+
+.el-time-spinner__item {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+}
+
+.el-time-spinner__item:hover {
+  background: rgba(0, 255, 255, 0.1) !important;
+  color: #00ffff !important;
+}
+
+.el-time-spinner__item.is-active {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.3), rgba(138, 43, 226, 0.3)) !important;
+  color: #00ffff !important;
+}
+
+/* Fix for cascader */
+.el-cascader-panel {
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(30px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  border-radius: 12px !important;
+  color: #e2e8f0 !important;
+}
+
+.el-cascader-menu {
+  background: transparent !important;
+  border-right: 1px solid rgba(0, 255, 255, 0.2) !important;
+}
+
+.el-cascader-node {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+}
+
+.el-cascader-node:hover {
+  background: rgba(0, 255, 255, 0.1) !important;
+  color: #00ffff !important;
+}
+
+.el-cascader-node.is-active {
+  background: rgba(0, 255, 255, 0.2) !important;
+  color: #00ffff !important;
+}
+
+/* Fix for tree */
+.el-tree {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+}
+
+.el-tree-node__content {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+}
+
+.el-tree-node__content:hover {
+  background: rgba(0, 255, 255, 0.1) !important;
+  color: #00ffff !important;
+}
+
+.el-tree-node.is-current > .el-tree-node__content {
+  background: rgba(0, 255, 255, 0.2) !important;
+  color: #00ffff !important;
+}
+
+/* Fix for transfer */
+.el-transfer {
+  color: #e2e8f0 !important;
+}
+
+.el-transfer-panel {
+  background: rgba(15, 23, 42, 0.8) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  border-radius: 12px !important;
+  color: #e2e8f0 !important;
+}
+
+.el-transfer-panel__header {
+  background: rgba(0, 255, 255, 0.1) !important;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2) !important;
+  color: #00ffff !important;
+}
+
+.el-transfer-panel__body {
+  background: transparent !important;
+}
+
+.el-transfer-panel__list {
+  background: transparent !important;
+}
+
+.el-transfer-panel__item {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+}
+
+.el-transfer-panel__item:hover {
+  background: rgba(0, 255, 255, 0.1) !important;
+  color: #00ffff !important;
+}
+
+/* Fix for menu */
+.el-menu {
+  background: rgba(15, 23, 42, 0.8) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  border-radius: 12px !important;
+  color: #e2e8f0 !important;
+}
+
+.el-menu-item {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+}
+
+.el-menu-item:hover {
+  background: rgba(0, 255, 255, 0.1) !important;
+  color: #00ffff !important;
+}
+
+.el-menu-item.is-active {
+  background: rgba(0, 255, 255, 0.2) !important;
+  color: #00ffff !important;
+  border-right: 3px solid #00ffff !important;
+}
+
+.el-submenu__title {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+}
+
+.el-submenu__title:hover {
+  background: rgba(0, 255, 255, 0.1) !important;
+  color: #00ffff !important;
+}
+
+/* Fix for breadcrumb */
+.el-breadcrumb {
+  color: #e2e8f0 !important;
+}
+
+.el-breadcrumb__item {
+  color: #94a3b8 !important;
+}
+
+.el-breadcrumb__item:last-child {
+  color: #00ffff !important;
+}
+
+.el-breadcrumb__inner {
+  color: inherit !important;
+}
+
+.el-breadcrumb__inner:hover {
+  color: #00ffff !important;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5) !important;
+}
+
+/* Fix for steps */
+.el-steps {
+  color: #e2e8f0 !important;
+}
+
+.el-step__head {
+  color: #94a3b8 !important;
+}
+
+.el-step__title {
+  color: #e2e8f0 !important;
+}
+
+.el-step__description {
+  color: #94a3b8 !important;
+}
+
+.el-step.is-process .el-step__head {
+  color: #00ffff !important;
+  border-color: #00ffff !important;
+}
+
+.el-step.is-process .el-step__title {
+  color: #00ffff !important;
+}
+
+.el-step.is-finish .el-step__head {
+  color: #22c55e !important;
+  border-color: #22c55e !important;
+}
+
+.el-step.is-finish .el-step__title {
+  color: #22c55e !important;
+}
+
+/* Fix for message components */
+.el-message {
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  border-radius: 8px !important;
+  color: #e2e8f0 !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+}
+
+.el-message--success {
+  border-color: rgba(34, 197, 94, 0.5) !important;
+}
+
+.el-message--warning {
+  border-color: rgba(245, 158, 11, 0.5) !important;
+}
+
+.el-message--error {
+  border-color: rgba(239, 68, 68, 0.5) !important;
+}
+
+.el-message--info {
+  border-color: rgba(59, 130, 246, 0.5) !important;
+}
+
+/* Fix for specific page layouts */
+.vacancy-option {
+  color: #e2e8f0 !important;
+}
+
+.vacancy-title {
+  color: #e2e8f0 !important;
+  font-weight: 600 !important;
+}
+
+.vacancy-code {
+  color: #94a3b8 !important;
+}
+
+.form-help {
+  color: #64748b !important;
+}
+
+.file-info {
+  background: rgba(15, 23, 42, 0.6) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  border-radius: 8px !important;
+  color: #e2e8f0 !important;
+}
+
+.file-details {
+  color: #e2e8f0 !important;
+}
+
+.file-name {
+  color: #e2e8f0 !important;
+  font-weight: 600 !important;
+}
+
+.file-size,
+.file-type {
+  color: #94a3b8 !important;
+}
+
+.info-content h4 {
+  color: #00ffff !important;
+  font-weight: 600 !important;
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.3) !important;
+}
+
+.process-steps,
+.supported-formats,
+.limitations {
+  color: #94a3b8 !important;
+}
+
+.no-recent {
+  color: #64748b !important;
+}
+
+.recent-upload-item {
+  background: rgba(15, 23, 42, 0.6) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+}
+
+.recent-upload-item:hover {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border-color: rgba(0, 255, 255, 0.4) !important;
+  transform: translateY(-2px) !important;
+}
+
+.upload-file-name {
+  color: #e2e8f0 !important;
+  font-weight: 600 !important;
+}
+
+.upload-date {
+  color: #64748b !important;
+}
+
+/* Global router-link styles - HomeView style */
+router-link {
+  text-decoration: none !important;
+}
+
+/* Router-link as buttons */
+.router-link-button,
+.cta-button,
+.btn-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+  text-decoration: none !important;
+  transition: all 0.3s ease !important;
+  border: 1px solid transparent !important;
+  cursor: pointer !important;
+  min-height: 44px !important;
+  backdrop-filter: blur(20px) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+/* Primary router-link style */
+.router-link-button.primary,
+.cta-button.cta-primary,
+.btn-link.primary {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(138, 43, 226, 0.2)) !important;
+  border: 1px solid rgba(0, 255, 255, 0.5) !important;
+  color: #00ffff !important;
+  box-shadow: 0 8px 32px rgba(0, 255, 255, 0.3) !important;
+}
+
+.router-link-button.primary::before,
+.cta-button.cta-primary::before,
+.btn-link.primary::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: -100% !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.4), transparent) !important;
+  transition: left 0.6s ease !important;
+  z-index: 0 !important;
+}
+
+.router-link-button.primary:hover,
+.cta-button.cta-primary:hover,
+.btn-link.primary:hover {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.35), rgba(138, 43, 226, 0.35)) !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 12px 40px rgba(0, 255, 255, 0.5) !important;
+  text-shadow: 0 0 15px rgba(0, 255, 255, 1) !important;
+}
+
+.router-link-button.primary:hover::before,
+.cta-button.cta-primary:hover::before,
+.btn-link.primary:hover::before {
+  left: 100% !important;
+}
+
+/* Secondary router-link style */
+.router-link-button.secondary,
+.cta-button.cta-secondary,
+.btn-link.secondary {
+  background: rgba(15, 23, 42, 0.7) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(138, 43, 226, 0.5) !important;
+  color: #8a2be2 !important;
+  box-shadow: 0 8px 32px rgba(138, 43, 226, 0.2) !important;
+}
+
+.router-link-button.secondary:hover,
+.cta-button.cta-secondary:hover,
+.btn-link.secondary:hover {
+  background: rgba(138, 43, 226, 0.2) !important;
+  border-color: rgba(138, 43, 226, 0.7) !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 12px 40px rgba(138, 43, 226, 0.4) !important;
+  text-shadow: 0 0 15px rgba(138, 43, 226, 1) !important;
+}
+
+/* Ghost router-link style */
+.router-link-button.ghost,
+.cta-button.cta-ghost,
+.btn-link.ghost {
+  background: rgba(15, 23, 42, 0.6) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  color: #00ffff !important;
+  box-shadow: 0 8px 32px rgba(0, 255, 255, 0.1) !important;
+}
+
+.router-link-button.ghost:hover,
+.cta-button.cta-ghost:hover,
+.btn-link.ghost:hover {
+  background: rgba(0, 255, 255, 0.1) !important;
+  border-color: rgba(0, 255, 255, 0.5) !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 12px 40px rgba(0, 255, 255, 0.3) !important;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.8) !important;
+}
+
+/* Navigation links */
+.nav-link {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  padding: 0.625rem 1rem !important;
+  border-radius: 0.5rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  color: #e2e8f0 !important;
+  text-decoration: none !important;
+  transition: all 0.2s ease !important;
+  border: 1px solid transparent !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.nav-link:hover {
+  color: #00ffff !important;
+  background: rgba(0, 255, 255, 0.1) !important;
+  border-color: rgba(0, 255, 255, 0.3) !important;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.8) !important;
+  transform: translateY(-1px) !important;
+}
+
+.nav-link.router-link-active {
+  background: rgba(0, 255, 255, 0.15) !important;
+  border-color: rgba(0, 255, 255, 0.4) !important;
+  color: #00ffff !important;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.8) !important;
+  box-shadow: 0 4px 15px rgba(0, 255, 255, 0.2) !important;
+}
+
+/* Brand link */
+.brand-link {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  color: #00ffff !important;
+  text-decoration: none !important;
+  transition: all 0.3s ease !important;
+}
+
+.brand-link:hover {
+  text-shadow: 0 0 15px rgba(0, 255, 255, 0.8) !important;
+  transform: translateX(2px) !important;
+}
+
+/* Mobile navigation links */
+.mobile-nav-link {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  padding: 1rem !important;
+  color: #e2e8f0 !important;
+  text-decoration: none !important;
+  transition: all 0.2s ease !important;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.1) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.mobile-nav-link:hover {
+  color: #00ffff !important;
+  background: rgba(0, 255, 255, 0.1) !important;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.8) !important;
+  padding-left: 1.5rem !important;
+}
+
+.mobile-nav-link.router-link-active {
+  background: rgba(0, 255, 255, 0.15) !important;
+  color: #00ffff !important;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.8) !important;
+  border-left: 3px solid #00ffff !important;
+}
+
+/* Fix for containers and layouts */
+.el-container {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+}
+
+.el-header {
+  background: rgba(15, 23, 42, 0.8) !important;
+  backdrop-filter: blur(20px) !important;
+  color: #e2e8f0 !important;
+}
+
+.el-aside {
+  background: rgba(15, 23, 42, 0.8) !important;
+  backdrop-filter: blur(20px) !important;
+  border-right: 1px solid rgba(0, 255, 255, 0.2) !important;
+  color: #e2e8f0 !important;
+}
+
+.el-main {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+}
+
+.el-footer {
+  background: rgba(15, 23, 42, 0.8) !important;
+  backdrop-filter: blur(20px) !important;
+  border-top: 1px solid rgba(0, 255, 255, 0.2) !important;
+  color: #e2e8f0 !important;
+}
+
+/* Fix for collapse */
+.el-collapse {
+  background: transparent !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+}
+
+.el-collapse-item__header {
+  background: rgba(0, 255, 255, 0.1) !important;
+  color: #e2e8f0 !important;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2) !important;
+}
+
+.el-collapse-item__header:hover {
+  background: rgba(0, 255, 255, 0.15) !important;
+  color: #00ffff !important;
+}
+
+.el-collapse-item__content {
+  background: rgba(15, 23, 42, 0.6) !important;
+  color: #e2e8f0 !important;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.1) !important;
+}
+
+/* Fix for tabs */
+.el-tabs {
+  color: #e2e8f0 !important;
+}
+
+.el-tabs__header {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2) !important;
+}
+
+.el-tabs__nav {
+  background: transparent !important;
+}
+
+.el-tabs__item {
+  background: transparent !important;
+  color: #94a3b8 !important;
+  border: 1px solid transparent !important;
+  border-radius: 8px 8px 0 0 !important;
+  margin-right: 4px !important;
+  transition: all 0.3s ease !important;
+}
+
+.el-tabs__item:hover {
+  background: rgba(0, 255, 255, 0.1) !important;
+  color: #00ffff !important;
+  border-color: rgba(0, 255, 255, 0.3) !important;
+}
+
+.el-tabs__item.is-active {
+  background: rgba(0, 255, 255, 0.2) !important;
+  color: #00ffff !important;
+  border-color: rgba(0, 255, 255, 0.5) !important;
+  border-bottom-color: transparent !important;
+}
+
+.el-tabs__content {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+}
+
+.el-tab-pane {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+}
+
+/* Fix for alert */
+.el-alert {
+  background: rgba(15, 23, 42, 0.8) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  border-radius: 8px !important;
+  color: #e2e8f0 !important;
+}
+
+.el-alert--success {
+  background: rgba(34, 197, 94, 0.1) !important;
+  border-color: rgba(34, 197, 94, 0.3) !important;
+  color: #22c55e !important;
+}
+
+.el-alert--warning {
+  background: rgba(245, 158, 11, 0.1) !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+  color: #f59e0b !important;
+}
+
+.el-alert--error {
+  background: rgba(239, 68, 68, 0.1) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  color: #ef4444 !important;
+}
+
+.el-alert--info {
+  background: rgba(59, 130, 246, 0.1) !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+  color: #3b82f6 !important;
+}
+
+.el-alert__title {
+  color: inherit !important;
+}
+
+.el-alert__description {
+  color: inherit !important;
+  opacity: 0.8 !important;
+}
+
+/* Fix for notification */
+.el-notification {
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(30px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  border-radius: 12px !important;
+  color: #e2e8f0 !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6) !important;
+}
+
+.el-notification__title {
+  color: #00ffff !important;
+  font-weight: 600 !important;
+}
+
+.el-notification__content {
+  color: #e2e8f0 !important;
+}
+
+/* Fix for image */
+.el-image {
+  background: rgba(15, 23, 42, 0.6) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  border-radius: 8px !important;
+}
+
+.el-image__error {
+  background: rgba(15, 23, 42, 0.8) !important;
+  color: #94a3b8 !important;
+}
+
+.el-image__placeholder {
+  background: rgba(15, 23, 42, 0.8) !important;
+  color: #94a3b8 !important;
+}
+
+/* Fix for avatar */
+.el-avatar {
+  background: rgba(0, 255, 255, 0.2) !important;
+  border: 2px solid rgba(0, 255, 255, 0.4) !important;
+  color: #00ffff !important;
+}
+
+/* Fix for badge */
+.el-badge__content {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(236, 72, 153, 0.9)) !important;
+  border: 1px solid rgba(239, 68, 68, 0.5) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.3) !important;
+}
+
+/* Fix for rate */
+.el-rate {
+  color: #94a3b8 !important;
+}
+
+.el-rate__item {
+  color: #94a3b8 !important;
+}
+
+.el-rate__icon {
+  color: inherit !important;
+}
+
+.el-rate__icon.hover {
+  color: #f59e0b !important;
+}
+
+/* Fix for color picker */
+.el-color-picker {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  border-radius: 6px !important;
+}
+
+.el-color-picker__trigger {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+}
+
+/* Fix for responsive issues */
+@media (max-width: 768px) {
+  .el-row {
+    margin: 0 !important;
+  }
+
+  .el-col {
+    padding: 0 5px !important;
+  }
+
+  .page-header {
+    margin: 0.5rem !important;
+    padding: 1rem !important;
+  }
+
+  .page-header h1 {
+    font-size: 1.25rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .el-card {
+    margin: 0.5rem 0 !important;
+  }
+
+  .el-form-item {
+    margin-bottom: 1rem !important;
+  }
+
+  .el-button {
+    width: 100% !important;
+    margin-bottom: 0.5rem !important;
+  }
+}
+
+/* Global fixes for any remaining white backgrounds */
+* {
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(0, 255, 255, 0.3) rgba(15, 23, 42, 0.8) !important;
+}
+
+*::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+}
+
+*::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border-radius: 4px !important;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 255, 0.3) !important;
+  border-radius: 4px !important;
+  transition: all 0.3s ease !important;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 255, 0.5) !important;
+}
+
+/* Force dark theme for any missed elements */
+div:not(.no-dark-theme),
+section:not(.no-dark-theme),
+article:not(.no-dark-theme),
+aside:not(.no-dark-theme),
+nav:not(.no-dark-theme),
+header:not(.no-dark-theme),
+footer:not(.no-dark-theme),
+main:not(.no-dark-theme) {
+  background-color: transparent !important;
+}
+
+/* Ensure all text is visible */
+p,
+span,
+div,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+label,
+li,
+td,
+th {
+  color: inherit !important;
+}
+
+/* Fix any remaining white inputs */
+input:not([type='submit']):not([type='button']):not([type='reset']):not(.no-dark-theme),
+textarea:not(.no-dark-theme),
+select:not(.no-dark-theme) {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  color: #e2e8f0 !important;
+  border-radius: 8px !important;
+}
+
+input:not([type='submit']):not([type='button']):not([type='reset']):not(.no-dark-theme):focus,
+textarea:not(.no-dark-theme):focus,
+select:not(.no-dark-theme):focus {
+  border-color: rgba(0, 255, 255, 0.6) !important;
+  box-shadow: 0 0 0 2px rgba(0, 255, 255, 0.1) !important;
+  outline: none !important;
+}
+
+input:not([type='submit']):not([type='button']):not([type='reset']):not(
+    .no-dark-theme
+  )::placeholder,
+textarea:not(.no-dark-theme)::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Fix any remaining white tables */
+table:not(.no-dark-theme) {
+  background: rgba(15, 23, 42, 0.6) !important;
+  color: #e2e8f0 !important;
+  border-collapse: collapse !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+}
+
+table:not(.no-dark-theme) th {
+  background: rgba(0, 255, 255, 0.1) !important;
+  color: #00ffff !important;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2) !important;
+  padding: 12px !important;
+}
+
+table:not(.no-dark-theme) td {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.1) !important;
+  padding: 12px !important;
+}
+
+table:not(.no-dark-theme) tr:hover {
+  background: rgba(0, 255, 255, 0.05) !important;
+}
+
+/* Fix any remaining white modals or overlays */
+.modal:not(.no-dark-theme),
+.overlay:not(.no-dark-theme),
+.popup:not(.no-dark-theme) {
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(30px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  border-radius: 16px !important;
+  color: #e2e8f0 !important;
+}
+/* HR 
+Panel specific fixes for card overflow */
+.hr-panel {
+  overflow: visible !important;
+}
+
+.hr-panel .el-container {
+  overflow: visible !important;
+}
+
+.hr-panel .el-main {
+  overflow: visible !important;
+  padding: 0 !important;
+}
+
+.hr-panel .stats-row {
+  overflow: visible !important;
+  margin-bottom: 2rem !important;
+  margin-top: 1rem !important;
+  padding-top: 2rem !important;
+  padding-bottom: 1rem !important;
+}
+
+.hr-panel .stats-row .el-col {
+  overflow: visible !important;
+  padding-top: 1rem !important;
+  padding-bottom: 1rem !important;
+}
+
+.hr-panel .el-row {
+  overflow: visible !important;
+}
+
+/* Force all BaseMetricCard containers to be visible */
+.hr-panel .base-metric-card,
+.hr-panel .metric-card {
+  overflow: visible !important;
+  z-index: 10 !important;
+}
+
+.hr-panel .base-metric-card:hover,
+.hr-panel .metric-card:hover {
+  z-index: 20 !important;
+  transform: translateY(-8px) scale(1.05) !important;
+}
+
+/* Ensure parent containers don't clip children */
+.hr-panel * {
+  overflow: visible !important;
+}
+
+/* Override any Element Plus overflow settings specifically for HR panel */
+.hr-panel .el-card,
+.hr-panel .el-card__body,
+.hr-panel .el-card__header {
+  overflow: visible !important;
+} /* Fix Bas
+eMetricCard background in HR Panel */
+.hr-panel .base-metric-card .el-card {
+  background: rgba(15, 23, 42, 0.6) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+}
+
+.hr-panel .base-metric-card .el-card__body {
+  background: transparent !important;
+}
+
+/* Fix any inner content backgrounds */
+.hr-panel .base-metric-card .metric-content,
+.hr-panel .base-metric-card .metric-value,
+.hr-panel .base-metric-card .metric-title,
+.hr-panel .base-metric-card .metric-change {
+  background: transparent !important;
+}
+
+/* Ensure chart/icon areas are also transparent */
+.hr-panel .base-metric-card .chart-container,
+.hr-panel .base-metric-card .icon-container {
+  background: transparent !important;
+} /* 
+Fix white backgrounds in HR Panel metric cards */
+.hr-panel .base-metric-card *,
+.hr-panel .metric-card * {
+  background: transparent !important;
+}
+
+/* Specifically target any canvas or svg elements that might have white backgrounds */
+.hr-panel .base-metric-card canvas,
+.hr-panel .base-metric-card svg,
+.hr-panel .metric-card canvas,
+.hr-panel .metric-card svg {
+  background: transparent !important;
+}
+
+/* Fix chart containers */
+.hr-panel .chart-container,
+.hr-panel .chart-wrapper,
+.hr-panel .echarts-container {
+  background: transparent !important;
+}
+
+/* Override any white backgrounds from libraries */
+.hr-panel .recharts-wrapper,
+.hr-panel .recharts-surface {
+  background: transparent !important;
+} 
+.base-button--primary {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(138, 43, 226, 0.2)) !important;
+  border: 1px solid rgba(0, 255, 255, 0.5) !important;
+  border-color: rgba(0, 255, 255, 0.5) !important;
+  color: #00ffff !important;
+  box-shadow: 0 8px 32px rgba(0, 255, 255, 0.3) !important;
+}
+
+.base-button--primary:hover {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.35), rgba(138, 43, 226, 0.35)) !important;
+  border: 1px solid rgba(0, 255, 255, 0.7) !important;
+  border-color: rgba(0, 255, 255, 0.7) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 12px 40px rgba(0, 255, 255, 0.5) !important;
+  text-shadow: 0 0 15px rgba(0, 255, 255, 1) !important;
+  color: #00ffff !important;
+}
+
+.base-button--primary *,
+.base-button--primary .button-text,
+.base-button--primary span {
+  color: #00ffff !important;
+}
+
+.base-button--primary:hover *,
+.base-button--primary:hover .button-text,
+.base-button--primary:hover span {
+  color: #00ffff !important;
+}
+/* Force border color for primary buttons - more aggressive */
+.base-button--primary {
+  border-top-color: rgba(0, 255, 255, 0.5) !important;
+  border-right-color: rgba(0, 255, 255, 0.5) !important;
+  border-bottom-color: rgba(0, 255, 255, 0.5) !important;
+  border-left-color: rgba(0, 255, 255, 0.5) !important;
+  outline: 1px solid rgba(0, 255, 255, 0.5) !important;
+}
+
+.base-button--primary:hover {
+  border-top-color: rgba(0, 255, 255, 0.7) !important;
+  border-right-color: rgba(0, 255, 255, 0.7) !important;
+  border-bottom-color: rgba(0, 255, 255, 0.7) !important;
+  border-left-color: rgba(0, 255, 255, 0.7) !important;
+  outline: 1px solid rgba(0, 255, 255, 0.7) !important;
+}
+
+/* Override any focus states */
+.base-button--primary:focus {
+  border-color: rgba(0, 255, 255, 0.7) !important;
+  outline: 1px solid rgba(0, 255, 255, 0.7) !important;
+  box-shadow: 0 0 0 3px rgba(0, 255, 255, 0.3) !important;
+}/* 
+Ensure secondary buttons remain purple */
+.base-button--secondary {
+  background: rgba(15, 23, 42, 0.7) !important;
+  border: 1px solid rgba(138, 43, 226, 0.5) !important;
+  border-color: rgba(138, 43, 226, 0.5) !important;
+  color: #8a2be2 !important;
+  box-shadow: 0 8px 32px rgba(138, 43, 226, 0.2) !important;
+}
+
+.base-button--secondary:hover {
+  background: rgba(138, 43, 226, 0.2) !important;
+  border: 1px solid rgba(138, 43, 226, 0.7) !important;
+  border-color: rgba(138, 43, 226, 0.7) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 12px 40px rgba(138, 43, 226, 0.4) !important;
+  text-shadow: 0 0 15px rgba(138, 43, 226, 1) !important;
+  color: #8a2be2 !important;
+}
+
+.base-button--secondary *,
+.base-button--secondary .button-text,
+.base-button--secondary span {
+  color: #8a2be2 !important;
+}
+
+.base-button--secondary:hover *,
+.base-button--secondary:hover .button-text,
+.base-button--secondary:hover span {
+  color: #8a2be2 !important;
+}
+
+/* Force border colors for secondary buttons */
+.base-button--secondary {
+  border-top-color: rgba(138, 43, 226, 0.5) !important;
+  border-right-color: rgba(138, 43, 226, 0.5) !important;
+  border-bottom-color: rgba(138, 43, 226, 0.5) !important;
+  border-left-color: rgba(138, 43, 226, 0.5) !important;
+}
+
+.base-button--secondary:hover {
+  border-top-color: rgba(138, 43, 226, 0.7) !important;
+  border-right-color: rgba(138, 43, 226, 0.7) !important;
+  border-bottom-color: rgba(138, 43, 226, 0.7) !important;
+  border-left-color: rgba(138, 43, 226, 0.7) !important;
+}/*
+ Fix button sizes - ensure consistent sizing */
+.base-button {
+  min-height: 44px !important;
+  padding: 0.75rem 1.5rem !important;
+  font-size: 1rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.base-button--small {
+  min-height: 32px !important;
+  padding: 0.5rem 1rem !important;
+  font-size: 0.875rem !important;
+}
+
+.base-button--medium {
+  min-height: 44px !important;
+  padding: 0.75rem 1.5rem !important;
+  font-size: 1rem !important;
+}
+
+.base-button--large {
+  min-height: 56px !important;
+  padding: 1rem 2rem !important;
+  font-size: 1.125rem !important;
+}
+
+/* Ensure all button variants have consistent sizing */
+.base-button--primary,
+.base-button--secondary,
+.base-button--ghost,
+.base-button--danger {
+  min-height: inherit !important;
+  padding: inherit !important;
+  font-size: inherit !important;
+}
+/* N
+avigation Button Fixes */
+.nav-button.base-button {
+  min-width: auto !important;
+  padding: 0.5rem 1rem !important;
+  font-size: 0.875rem !important;
+  border-radius: 6px !important;
+  transition: all 0.2s ease !important;
+}
+
+.nav-button.base-button--primary {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(138, 43, 226, 0.2)) !important;
+  border: 1px solid rgba(0, 255, 255, 0.5) !important;
+  color: #00ffff !important;
+  box-shadow: 0 4px 16px rgba(0, 255, 255, 0.3) !important;
+}
+
+.nav-button.base-button--primary:hover {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.35), rgba(138, 43, 226, 0.35)) !important;
+  border-color: rgba(0, 255, 255, 0.7) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 20px rgba(0, 255, 255, 0.4) !important;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.8) !important;
+}
+
+.nav-button.base-button--ghost {
+  background: rgba(15, 23, 42, 0.4) !important;
+  border: 1px solid rgba(148, 163, 184, 0.3) !important;
+  color: #94a3b8 !important;
+  box-shadow: none !important;
+}
+
+.nav-button.base-button--ghost:hover {
+  background: rgba(0, 255, 255, 0.1) !important;
+  border-color: rgba(0, 255, 255, 0.4) !important;
+  color: #00ffff !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0, 255, 255, 0.2) !important;
+  text-shadow: 0 0 8px rgba(0, 255, 255, 0.6) !important;
+}
+
+/* Mobile navigation fixes */
+@media (max-width: 1023px) {
+  .nav-button .nav-text {
+    display: none !important;
+  }
+  
+  .nav-button.base-button {
+    padding: 0.5rem !important;
+    aspect-ratio: 1 !important;
+    min-width: 2.5rem !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .nav-button .nav-text {
+    display: block !important;
+  }
+  
+  .nav-button.base-button {
+    padding: 0.5rem 1rem !important;
+  }
+}
+/*
+ BaseButton Component Fixes - Higher Specificity */
+.base-button.base-button--primary {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(138, 43, 226, 0.2)) !important;
+  border: 1px solid rgba(0, 255, 255, 0.5) !important;
+  color: #00ffff !important;
+  box-shadow: 0 8px 32px rgba(0, 255, 255, 0.3) !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+  backdrop-filter: blur(20px) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  min-height: 2.5rem !important;
+}
+
+.base-button.base-button--primary::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: -100% !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.4), transparent) !important;
+  transition: left 0.6s ease !important;
+  z-index: 0 !important;
+}
+
+.base-button.base-button--primary:hover {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.35), rgba(138, 43, 226, 0.35)) !important;
+  border-color: rgba(0, 255, 255, 0.7) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 12px 40px rgba(0, 255, 255, 0.5) !important;
+  text-shadow: 0 0 15px rgba(0, 255, 255, 1) !important;
+}
+
+.base-button.base-button--primary:hover::before {
+  left: 100% !important;
+}
+
+.base-button.base-button--secondary {
+  background: rgba(15, 23, 42, 0.7) !important;
+  border: 1px solid rgba(138, 43, 226, 0.5) !important;
+  color: #8a2be2 !important;
+  box-shadow: 0 8px 32px rgba(138, 43, 226, 0.2) !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+  backdrop-filter: blur(20px) !important;
+  min-height: 2.5rem !important;
+}
+
+.base-button.base-button--secondary:hover {
+  background: rgba(138, 43, 226, 0.2) !important;
+  border-color: rgba(138, 43, 226, 0.7) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 12px 40px rgba(138, 43, 226, 0.4) !important;
+  text-shadow: 0 0 15px rgba(138, 43, 226, 1) !important;
+}
+
+.base-button.base-button--ghost {
+  background: rgba(15, 23, 42, 0.6) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  color: #00ffff !important;
+  box-shadow: 0 8px 32px rgba(0, 255, 255, 0.1) !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+  backdrop-filter: blur(20px) !important;
+  min-height: 2.5rem !important;
+}
+
+.base-button.base-button--ghost:hover {
+  background: rgba(0, 255, 255, 0.1) !important;
+  border-color: rgba(0, 255, 255, 0.5) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 12px 40px rgba(0, 255, 255, 0.3) !important;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.8) !important;
+}
+
+.base-button.base-button--danger {
+  background: rgba(15, 23, 42, 0.7) !important;
+  border: 1px solid rgba(239, 68, 68, 0.5) !important;
+  color: #ef4444 !important;
+  box-shadow: 0 8px 32px rgba(239, 68, 68, 0.2) !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+  backdrop-filter: blur(20px) !important;
+  min-height: 2.5rem !important;
+}
+
+.base-button.base-button--danger:hover {
+  background: rgba(239, 68, 68, 0.2) !important;
+  border-color: rgba(239, 68, 68, 0.7) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 12px 40px rgba(239, 68, 68, 0.4) !important;
+  text-shadow: 0 0 15px rgba(239, 68, 68, 1) !important;
+}
+
+/* BaseButton Size Variants */
+.base-button.base-button--small {
+  padding: 0.5rem 1rem !important;
+  font-size: 0.875rem !important;
+  min-height: 2rem !important;
+}
+
+.base-button.base-button--large {
+  padding: 1rem 2rem !important;
+  font-size: 1.125rem !important;
+  min-height: 3rem !important;
+}
+
+/* BaseButton Text and Icons */
+.base-button .button-text,
+.base-button .button-icon {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.base-button .button-icon svg {
+  width: 1em !important;
+  height: 1em !important;
+}
+
+/* BaseButton Loading State */
+.base-button.base-button--loading {
+  cursor: wait !important;
+}
+
+.base-button .button-loading {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.base-button .loading-spinner {
+  width: 1em !important;
+  height: 1em !important;
+  animation: spin 1s linear infinite !important;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}/* Can
+didate Interview Page Fixes */
+.candidate-interview {
+  min-height: 100vh;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+  color: #e2e8f0;
+}
+
+.candidate-interview .el-header {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.6)) !important;
+  backdrop-filter: blur(30px) !important;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.3) !important;
+  padding: 1.5rem !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+.candidate-interview .header-content {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  max-width: 1280px !important;
+  margin: 0 auto !important;
+}
+
+.candidate-interview .header-content h1 {
+  color: #00ffff !important;
+  font-weight: 700 !important;
+  font-size: 1.5rem !important;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5) !important;
+  margin: 0 !important;
+}
+
+.candidate-interview .session-info {
+  display: flex !important;
+  gap: 1rem !important;
+  color: #94a3b8 !important;
+  font-size: 0.875rem !important;
+}
+
+.candidate-interview .el-main {
+  padding: 2rem !important;
+  max-width: 1280px !important;
+  margin: 0 auto !important;
+}
+
+/* Card Styles */
+.candidate-interview .el-card {
+  background: rgba(15, 23, 42, 0.6) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 40px rgba(0, 255, 255, 0.1) !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.candidate-interview .el-card__header {
+  background: rgba(0, 255, 255, 0.1) !important;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2) !important;
+  color: #00ffff !important;
+  font-weight: 600 !important;
+  padding: 1rem 1.5rem !important;
+  border-radius: 16px 16px 0 0 !important;
+}
+
+.candidate-interview .el-card__body {
+  padding: 1.5rem !important;
+  background: transparent !important;
+}
+
+/* Avatar Card */
+.candidate-interview .avatar-card {
+  height: 400px !important;
+}
+
+.candidate-interview .avatar-container {
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: linear-gradient(135deg, rgba(138, 43, 226, 0.1), rgba(0, 255, 255, 0.1)) !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+}
+
+/* Chat Card */
+.candidate-interview .chat-card {
+  height: 400px !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.candidate-interview .chat-card .el-card__body {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  padding: 1rem !important;
+}
+
+/* Code Input Section */
+.candidate-interview .code-input-section {
+  margin-bottom: 1rem !important;
+  padding: 1rem !important;
+  background: rgba(0, 255, 255, 0.05) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  border-radius: 8px !important;
+}
+
+.candidate-interview .code-input-wrapper {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.5rem !important;
+  align-items: center !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.candidate-interview .code-input-wrapper .el-input {
+  flex: 1 !important;
+  min-width: 150px !important;
+}
+
+.candidate-interview .code-input-wrapper .el-button {
+  min-width: 80px !important;
+  height: 40px !important;
+  font-size: 0.75rem !important;
+  line-height: 1.2 !important;
+  white-space: pre-line !important;
+  padding: 0.5rem !important;
+}
+
+.candidate-interview .code-error {
+  color: #ef4444 !important;
+  font-size: 0.875rem !important;
+  margin-top: 0.5rem !important;
+}
+
+/* Resume Info */
+.candidate-interview .resume-info {
+  margin-bottom: 1rem !important;
+}
+
+.candidate-interview .resume-info .el-tag {
+  width: 100% !important;
+  padding: 0.75rem !important;
+  font-size: 0.875rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+}
+
+/* Chat Messages */
+.candidate-interview .chat-messages {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  padding: 0.5rem !important;
+  background: rgba(15, 23, 42, 0.3) !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(0, 255, 255, 0.1) !important;
+  margin-bottom: 1rem !important;
+  max-height: 200px !important;
+}
+
+.candidate-interview .message {
+  margin-bottom: 0.75rem !important;
+  padding: 0.75rem !important;
+  border-radius: 8px !important;
+  max-width: 90% !important;
+}
+
+.candidate-interview .message.avatar {
+  background: rgba(0, 255, 255, 0.1) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  margin-right: auto !important;
+}
+
+.candidate-interview .message.user {
+  background: rgba(138, 43, 226, 0.1) !important;
+  border: 1px solid rgba(138, 43, 226, 0.2) !important;
+  margin-left: auto !important;
+}
+
+.candidate-interview .message-content {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.25rem !important;
+}
+
+.candidate-interview .message-text {
+  color: #e2e8f0 !important;
+  font-size: 0.875rem !important;
+  line-height: 1.4 !important;
+}
+
+.candidate-interview .message-time {
+  color: #94a3b8 !important;
+  font-size: 0.75rem !important;
+  text-align: right !important;
+}
+
+/* Voice Input Section */
+.candidate-interview .voice-input-horizontal {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.75rem !important;
+  padding: 1rem !important;
+  background: rgba(0, 255, 255, 0.05) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  border-radius: 8px !important;
+}
+
+.candidate-interview .microphone-status-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+}
+
+.candidate-interview .microphone-status-group .el-tag {
+  font-size: 0.75rem !important;
+  line-height: 1.2 !important;
+  text-align: center !important;
+  min-width: 80px !important;
+}
+
+.candidate-interview .microphone-selector-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+}
+
+.candidate-interview .microphone-selector-group label {
+  color: #e2e8f0 !important;
+  font-size: 0.875rem !important;
+  white-space: nowrap !important;
+}
+
+.candidate-interview .voice-controls-group {
+  display: flex !important;
+  gap: 0.5rem !important;
+}
+
+.candidate-interview .voice-controls-group .el-button {
+  flex: 1 !important;
+  height: 40px !important;
+  font-size: 0.875rem !important;
+}
+
+/* Recording Status */
+.candidate-interview .recording-status {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  margin-top: 0.5rem !important;
+}
+
+.candidate-interview .recording-status span {
+  color: #00ffff !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+}
+
+/* Progress Card */
+.candidate-interview .progress-card {
+  margin-top: 1.5rem !important;
+}
+
+.candidate-interview .progress-item {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 0.5rem 0 !important;
+}
+
+.candidate-interview .progress-item label {
+  color: #94a3b8 !important;
+  font-weight: 500 !important;
+}
+
+.candidate-interview .progress-item span {
+  color: #e2e8f0 !important;
+  font-weight: 600 !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .candidate-interview .el-main {
+    padding: 1rem !important;
+  }
+  
+  .candidate-interview .header-content {
+    flex-direction: column !important;
+    gap: 1rem !important;
+    text-align: center !important;
+  }
+  
+  .candidate-interview .avatar-card,
+  .candidate-interview .chat-card {
+    height: auto !important;
+    min-height: 300px !important;
+  }
+  
+  .candidate-interview .code-input-wrapper {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  
+  .candidate-interview .code-input-wrapper .el-button {
+    width: 100% !important;
+  }
+  
+  .candidate-interview .voice-input-horizontal {
+    padding: 0.75rem !important;
+  }
+  
+  .candidate-interview .microphone-selector-group {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+}/* I
+nterview Page - Complete Redesign - FIXED */
+.candidate-interview {
+  min-height: 100vh;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+  color: #e2e8f0;
+}
+
+/* Fix all buttons in interview page to be uniform */
+.candidate-interview .el-button {
+  height: 36px !important;
+  padding: 0 16px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  border-radius: 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  min-width: auto !important;
+}
+
+/* Code input section - fix button layout */
+.candidate-interview .code-input-wrapper {
+  display: grid !important;
+  grid-template-columns: 1fr auto auto auto !important;
+  gap: 8px !important;
+  align-items: center !important;
+  margin-bottom: 12px !important;
+}
+
+.candidate-interview .code-input-wrapper .el-input {
+  width: 100% !important;
+}
+
+.candidate-interview .code-input-wrapper .el-button {
+  height: 32px !important;
+  padding: 0 12px !important;
+  font-size: 12px !important;
+  min-width: 80px !important;
+}
+
+/* Voice controls - fix button layout */
+.candidate-interview .voice-controls-group {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 8px !important;
+}
+
+.candidate-interview .voice-controls-group .el-button {
+  height: 32px !important;
+  font-size: 12px !important;
+  padding: 0 8px !important;
+}
+
+/* Microphone status */
+.candidate-interview .microphone-status-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+
+.candidate-interview .microphone-status-group .el-tag {
+  height: 24px !important;
+  line-height: 22px !important;
+  font-size: 11px !important;
+  padding: 0 8px !important;
+  text-align: center !important;
+}
+
+.candidate-interview .microphone-status-group .el-button {
+  height: 24px !important;
+  font-size: 11px !important;
+  padding: 0 8px !important;
+}
+
+/* Progress section */
+.candidate-interview .progress-item {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 8px 0 !important;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.1) !important;
+}
+
+.candidate-interview .progress-item:last-child {
+  border-bottom: none !important;
+}
+
+.candidate-interview .progress-item label {
+  color: #94a3b8 !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+.candidate-interview .progress-item .el-tag {
+  height: 24px !important;
+  line-height: 22px !important;
+  font-size: 12px !important;
+}
+
+/* Cards */
+.candidate-interview .el-card {
+  background: rgba(15, 23, 42, 0.6) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+  margin-bottom: 16px !important;
+}
+
+.candidate-interview .el-card__header {
+  background: rgba(0, 255, 255, 0.1) !important;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2) !important;
+  color: #00ffff !important;
+  font-weight: 600 !important;
+  padding: 12px 16px !important;
+  font-size: 16px !important;
+}
+
+.candidate-interview .el-card__body {
+  padding: 16px !important;
+}
+
+/* Avatar section */
+.candidate-interview .avatar-container {
+  height: 320px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: linear-gradient(135deg, rgba(138, 43, 226, 0.1), rgba(0, 255, 255, 0.1)) !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+}
+
+/* Chat section */
+.candidate-interview .chat-card .el-card__body {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 320px !important;
+  padding: 12px !important;
+}
+
+.candidate-interview .code-input-section {
+  background: rgba(0, 255, 255, 0.05) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  border-radius: 6px !important;
+  padding: 12px !important;
+  margin-bottom: 12px !important;
+}
+
+.candidate-interview .resume-info {
+  margin-bottom: 12px !important;
+}
+
+.candidate-interview .resume-info .el-tag {
+  width: 100% !important;
+  height: auto !important;
+  padding: 8px 12px !important;
+  font-size: 13px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.candidate-interview .chat-messages {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  padding: 8px !important;
+  background: rgba(15, 23, 42, 0.3) !important;
+  border-radius: 6px !important;
+  border: 1px solid rgba(0, 255, 255, 0.1) !important;
+  margin-bottom: 12px !important;
+  min-height: 120px !important;
+}
+
+.candidate-interview .message {
+  margin-bottom: 8px !important;
+  padding: 8px 12px !important;
+  border-radius: 6px !important;
+  max-width: 85% !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+}
+
+.candidate-interview .message.avatar {
+  background: rgba(0, 255, 255, 0.1) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  margin-right: auto !important;
+}
+
+.candidate-interview .message.user {
+  background: rgba(138, 43, 226, 0.1) !important;
+  border: 1px solid rgba(138, 43, 226, 0.2) !important;
+  margin-left: auto !important;
+}
+
+.candidate-interview .message-time {
+  color: #94a3b8 !important;
+  font-size: 10px !important;
+  margin-top: 4px !important;
+  text-align: right !important;
+}
+
+.candidate-interview .voice-input-horizontal {
+  background: rgba(0, 255, 255, 0.05) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  border-radius: 6px !important;
+  padding: 12px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+.candidate-interview .microphone-selector-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+
+.candidate-interview .microphone-selector-group label {
+  color: #e2e8f0 !important;
+  font-size: 13px !important;
+  white-space: nowrap !important;
+}
+
+.candidate-interview .microphone-selector-group .el-select {
+  min-width: 160px !important;
+}
+
+.candidate-interview .recording-status {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-top: 8px !important;
+}
+
+.candidate-interview .recording-status .el-progress {
+  flex: 1 !important;
+}
+
+.candidate-interview .recording-status span {
+  color: #00ffff !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  min-width: 30px !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .candidate-interview .code-input-wrapper {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+  
+  .candidate-interview .code-input-wrapper .el-button {
+    width: 100% !important;
+    justify-self: stretch !important;
+  }
+  
+  .candidate-interview .voice-controls-group {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .candidate-interview .microphone-selector-group {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  
+  .candidate-interview .avatar-container {
+    height: 240px !important;
+  }
+  
+  .candidate-interview .chat-card .el-card__body {
+    height: 280px !important;
+  }
+}/* Fix white
+ backgrounds in dropdowns and popovers - AGGRESSIVE */
+.el-select-dropdown,
+.el-dropdown-menu,
+.el-popper,
+.el-tooltip__popper,
+.el-popover,
+.el-picker-panel,
+.el-cascader-panel,
+.el-autocomplete-suggestion,
+.el-menu--popup,
+.el-submenu__popup {
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+  color: #e2e8f0 !important;
+}
+
+/* Fix dropdown options */
+.el-select-dropdown .el-select-dropdown__item,
+.el-option,
+.el-dropdown-menu__item,
+.el-cascader-node,
+.el-autocomplete-suggestion li,
+.el-menu-item {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+  border: none !important;
+}
+
+.el-select-dropdown .el-select-dropdown__item:hover,
+.el-option:hover,
+.el-dropdown-menu__item:hover,
+.el-cascader-node:hover,
+.el-autocomplete-suggestion li:hover,
+.el-menu-item:hover {
+  background: rgba(0, 255, 255, 0.1) !important;
+  color: #00ffff !important;
+}
+
+.el-select-dropdown .el-select-dropdown__item.selected,
+.el-option.selected,
+.el-option.is-selected {
+  background: rgba(0, 255, 255, 0.2) !important;
+  color: #00ffff !important;
+  font-weight: 600 !important;
+}
+
+/* Fix scrollbars in dropdowns */
+.el-select-dropdown .el-scrollbar__wrap,
+.el-cascader-panel .el-scrollbar__wrap,
+.el-autocomplete-suggestion .el-scrollbar__wrap {
+  background: transparent !important;
+}
+
+.el-select-dropdown .el-scrollbar__bar,
+.el-cascader-panel .el-scrollbar__bar,
+.el-autocomplete-suggestion .el-scrollbar__bar {
+  background: rgba(0, 255, 255, 0.3) !important;
+}
+
+/* Fix empty state */
+.el-select-dropdown .el-select-dropdown__empty,
+.el-select__empty {
+  color: #94a3b8 !important;
+  background: transparent !important;
+}
+
+/* Global popper fix */
+.el-popper.is-light {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  color: #e2e8f0 !important;
+}
+
+.el-popper.is-light .el-popper__arrow::before {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+}
+
+/* Fix for any remaining white backgrounds */
+[class*="el-"] {
+  background-color: transparent !important;
+}
+
+[class*="el-"][style*="background-color: rgb(255, 255, 255)"],
+[class*="el-"][style*="background-color: white"],
+[class*="el-"][style*="background: rgb(255, 255, 255)"],
+[class*="el-"][style*="background: white"] {
+  background: rgba(15, 23, 42, 0.95) !important;
+  color: #e2e8f0 !important;
+}
+
+/* Specific fix for export dropdown */
+.el-select-dropdown[data-popper-placement] {
+  background: rgba(15, 23, 42, 0.98) !important;
+  backdrop-filter: blur(30px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.4) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Fix dropdown arrow */
+.el-popper__arrow,
+.el-popper__arrow::before {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border-color: rgba(0, 255, 255, 0.3) !important;
+}
+.candidate-interview {
+  min-height: 100vh !important;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95)) !important;
+  color: #e2e8f0 !important;
+}
+
+.candidate-interview .el-container {
+  min-height: 100vh !important;
+}
+
+.candidate-interview .el-header {
+  background: rgba(15, 23, 42, 0.8) !important;
+  backdrop-filter: blur(20px) !important;
+  border-bottom: 1px solirgba(0, 255, 255, 0.3) !important;
+  padding: 20px !important;
+  height: auto !important;
+}
+
+.candidate-interview .header-content {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+.candidate-interview .header-content h1 {
+  color: #00ffff !important;
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  margin: 0 !important;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5) !important;
+}
+
+.candidate-interview .session-info {
+  display: flex !important;
+  gap: 16px !important;
+  color: #94a3b8 !important;
+  font-size: 14px !important;
+}
+
+.candidate-interview .el-main {
+  padding: 24px !important;
+  background: transparent !important;
+  width: 100% !important;
+}
+
+.candidate-interview .el-row {
+  max-width: 100% !important;
+  margin: 0 !important;
+  width: 100% !important;
+}
+
+/* Cards - Uniform styling */
+.candidate-interview .el-card {
+  background: rgba(15, 23, 42, 0.7) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+  margin-bottom: 0 !important;
+}
+
+.candidate-interview .el-card__header {
+  background: rgba(0, 255, 255, 0.1) !important;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2) !important;
+  color: #00ffff !important;
+  font-weight: 600 !important;
+  font-size: 16px !important;
+  padding: 16px 20px !important;
+}
+
+.candidate-interview .el-card__body {
+  padding: 20px !important;
+  background: transparent !important;
+}
+
+/* Avatar Card */
+.candidate-interview .avatar-card {
+  height: 400px !important;
+}
+
+.candidate-interview .avatar-card .el-card__body {
+  height: calc(100% - 57px) !important;
+  padding: 0 !important;
+}
+
+.candidate-interview .avatar-container {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: linear-gradient(135deg, rgba(138, 43, 226, 0.1), rgba(0, 255, 255, 0.1)) !important;
+  border-radius: 0 0 12px 12px !important;
+  position: relative !important;
+}
+
+/* Chat Card */
+.candidate-interview .chat-card {
+  height: 400px !important;
+}
+
+.candidate-interview .chat-card .el-card__body {
+  height: calc(100% - 57px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 16px !important;
+}
+
+/* Code Input Section - FIXED */
+.candidate-interview .code-input-section {
+  background: rgba(0, 255, 255, 0.05) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  border-radius: 8px !important;
+  padding: 16px !important;
+  margin-bottom: 16px !important;
+}
+
+.candidate-interview .code-input-wrapper {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+.candidate-interview .code-input-wrapper .el-input {
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+.candidate-interview .code-input-wrapper .el-input .el-input__wrapper {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  border-radius: 6px !important;
+}
+
+.candidate-interview .code-input-wrapper .el-input .el-input__inner {
+  color: #e2e8f0 !important;
+  background: transparent !important;
+}
+
+/* Buttons in code section - UNIFORM */
+.candidate-interview .code-input-wrapper .el-button {
+  width: 100% !important;
+  height: 40px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  border-radius: 6px !important;
+  margin: 0 !important;
+  white-space: nowrap !important;
+  line-height: 1.4 !important;
+  padding: 8px 16px !important;
+}
+
+.candidate-interview .code-error {
+  color: #ef4444 !important;
+  font-size: 14px !important;
+  margin-top: 8px !important;
+  padding: 8px !important;
+  background: rgba(239, 68, 68, 0.1) !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  border-radius: 6px !important;
+}
+
+/* Resume Info */
+.candidate-interview .resume-info {
+  margin-bottom: 16px !important;
+}
+
+.candidate-interview .resume-info .el-tag {
+  width: 100% !important;
+  height: auto !important;
+  padding: 12px !important;
+  font-size: 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  border-radius: 6px !important;
+}
+
+/* Chat Messages */
+.candidate-interview .chat-messages {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  padding: 12px !important;
+  background: rgba(15, 23, 42, 0.4) !important;
+  border: 1px solid rgba(0, 255, 255, 0.1) !important;
+  border-radius: 8px !important;
+  margin-bottom: 16px !important;
+  min-height: 120px !important;
+}
+
+.candidate-interview .message {
+  margin-bottom: 12px !important;
+  padding: 12px !important;
+  border-radius: 8px !important;
+  max-width: 90% !important;
+}
+
+.candidate-interview .message.avatar {
+  background: rgba(0, 255, 255, 0.1) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  margin-right: auto !important;
+  margin-left: 0 !important;
+}
+
+.candidate-interview .message.user {
+  background: rgba(138, 43, 226, 0.1) !important;
+  border: 1px solid rgba(138, 43, 226, 0.2) !important;
+  margin-left: auto !important;
+  margin-right: 0 !important;
+}
+
+.candidate-interview .message-text {
+  color: #e2e8f0 !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  margin-bottom: 4px !important;
+}
+
+.candidate-interview .message-time {
+  color: #94a3b8 !important;
+  font-size: 12px !important;
+  text-align: right !important;
+}
+
+/* Voice Input Section */
+.candidate-interview .voice-input-horizontal {
+  background: rgba(0, 255, 255, 0.05) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  border-radius: 8px !important;
+  padding: 16px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+.candidate-interview .microphone-status-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  flex-wrap: wrap !important;
+}
+
+.candidate-interview .microphone-status-group .el-tag {
+  height: 32px !important;
+  line-height: 30px !important;
+  font-size: 12px !important;
+  padding: 0 12px !important;
+  border-radius: 6px !important;
+}
+
+.candidate-interview .microphone-status-group .el-button {
+  height: 32px !important;
+  font-size: 12px !important;
+  padding: 0 12px !important;
+  border-radius: 6px !important;
+}
+
+.candidate-interview .microphone-selector-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.candidate-interview .microphone-selector-group label {
+  color: #e2e8f0 !important;
+  font-size: 14px !important;
+  white-space: nowrap !important;
+  min-width: 80px !important;
+}
+
+.candidate-interview .voice-controls-group {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 12px !important;
+}
+
+.candidate-interview .voice-controls-group .el-button {
+  height: 40px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  border-radius: 6px !important;
+}
+
+/* Progress Card */
+.candidate-interview .progress-card {
+  margin-top: 20px !important;
+}
+
+.candidate-interview .progress-item {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 12px 0 !important;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.1) !important;
+}
+
+.candidate-interview .progress-item:last-child {
+  border-bottom: none !important;
+}
+
+.candidate-interview .progress-item label {
+  color: #94a3b8 !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+.candidate-interview .progress-item .el-tag {
+  height: 28px !important;
+  line-height: 26px !important;
+  font-size: 12px !important;
+  border-radius: 6px !important;
+}
+
+/* Recording Status */
+.candidate-interview .recording-status {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin-top: 12px !important;
+}
+
+.candidate-interview .recording-status .el-progress {
+  flex: 1 !important;
+}
+
+.candidate-interview .recording-status span {
+  color: #00ffff !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  min-width: 40px !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .candidate-interview .el-main {
+    padding: 16px !important;
+  }
+  
+  .candidate-interview .header-content {
+    flex-direction: column !important;
+    gap: 12px !important;
+    text-align: center !important;
+  }
+  
+  .candidate-interview .avatar-card,
+  .candidate-interview .chat-card {
+    height: auto !important;
+    min-height: 300px !important;
+  }
+  
+  .candidate-interview .voice-controls-group {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .candidate-interview .microphone-selector-group {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+}/* I
+nterview Layout - SPACIOUS VERSION */
+.candidate-interview .avatar-card {
+  height: 500px !important;
+}
+
+.candidate-interview .chat-card {
+  height: 500px !important;
+}
+
+.candidate-interview .chat-card .el-card__body {
+  height: calc(100% - 57px) !important;
+  padding: 24px !important;
+}
+
+.candidate-interview .code-input-section {
+  padding: 20px !important;
+  margin-bottom: 20px !important;
+}
+
+.candidate-interview .code-input-wrapper {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 16px !important;
+}
+
+.candidate-interview .code-input-wrapper .el-button {
+  height: 48px !important;
+  font-size: 16px !important;
+  padding: 12px 24px !important;
+}
+
+.candidate-interview .chat-messages {
+  min-height: 200px !important;
+  padding: 16px !important;
+  margin-bottom: 20px !important;
+}
+
+.candidate-interview .voice-input-horizontal {
+  padding: 20px !important;
+  gap: 16px !important;
+}
+
+.candidate-interview .voice-controls-group .el-button {
+  height: 48px !important;
+  font-size: 16px !important;
+}
+
+.candidate-interview .microphone-status-group .el-tag {
+  height: 36px !important;
+  line-height: 34px !important;
+  font-size: 14px !important;
+  padding: 0 16px !important;
+}
+
+.candidate-interview .microphone-status-group .el-button {
+  height: 36px !important;
+  font-size: 14px !important;
+  padding: 0 16px !important;
+}
+
+.candidate-interview .resume-info .el-tag {
+  padding: 16px !important;
+  font-size: 16px !important;
+}
+
+.candidate-interview .message {
+  padding: 16px !important;
+  margin-bottom: 16px !important;
+  font-size: 16px !important;
+}
+
+.candidate-interview .progress-item {
+  padding: 16px 0 !important;
+}
+
+.candidate-interview .progress-item label {
+  font-size: 16px !important;
+}
+
+.candidate-interview .progress-item .el-tag {
+  height: 32px !important;
+  line-height: 30px !important;
+  font-size: 14px !important;
+}
+
+/* Make everything more spacious */
+.candidate-interview .el-card__body {
+  padding: 24px !important;
+}
+
+.candidate-interview .el-card__header {
+  padding: 20px 24px !important;
+  font-size: 18px !important;
+}
+
+/* Wider input fields */
+.candidate-interview .el-input .el-input__wrapper {
+  padding: 12px 16px !important;
+  font-size: 16px !important;
+}
+
+.candidate-interview .microphone-selector-group .el-select {
+  min-width: 200px !important;
+}
+
+.candidate-interview .microphone-selector-group label {
+  font-size: 16px !important;
+  min-width: 100px !important;
+}
+
+/* More space for recording status */
+.candidate-interview .recording-status {
+  gap: 16px !important;
+  margin-top: 16px !important;
+}
+
+.candidate-interview .recording-status span {
+  font-size: 16px !important;
+  min-width: 50px !important;
+}/* F
+ix Microphone Section - CRITICAL */
+.candidate-interview .microphone-status-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  flex-wrap: wrap !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.candidate-interview .microphone-status-group .el-tag {
+  height: auto !important;
+  min-height: 32px !important;
+  line-height: 1.2 !important;
+  font-size: 12px !important;
+  padding: 8px 12px !important;
+  border-radius: 6px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  white-space: pre-line !important;
+}
+
+.candidate-interview .microphone-status-group .el-button {
+  height: 32px !important;
+  font-size: 12px !important;
+  padding: 0 12px !important;
+  border-radius: 6px !important;
+  margin: 0 !important;
+  white-space: nowrap !important;
+}
+
+/* Microphone Selector - SHOW IT */
+.candidate-interview .microphone-selector-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: 100% !important;
+}
+
+.candidate-interview .microphone-selector-group label {
+  color: #e2e8f0 !important;
+  font-size: 14px !important;
+  white-space: nowrap !important;
+  min-width: 80px !important;
+  flex-shrink: 0 !important;
+}
+
+.candidate-interview .microphone-selector-group .el-select {
+  flex: 1 !important;
+  min-width: 160px !important;
+  width: auto !important;
+}
+
+.candidate-interview .microphone-selector-group .el-select .el-input {
+  width: 100% !important;
+}
+
+.candidate-interview .microphone-selector-group .el-select .el-input__wrapper {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  border-radius: 6px !important;
+  height: 32px !important;
+}
+
+.candidate-interview .microphone-selector-group .el-select .el-input__inner {
+  color: #e2e8f0 !important;
+  background: transparent !important;
+  font-size: 14px !important;
+  height: 30px !important;
+  line-height: 30px !important;
+}
+
+/* Voice Controls - Keep them visible */
+.candidate-interview .voice-controls-group {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 12px !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.candidate-interview .voice-controls-group .el-button {
+  height: 40px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  border-radius: 6px !important;
+  margin: 0 !important;
+  padding: 8px 16px !important;
+}
+
+/* Make sure voice input section is always visible */
+.candidate-interview .voice-input-horizontal {
+  background: rgba(0, 255, 255, 0.05) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  border-radius: 8px !important;
+  padding: 16px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Override any hiding styles */
+.candidate-interview .voice-input-horizontal * {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Recording status */
+.candidate-interview .recording-status {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin-top: 12px !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.candidate-interview .recording-status .el-progress {
+  flex: 1 !important;
+}
+
+.candidate-interview .recording-status span {
+  color: #00ffff !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  min-width: 40px !important;
+}
+
+/* Debug - make sure nothing is hidden */
+.candidate-interview [v-if],
+.candidate-interview [v-show] {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Responsive fixes for microphone */
+@media (max-width: 768px) {
+  .candidate-interview .microphone-selector-group {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+  
+  .candidate-interview .microphone-selector-group label {
+    min-width: auto !important;
+  }
+  
+  .candidate-interview .microphone-selector-group .el-select {
+    width: 100% !important;
+  }
+}/* F
+ORCE SHOW Microphone Selector - Override v-if */
+.candidate-interview .microphone-selector-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: 100% !important;
+  /* Override Vue v-if hiding */
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+/* Force show even when v-if is false */
+.candidate-interview .voice-input-horizontal > div[style*="display: none"],
+.candidate-interview .voice-input-horizontal > div[hidden] {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Add a fallback microphone selector if missing */
+.candidate-interview .voice-input-horizontal::after {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 0;
+}
+
+/* If microphone selector is missing, add it back */
+.candidate-interview .voice-input-horizontal:not(:has(.microphone-selector-group))::before {
+  content: "Микрофон: Default";
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 6px;
+  color: #e2e8f0;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+/* Alternative: Create a visible microphone section */
+.candidate-interview .voice-input-horizontal {
+  position: relative;
+}
+
+.candidate-interview .voice-input-horizontal > *:nth-child(2) {
+  /* This should be the microphone selector */
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Ensure microphone elements are always visible */
+.candidate-interview [class*="microphone"] {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Force show any hidden divs in voice input */
+.candidate-interview .voice-input-horizontal > div {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Override Vue's v-if style attribute */
+.candidate-interview .voice-input-horizontal div[style*="display: none"] {
+  display: flex !important;
+}
+
+.candidate-interview .voice-input-horizontal div[style*="visibility: hidden"] {
+  visibility: visible !important;
+}
+
+/* Make sure select dropdown works */
+.candidate-interview .microphone-selector-group .el-select .el-input__wrapper {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  border-radius: 6px !important;
+  height: 36px !important;
+  min-width: 180px !important;
+}
+
+.candidate-interview .microphone-selector-group .el-select .el-input__inner {
+  color: #e2e8f0 !important;
+  background: transparent !important;
+  font-size: 14px !important;
+  height: 34px !important;
+  line-height: 34px !important;
+}/* EMERGENCY
+: Add microphone selector if missing */
+.candidate-interview .voice-input-horizontal {
+  position: relative;
+}
+
+/* If no microphone selector exists, create one with CSS */
+.candidate-interview .voice-input-horizontal:not(:has(.microphone-selector-group)) .microphone-status-group::after {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 40px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 6px;
+  margin-top: 12px;
+  position: relative;
+}
+
+.candidate-interview .voice-input-horizontal:not(:has(.microphone-selector-group)) .microphone-status-group::before {
+  content: "Микрофон: По умолчанию";
+  display: block;
+  color: #e2e8f0;
+  font-size: 14px;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 6px;
+}
+
+/* Alternative approach - inject HTML-like content */
+.candidate-interview .microphone-status-group {
+  position: relative;
+}
+
+.candidate-interview .microphone-status-group::after {
+  content: "Микрофон: \A Выберите устройство";
+  white-space: pre-line;
+  display: block;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 6px;
+  color: #e2e8f0;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.candidate-interview .microphone-status-group::after:hover {
+  background: rgba(0, 255, 255, 0.1);
+  border-color: rgba(0, 255, 255, 0.5);
+}/* 
+EMERGENCY FIX - Show microphone selector */
+.candidate-interview .microphone-selector-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 12px !important;
+  background: rgba(0, 255, 255, 0.1) !important;
+  border: 2px solid rgba(0, 255, 255, 0.5) !important;
+  border-radius: 8px !important;
+  margin: 12px 0 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative !important;
+  z-index: 999 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.candidate-interview .microphone-selector-group label {
+  color: #00ffff !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+  min-width: 80px !important;
+}
+
+.candidate-interview .microphone-selector-group .el-select {
+  flex: 1 !important;
+  min-width: 150px !important;
+}
+
+.candidate-interview .microphone-selector-group .el-select .el-input__wrapper {
+  background: rgba(15, 23, 42, 0.9) !important;
+  border: 1px solid rgba(0, 255, 255, 0.5) !important;
+  border-radius: 6px !important;
+  height: 36px !important;
+}
+
+.candidate-interview .microphone-selector-group .el-select .el-input__inner {
+  color: #e2e8f0 !important;
+  background: transparent !important;
+  font-size: 14px !important;
+}
+
+/* Make sure voice input section is visible */
+.candidate-interview .voice-input-horizontal {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  padding: 16px !important;
+  background: rgba(0, 255, 255, 0.05) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  border-radius: 8px !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+/* Debug: Add red border to see if element exists */
+.candidate-interview .microphone-selector-group {
+  border: 2px solid red !important;
+  background: yellow !important;
+  color: black !important;
+}
+
+.candidate-interview .microphone-selector-group label {
+  color: black !important;
+}
+
+/* Override any display: none */
+.candidate-interview .voice-input-horizontal > * {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.candidate-interview .microphone-selector-group {
+  display: flex !important;
+}/* FOR
+CE SHOW MICROPHONE SELECTOR - NUCLEAR OPTION */
+.candidate-interview .voice-input-horizontal {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative !important;
+  z-index: 9999 !important;
+  background: red !important;
+  border: 5px solid yellow !important;
+  padding: 20px !important;
+  margin: 20px 0 !important;
+}
+
+.candidate-interview .microphone-selector-group {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  background: lime !important;
+  border: 3px solid blue !important;
+  padding: 15px !important;
+  margin: 10px 0 !important;
+  position: relative !important;
+  z-index: 9999 !important;
+}
+
+.candidate-interview .microphone-selector-group label {
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: black !important;
+  font-size: 16px !important;
+  font-weight: bold !important;
+  background: white !important;
+  padding: 5px !important;
+}
+
+.candidate-interview .microphone-selector-group .el-select {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: 100% !important;
+  margin-top: 10px !important;
+}
+
+.candidate-interview .microphone-selector-group .el-select .el-input {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.candidate-interview .microphone-selector-group .el-select .el-input__wrapper {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  background: white !important;
+  border: 2px solid black !important;
+  height: 40px !important;
+}
+
+/* Override any Vue conditional rendering */
+.candidate-interview .voice-input-horizontal[style*="display: none"] {
+  display: block !important;
+}
+
+.candidate-interview .microphone-selector-group[style*="display: none"] {
+  display: block !important;
+}
+
+/* Make sure chat card shows the voice input */
+.candidate-interview .chat-card .el-card__body {
+  overflow: visible !important;
+}
+
+/* Debug: Add content if selector is missing */
+.candidate-interview .voice-input-horizontal::before {
+  content: "VOICE INPUT SECTION IS HERE" !important;
+  display: block !important;
+  background: purple !important;
+  color: white !important;
+  padding: 10px !important;
+  font-size: 14px !important;
+  font-weight: bold !important;
+}
+
+.candidate-interview .microphone-selector-group::before {
+  content: "MICROPHONE SELECTOR IS HERE" !important;
+  display: block !important;
+  background: orange !important;
+  color: black !important;
+  padding: 5px !important;
+  font-size: 12px !important;
+  font-weight: bold !important;
+}/* Microph
+one Settings in Code Section */
+.candidate-interview .microphone-settings {
+  margin-top: 20px !important;
+  padding: 16px !important;
+  background: rgba(0, 255, 255, 0.1) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  border-radius: 8px !important;
+}
+
+.candidate-interview .microphone-settings h4 {
+  color: #00ffff !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  margin: 0 0 12px 0 !important;
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.5) !important;
+}
+
+.candidate-interview .microphone-status {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin-bottom: 16px !important;
+  flex-wrap: wrap !important;
+}
+
+.candidate-interview .microphone-status .el-tag {
+  height: 32px !important;
+  line-height: 30px !important;
+  font-size: 13px !important;
+  padding: 0 12px !important;
+  border-radius: 6px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.candidate-interview .microphone-status .el-button {
+  height: 32px !important;
+  font-size: 12px !important;
+  padding: 0 12px !important;
+  border-radius: 6px !important;
+}
+
+.candidate-interview .microphone-selector {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+.candidate-interview .microphone-selector label {
+  color: #e2e8f0 !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+.candidate-interview .microphone-selector .el-select {
+  width: 100% !important;
+}
+
+.candidate-interview .microphone-selector .el-select .el-input__wrapper {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  border-radius: 6px !important;
+  height: 36px !important;
+}
+
+.candidate-interview .microphone-selector .el-select .el-input__inner {
+  color: #e2e8f0 !important;
+  background: transparent !important;
+  font-size: 14px !important;
+  height: 34px !important;
+  line-height: 34px !important;
+}
+
+.candidate-interview .microphone-selector .el-select .el-input__inner::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Make sure it's visible in code section */
+.candidate-interview .code-input-section {
+  background: rgba(0, 255, 255, 0.05) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  border-radius: 8px !important;
+  padding: 16px !important;
+  margin-bottom: 16px !important;
+}

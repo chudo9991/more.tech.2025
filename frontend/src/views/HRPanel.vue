@@ -4,31 +4,22 @@
       <el-header>
         <div class="header-content">
           <h1>HR Панель - Управление интервью</h1>
-          <el-button type="primary" @click="refreshData">
-            <el-icon><Refresh /></el-icon>
+          <BaseButton variant="primary" @click="refreshData" :icon="Refresh">
             Обновить
-          </el-button>
+          </BaseButton>
         </div>
       </el-header>
       
       <el-main>
-        <el-row :gutter="20">
+        <el-row :gutter="20" class="stats-row">
           <!-- Statistics Cards -->
           <el-col :span="6" v-for="stat in statistics" :key="stat.title">
-            <el-card class="stat-card" shadow="hover">
-              <div class="stat-content">
-                <div class="stat-icon" :class="stat.type">
-                  <el-icon><component :is="stat.icon" /></el-icon>
-                </div>
-                <div class="stat-info">
-                  <div class="stat-value">{{ stat.value }}</div>
-                  <div class="stat-title">{{ stat.title }}</div>
-                  <div class="stat-change" :class="stat.trend">
-                    {{ stat.change }}
-                  </div>
-                </div>
-              </div>
-            </el-card>
+            <BaseMetricCard
+              :title="stat.title"
+              :value="stat.value"
+              :icon="stat.icon"
+              :variant="stat.type"
+            />
           </el-col>
         </el-row>
 
@@ -59,14 +50,12 @@
               </el-select>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" @click="applyFilters" :loading="loading">
-                <el-icon><Search /></el-icon>
+              <BaseButton variant="primary" @click="applyFilters" :loading="loading" :icon="Search" style="margin-right: 1rem;">
                 Применить
-              </el-button>
-              <el-button @click="clearFilters">
-                <el-icon><Refresh /></el-icon>
+              </BaseButton>
+              <BaseButton @click="clearFilters" variant="ghost" :icon="Refresh">
                 Очистить
-              </el-button>
+              </BaseButton>
             </el-form-item>
           </el-form>
         </el-card>
@@ -77,18 +66,15 @@
             <div class="table-header">
               <span>Сессии интервью</span>
               <div class="table-actions">
-                <el-button type="primary" @click="showCreateSession" size="small">
-                  <el-icon><Plus /></el-icon>
+                <BaseButton variant="primary" @click="showCreateSession" size="small" :icon="Plus">
                   Новая сессия
-                </el-button>
-                <el-button @click="refreshData" :loading="loading" size="small">
-                  <el-icon><Refresh /></el-icon>
+                </BaseButton>
+                <BaseButton @click="refreshData" :loading="loading" size="small" variant="secondary" :icon="Refresh">
                   Обновить
-                </el-button>
-                <el-button type="success" @click="exportAllSessions" size="small">
-                  <el-icon><Download /></el-icon>
+                </BaseButton>
+                <BaseButton variant="secondary" @click="exportAllSessions" size="small" :icon="Download">
                   Экспорт всех
-                </el-button>
+                </BaseButton>
               </div>
             </div>
           </template>
@@ -136,23 +122,22 @@
             </el-table-column>
             <el-table-column label="Действия" width="250" fixed="right">
               <template #default="{ row }">
-                <el-button size="small" @click.stop="viewSession(row)">
+                <BaseButton size="small" @click.stop="viewSession(row)" variant="primary">
                   Просмотр
-                </el-button>
-                <el-button 
+                </BaseButton>
+                <BaseButton 
                   size="small" 
-                  type="success" 
+                  variant="secondary" 
                   @click.stop="exportSession(row)"
                   :disabled="row.status !== 'completed'"
                 >
                   Экспорт
-                </el-button>
-                <el-button 
+                </BaseButton>
+                <BaseButton 
                   size="small" 
-                  type="danger" 
+                  variant="danger" 
                   @click.stop="deleteSession(row)"
                   :icon="Delete"
-                  circle
                 />
               </template>
             </el-table-column>
@@ -198,7 +183,8 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Refresh, Download, Delete, Search, Document, Check, Clock, Star, Plus } from '@element-plus/icons-vue'
+import { Refresh, Download, Delete, Search, Plus, Document, Check, Clock, Star } from '@element-plus/icons-vue'
+import { BaseButton, BaseMetricCard } from '@/components/base'
 import SessionDetail from '@/components/SessionDetail.vue'
 import CreateSession from '@/components/CreateSession.vue'
 import { useHRStore } from '@/stores/hr'
@@ -208,10 +194,10 @@ const hrStore = useHRStore()
 // Reactive data
 const loading = ref(false)
 const statistics = ref([
-  { title: 'Всего сессий', value: 0, change: '+0%', trend: 'neutral', icon: 'Document', type: 'primary' },
-  { title: 'Завершено', value: 0, change: '+0%', trend: 'positive', icon: 'Check', type: 'success' },
-  { title: 'В процессе', value: 0, change: '+0%', trend: 'neutral', icon: 'Clock', type: 'warning' },
-  { title: 'Средний балл', value: '0%', change: '+0%', trend: 'positive', icon: 'Star', type: 'info' }
+  { title: 'Всего сессий', value: 42, icon: 'Document', type: 'primary' },
+  { title: 'Завершено', value: 28, icon: 'User', type: 'success' },
+  { title: 'В процессе', value: 14, icon: 'Briefcase', type: 'warning' },
+  { title: 'Средний балл', value: 85, icon: 'Money', type: 'info' }
 ])
 
 // Use store data
@@ -269,12 +255,10 @@ const loadVacancies = async () => {
 const loadStatistics = async () => {
   try {
     const stats = await hrStore.fetchStatistics()
-    statistics.value = [
-      { title: 'Total Sessions', value: stats.total_sessions, change: stats.sessions_change, trend: 'neutral' },
-      { title: 'Completed', value: stats.completed_sessions, change: stats.completed_change, trend: 'positive' },
-      { title: 'In Progress', value: stats.in_progress_sessions, change: stats.progress_change, trend: 'neutral' },
-      { title: 'Avg Score', value: `${(stats.avg_score * 100).toFixed(1)}%`, change: stats.score_change, trend: 'positive' }
-    ]
+    statistics.value[0].value = stats.total_sessions
+    statistics.value[1].value = stats.completed_sessions
+    statistics.value[2].value = stats.in_progress_sessions
+    statistics.value[3].value = Math.round(stats.avg_score * 100)
   } catch (error) {
     console.error('Error loading statistics:', error)
   }
@@ -416,6 +400,8 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleString()
 }
 
+
+
 // Lifecycle
 onMounted(async () => {
   await loadVacancies()
@@ -427,6 +413,7 @@ onMounted(async () => {
 <style scoped>
 .hr-panel {
   height: 100vh;
+  /* overflow: visible; */
 }
 
 .header-content {
@@ -436,74 +423,20 @@ onMounted(async () => {
   height: 100%;
 }
 
+.header-content {
+  padding: 1rem 0;
+  margin-bottom: 1rem;
+}
+
 .header-content h1 {
   margin: 0;
-  color: #303133;
-}
-
-.stat-card {
-  margin-bottom: 20px;
-}
-
-.stat-content {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.stat-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  color: white;
-}
-
-.stat-icon.primary { background-color: #409eff; }
-.stat-icon.success { background-color: #67c23a; }
-.stat-icon.warning { background-color: #e6a23c; }
-.stat-icon.info { background-color: #909399; }
-
-.stat-info {
-  flex: 1;
-}
-
-.stat-content {
-  text-align: center;
-}
-
-.stat-value {
+  color: #00ffff;
   font-size: 2rem;
-  font-weight: bold;
-  color: #409eff;
-  margin-bottom: 8px;
+  font-weight: 700;
+  text-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
 }
 
-.stat-title {
-  font-size: 0.9rem;
-  color: #606266;
-  margin-bottom: 4px;
-}
 
-.stat-change {
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
-.stat-change.positive {
-  color: #67c23a;
-}
-
-.stat-change.negative {
-  color: #f56c6c;
-}
-
-.stat-change.neutral {
-  color: #909399;
-}
 
 .filter-card {
   margin-bottom: 20px;
@@ -569,4 +502,98 @@ onMounted(async () => {
   display: flex;
   gap: 8px;
 }
-</style>
+</style><style scoped>
+/* Fix metric values visibility */
+:deep(.metric-value) {
+  color: #00ffff !important;
+  -webkit-text-fill-color: #00ffff !important;
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+}
+
+/* Variant specific colors */
+:deep(.metric-card.primary .metric-value) {
+  color: #00ffff !important;
+  -webkit-text-fill-color: #00ffff !important;
+}
+
+:deep(.metric-card.success .metric-value) {
+  color: #22c55e !important;
+  -webkit-text-fill-color: #22c55e !important;
+}
+
+:deep(.metric-card.warning .metric-value) {
+  color: #f59e0b !important;
+  -webkit-text-fill-color: #f59e0b !important;
+}
+
+:deep(.metric-card.info .metric-value) {
+  color: #3b82f6 !important;
+  -webkit-text-fill-color: #3b82f6 !important;
+}
+</style>/
+* Fix primary button colors in HR Panel */
+:deep(.base-button.primary),
+:deep(.el-button--primary) {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(138, 43, 226, 0.2)) !important;
+  border: 1px solid rgba(0, 255, 255, 0.5) !important;
+  color: #00ffff !important;
+  box-shadow: 0 8px 32px rgba(0, 255, 255, 0.3) !important;
+}
+
+:deep(.base-button.primary:hover),
+:deep(.el-button--primary:hover) {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.35), rgba(138, 43, 226, 0.35)) !important;
+  border-color: rgba(0, 255, 255, 0.7) !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 12px 40px rgba(0, 255, 255, 0.5) !important;
+  text-shadow: 0 0 15px rgba(0, 255, 255, 1) !important;
+}
+
+/* Fix ghost/secondary button colors */
+:deep(.base-button.ghost),
+:deep(.base-button.secondary) {
+  background: rgba(15, 23, 42, 0.7) !important;
+  border: 1px solid rgba(138, 43, 226, 0.5) !important;
+  color: #8a2be2 !important;
+  box-shadow: 0 8px 32px rgba(138, 43, 226, 0.2) !important;
+}
+
+:deep(.base-button.ghost:hover),
+:deep(.base-button.secondary:hover) {
+  background: rgba(138, 43, 226, 0.2) !important;
+  border-color: rgba(138, 43, 226, 0.7) !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 12px 40px rgba(138, 43, 226, 0.4) !important;
+  text-shadow: 0 0 15px rgba(138, 43, 226, 1) !important;
+}/* O
+verride primary button colors with higher specificity */
+.hr-panel :deep(.base-button--primary) {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(138, 43, 226, 0.2)) !important;
+  border: 1px solid rgba(0, 255, 255, 0.5) !important;
+  color: #00ffff !important;
+  box-shadow: 0 8px 32px rgba(0, 255, 255, 0.3) !important;
+}
+
+.hr-panel :deep(.base-button--primary:hover) {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.35), rgba(138, 43, 226, 0.35)) !important;
+  border-color: rgba(0, 255, 255, 0.7) !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 12px 40px rgba(0, 255, 255, 0.5) !important;
+  text-shadow: 0 0 15px rgba(0, 255, 255, 1) !important;
+}/*
+ Force primary button text color */
+.hr-panel :deep(.base-button--primary),
+.hr-panel :deep(.base-button--primary *),
+.hr-panel :deep(.base-button--primary .button-text),
+.hr-panel :deep(.base-button--primary span) {
+  color: #00ffff !important;
+}
+
+.hr-panel :deep(.base-button--primary:hover),
+.hr-panel :deep(.base-button--primary:hover *),
+.hr-panel :deep(.base-button--primary:hover .button-text),
+.hr-panel :deep(.base-button--primary:hover span) {
+  color: #00ffff !important;
+}
