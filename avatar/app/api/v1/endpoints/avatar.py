@@ -10,7 +10,7 @@ from app.schemas.avatar import (
     AvatarResponse
 )
 # from app.services.avatar_service import AvatarService
-from app.services.a2e_service import A2EService
+from app.services.did_streaming_service import DIDStreamingService
 from pydantic import BaseModel
 
 router = APIRouter()
@@ -453,8 +453,8 @@ async def get_streaming_avatars() -> Dict[str, Any]:
     """Get all available streaming avatars"""
     try:
         print("=== Get streaming avatars endpoint called ===")
-        a2e_service = A2EService()
-        avatars = await a2e_service.get_streaming_avatars()
+        did_service = DIDStreamingService()
+        avatars = await did_service.get_available_streaming_avatars()
         return {
             "avatars": avatars,
             "count": len(avatars)
@@ -471,8 +471,8 @@ async def get_streaming_token(request: StreamingAvatarRequest) -> Dict[str, Any]
     try:
         print("=== Get streaming token endpoint called ===")
         print(f"Request: {request}")
-        a2e_service = A2EService()
-        token_data = await a2e_service.get_streaming_token(request.avatar_id)
+        did_service = DIDStreamingService()
+        token_data = await did_service.get_streaming_token(request.avatar_id)
         
         # Check if there's an error in the response
         if token_data.get("error"):
@@ -514,8 +514,8 @@ async def set_streaming_context(request: StreamingAvatarContextRequest) -> Dict[
     try:
         print("=== Set streaming context endpoint called ===")
         print(f"Request: {request}")
-        a2e_service = A2EService()
-        result = await a2e_service.set_streaming_context(request.avatar_id, request.context)
+        did_service = DIDStreamingService()
+        result = await did_service.set_streaming_context(request.avatar_id, request.context)
         return {
             "success": result,
             "avatar_id": request.avatar_id,
@@ -533,8 +533,8 @@ async def get_streaming_context(avatar_id: str) -> Dict[str, Any]:
     try:
         print("=== Get streaming context endpoint called ===")
         print(f"Avatar ID: {avatar_id}")
-        a2e_service = A2EService()
-        context = await a2e_service.get_streaming_context(avatar_id)
+        did_service = DIDStreamingService()
+        context = await did_service.get_streaming_context(avatar_id)
         return {
             "success": True,
             "avatar_id": avatar_id,
@@ -552,8 +552,8 @@ async def ask_streaming_question(request: StreamingAvatarQuestionRequest) -> Dic
     try:
         print("=== Ask streaming question endpoint called ===")
         print(f"Request: {request}")
-        a2e_service = A2EService()
-        response = await a2e_service.ask_streaming_question(request.avatar_id, request.question)
+        did_service = DIDStreamingService()
+        response = await did_service.ask_streaming_question(request.avatar_id, request.question)
         return {
             "success": True,
             "avatar_id": request.avatar_id,
@@ -572,8 +572,8 @@ async def speak_streaming_directly(request: StreamingAvatarSpeakRequest) -> Dict
     try:
         print("=== Speak streaming directly endpoint called ===")
         print(f"Request: {request}")
-        a2e_service = A2EService()
-        result = await a2e_service.speak_streaming_directly(request.avatar_id, request.text)
+        did_service = DIDStreamingService()
+        result = await did_service.speak_streaming_directly(request.avatar_id, request.text)
         return {
             "success": True,
             "avatar_id": request.avatar_id,
@@ -592,8 +592,8 @@ async def leave_streaming_room(request: StreamingAvatarRequest) -> Dict[str, Any
     try:
         print("=== Leave streaming room endpoint called ===")
         print(f"Request: {request}")
-        a2e_service = A2EService()
-        result = await a2e_service.leave_streaming_room(request.avatar_id)
+        did_service = DIDStreamingService()
+        result = await did_service.leave_streaming_room(request.avatar_id)
         return {
             "success": result,
             "avatar_id": request.avatar_id
@@ -608,14 +608,14 @@ async def leave_streaming_room(request: StreamingAvatarRequest) -> Dict[str, Any
 # NEW STREAMING ENDPOINTS (v2) - исправленные endpoints для стриминга
 # ============================================================================
 
-from app.services.a2e_streaming_service import A2EStreamingService
+from app.services.did_streaming_service import DIDStreamingService
 
 @router.get("/streaming-v2/avatars")
 async def get_streaming_avatars_v2() -> Dict[str, Any]:
     """Get all available streaming avatars - исправленная версия"""
     try:
         print("=== Get streaming avatars v2 endpoint called ===")
-        streaming_service = A2EStreamingService()
+        streaming_service = DIDStreamingService()
         avatars = await streaming_service.get_available_streaming_avatars()
         return {
             "success": True,
@@ -634,7 +634,7 @@ async def get_streaming_token_v2(request: StreamingAvatarRequest) -> Dict[str, A
     try:
         print("=== Get streaming token v2 endpoint called ===")
         print(f"Request: {request}")
-        streaming_service = A2EStreamingService()
+        streaming_service = DIDStreamingService()
         token_data = await streaming_service.get_streaming_token(request.avatar_id)
         
         # Check if there's an error in the response
@@ -678,7 +678,7 @@ async def set_streaming_context_v2(request: StreamingAvatarContextRequest) -> Di
     try:
         print("=== Set streaming context v2 endpoint called ===")
         print(f"Request: {request}")
-        streaming_service = A2EStreamingService()
+        streaming_service = DIDStreamingService()
         result = await streaming_service.set_streaming_context(request.avatar_id, request.context)
         return {
             "success": result,
@@ -697,7 +697,7 @@ async def get_streaming_context_v2(avatar_id: str) -> Dict[str, Any]:
     try:
         print("=== Get streaming context v2 endpoint called ===")
         print(f"Avatar ID: {avatar_id}")
-        streaming_service = A2EStreamingService()
+        streaming_service = DIDStreamingService()
         context = await streaming_service.get_streaming_context(avatar_id)
         return {
             "success": True,
@@ -716,7 +716,7 @@ async def ask_streaming_question_v2(request: StreamingAvatarQuestionRequest) -> 
     try:
         print("=== Ask streaming question v2 endpoint called ===")
         print(f"Request: {request}")
-        streaming_service = A2EStreamingService()
+        streaming_service = DIDStreamingService()
         response = await streaming_service.ask_streaming_question(request.avatar_id, request.question)
         return {
             "success": True,
@@ -736,7 +736,7 @@ async def speak_streaming_directly_v2(request: StreamingAvatarSpeakRequest) -> D
     try:
         print("=== Speak streaming directly v2 endpoint called ===")
         print(f"Request: {request}")
-        streaming_service = A2EStreamingService()
+        streaming_service = DIDStreamingService()
         result = await streaming_service.speak_streaming_directly(request.avatar_id, request.text)
         return {
             "success": True,
@@ -756,7 +756,7 @@ async def leave_streaming_room_v2(request: StreamingAvatarRequest) -> Dict[str, 
     try:
         print("=== Leave streaming room v2 endpoint called ===")
         print(f"Request: {request}")
-        streaming_service = A2EStreamingService()
+        streaming_service = DIDStreamingService()
         result = await streaming_service.leave_streaming_room(request.avatar_id)
         return {
             "success": result,
@@ -773,7 +773,7 @@ async def get_streaming_status_v2() -> Dict[str, Any]:
     """Get streaming service status - исправленная версия"""
     try:
         print("=== Get streaming status v2 endpoint called ===")
-        streaming_service = A2EStreamingService()
+        streaming_service = DIDStreamingService()
         status = await streaming_service.get_streaming_status()
         return {
             "success": True,

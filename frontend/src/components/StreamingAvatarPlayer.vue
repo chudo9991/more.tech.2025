@@ -37,9 +37,13 @@
       
       <div v-else class="avatar-placeholder">
         <div class="avatar-placeholder-content">
-          <div class="avatar-icon">🎭</div>
-          <h3>AI Аватар Подключен</h3>
-          <p>Готов к интервью</p>
+          <div class="avatar-icon">👩‍💼</div>
+          <h3>HR Аватар Светлана</h3>
+          <p>D-ID Streaming подключен</p>
+          <div class="avatar-status">
+            <span class="status-indicator"></span>
+            Готова к интервью
+          </div>
         </div>
       </div>
     </div>
@@ -57,6 +61,34 @@ const props = defineProps({
   }
 })
 
+// Send text to D-ID avatar
+const sendTextToAvatar = async (text) => {
+  try {
+    console.log('Sending text to D-ID avatar:', text)
+    
+    const response = await fetch(`${apiBaseUrl}/api/v1/avatar/streaming/speak`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        avatar_id: avatarId,
+        text: text
+      })
+    })
+    
+    if (response.ok) {
+      const result = await response.json()
+      console.log('Text sent to avatar:', result)
+      emit('avatar-speak', { text, result })
+    } else {
+      console.error('Failed to send text to avatar:', response.status)
+    }
+  } catch (error) {
+    console.error('Error sending text to avatar:', error)
+  }
+}
+
 // Expose methods to parent
 const setVideoUrl = (url) => {
   if (url) {
@@ -67,7 +99,8 @@ const setVideoUrl = (url) => {
 }
 
 defineExpose({
-  setVideoUrl
+  setVideoUrl,
+  sendTextToAvatar
 })
 
 // Emits
@@ -80,14 +113,14 @@ const isConnected = ref(false)
 const connecting = ref(false)
 
 // Avatar configuration
-const avatarId = '68af59a86eeedd0042ca7e27' // Alice (working for video)
+const avatarId = 'did_hr_avatar' // D-ID HR Avatar
 const apiBaseUrl = import.meta.env.VITE_API_URL || ''
 
 // Methods
 const connectToAvatar = async () => {
   try {
     connecting.value = true
-    console.log('Connecting to A2E streaming avatar...')
+    console.log('Connecting to D-ID streaming avatar...')
     
     // Get streaming avatar token from our avatar service
     const tokenResponse = await fetch(`${apiBaseUrl}/api/v1/avatar/streaming/get-token`, {
@@ -103,24 +136,48 @@ const connectToAvatar = async () => {
     if (tokenResponse.ok) {
       const result = await tokenResponse.json()
       
-          if (result.success && result.stream_url) {
-      streamUrl.value = result.stream_url
-      isConnected.value = true
-      console.log('Connected to A2E streaming avatar:', result.stream_url)
-      emit('avatar-connected', { avatarId, sessionId: props.sessionId })
-    } else if (result.error === 'streaming_unavailable') {
-      // A2E streaming is unavailable - show placeholder
-      console.log('A2E streaming unavailable, using placeholder mode')
-      isConnected.value = true
-      streamUrl.value = null
-      emit('avatar-connected', { avatarId: 'placeholder', sessionId: props.sessionId })
-    } else {
-      // Other error - show placeholder
-      console.log('A2E streaming error, using placeholder mode:', result.message)
-      isConnected.value = true
-      streamUrl.value = null
-      emit('avatar-connected', { avatarId: 'placeholder', sessionId: props.sessionId })
-    }
+      if (result.success) {
+        // D-ID streaming session created successfully
+        console.log('Connected to D-ID streaming avatar:', result.token)
+        
+        // For D-ID, we don't get a direct stream_url, so we use placeholder mode
+        // but store the session info for later use
+        isConnected.value = true
+        streamUrl.value = null // D-ID doesn't provide direct stream URL
+        
+        // Store session info for later use
+        window.didSessionInfo = {
+          token: result.token,
+          stream_id: result.stream_id,
+          session_id: result.session_id,
+          avatar_id: avatarId
+        }
+        
+        emit('avatar-connected', { 
+          avatarId, 
+          sessionId: props.sessionId,
+          didToken: result.token,
+          didStreamId: result.stream_id
+        })
+        
+        // Send initial greeting
+        setTimeout(() => {
+          sendTextToAvatar("Привет! Меня зовут Светлана, я HR специалист. Готова провести с вами интервью.")
+        }, 1000)
+        
+      } else if (result.error === 'streaming_unavailable') {
+        // D-ID streaming is unavailable - show placeholder
+        console.log('D-ID streaming unavailable, using placeholder mode')
+        isConnected.value = true
+        streamUrl.value = null
+        emit('avatar-connected', { avatarId: 'placeholder', sessionId: props.sessionId })
+      } else {
+        // Other error - show placeholder
+        console.log('D-ID streaming error, using placeholder mode:', result.message)
+        isConnected.value = true
+        streamUrl.value = null
+        emit('avatar-connected', { avatarId: 'placeholder', sessionId: props.sessionId })
+      }
     } else {
       // Fallback to placeholder mode
       console.log('Avatar service error, using placeholder mode')
@@ -225,5 +282,34 @@ onMounted(async () => {
   background-color: #f5f5f5;
   max-width: 100% !important;
   max-height: 100% !important;
+}
+
+.avatar-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  background-color: #4CAF50;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+  }
 }
 </style>
