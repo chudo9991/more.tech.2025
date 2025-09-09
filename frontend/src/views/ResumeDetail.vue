@@ -346,7 +346,13 @@ export default {
       processing.value = true
       try {
         const response = await fetch(`/api/v1/resumes/${resumeId}/process`, {
-          method: 'POST'
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            name: resume.value?.original_filename || 'resume'
+          })
         })
         
         if (!response.ok) {
