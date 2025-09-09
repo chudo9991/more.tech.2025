@@ -364,6 +364,17 @@ async def test_endpoint() -> Dict[str, str]:
     print("=== Test endpoint called ===")
     return {"message": "Test endpoint works!", "provider": "d-id"}
 
+@router.post("/test-get-token")
+async def test_get_token() -> Dict[str, Any]:
+    """Test get-token endpoint without D-ID call"""
+    print("=== Test get-token endpoint called ===")
+    return {
+        "success": True,
+        "message": "Test get-token endpoint works",
+        "provider": "d-id",
+        "test": True
+    }
+
 @router.get("/test-did")
 async def test_did() -> Dict[str, Any]:
     """Test D-ID service directly"""
@@ -409,8 +420,24 @@ async def get_streaming_token(request: StreamingAvatarRequest) -> Dict[str, Any]
     try:
         print("=== Get streaming token endpoint called (D-ID) ===")
         print(f"Request: {request}")
-        streaming_service = DIDStreamingService()
-        token_data = await streaming_service.get_streaming_token(request.avatar_id)
+        print(f"Avatar ID: {request.avatar_id}")
+        
+        # Test response first
+        return {
+            "success": True,
+            "token": "test_token_123",
+            "stream_url": "test_stream_url",
+            "room_id": "test_room_123",
+            "avatar_id": request.avatar_id,
+            "fallback_mode": False,
+            "provider": "d-id",
+            "test_mode": True,
+            "message": "D-ID endpoint is working - test mode"
+        }
+        
+        # Original D-ID code (commented out for now)
+        # streaming_service = DIDStreamingService()
+        # token_data = await streaming_service.get_streaming_token(request.avatar_id)
         
         # Check if there's an error in the response
         if not token_data.get("success"):
