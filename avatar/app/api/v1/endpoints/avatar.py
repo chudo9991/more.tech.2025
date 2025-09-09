@@ -1,5 +1,5 @@
 """
-Avatar service endpoints
+Avatar service endpoints - D-ID only
 """
 import time
 from typing import Dict, Any
@@ -9,7 +9,6 @@ from app.schemas.avatar import (
     AvatarGenerateRequest, 
     AvatarResponse
 )
-# from app.services.avatar_service import AvatarService
 from app.services.did_streaming_service import DIDStreamingService
 from pydantic import BaseModel
 
@@ -64,27 +63,36 @@ class FallbackVideoRequest(BaseModel):
 
 @router.post("/generate")
 async def generate_avatar_video(request: VideoGenerationRequest) -> Dict[str, Any]:
-    """Generate avatar video from text"""
+    """Generate avatar video from text using D-ID"""
     try:
-        print("=== Generate avatar video endpoint called ===")
-        a2e_service = A2EService()
-        video_url = await a2e_service.generate_avatar_video_from_text(
-            text=request.text,
-            voice_id=request.voice_id,
-            avatar_id=request.avatar_id,
-            resolution=request.resolution,
-            title=f"Interview Session {request.session_id}"
-        )
+        print("=== Generate avatar video endpoint called (D-ID) ===")
+        did_service = DIDStreamingService()
         
-        if video_url:
-            return {
-                "success": True,
-                "video_url": video_url,
-                "session_id": request.session_id,
-                "text": request.text
-            }
-        else:
-            raise HTTPException(status_code=400, detail="Video generation failed")
+        # Create avatar if needed
+        avatar_result = await did_service.create_avatar()
+        if not avatar_result.get("success"):
+            raise HTTPException(status_code=400, detail="Failed to create avatar")
+        
+        avatar_id = avatar_result["avatar_id"]
+        
+        # Get streaming token (session)
+        token_result = await did_service.get_streaming_token(avatar_id)
+        if not token_result.get("success"):
+            raise HTTPException(status_code=400, detail="Failed to create streaming session")
+        
+        # Make avatar speak
+        speak_success = await did_service.speak_streaming_directly(avatar_id, request.text)
+        if not speak_success:
+            raise HTTPException(status_code=400, detail="Failed to make avatar speak")
+        
+        return {
+            "success": True,
+            "avatar_id": avatar_id,
+            "session_id": request.session_id,
+            "text": request.text,
+            "stream_url": token_result.get("stream_url"),
+            "mode": "d-id_streaming"
+        }
             
     except Exception as e:
         print(f"Error in generate_avatar_video: {e}")
@@ -94,30 +102,36 @@ async def generate_avatar_video(request: VideoGenerationRequest) -> Dict[str, An
 
 @router.post("/fallback/generate-video")
 async def generate_fallback_video(request: FallbackVideoRequest) -> Dict[str, Any]:
-    """Generate fallback video when streaming is unavailable"""
+    """Generate fallback video using D-ID when streaming is unavailable"""
     try:
-        print("=== Generate fallback video endpoint called ===")
+        print("=== Generate fallback video endpoint called (D-ID) ===")
         print(f"Request: {request}")
         
-        a2e_service = A2EService()
-        video_url = await a2e_service.generate_avatar_video_from_text(
-            text=request.text,
-            voice_id=request.voice_id or a2e_service.default_voice_id,
-            avatar_id=request.avatar_id or a2e_service.default_avatar_id,
-            resolution=request.resolution or a2e_service.default_resolution,
-            title=f"Interview {request.session_id[:20]}"
-        )
+        did_service = DIDStreamingService()
         
-        if video_url:
-            return {
-                "success": True,
-                "video_url": video_url,
-                "session_id": request.session_id,
-                "text": request.text,
-                "mode": "fallback_video"
-            }
-        else:
-            raise HTTPException(status_code=400, detail="Fallback video generation failed")
+        # Create avatar
+        avatar_result = await did_service.create_avatar()
+        if not avatar_result.get("success"):
+            raise HTTPException(status_code=400, detail="Failed to create avatar")
+        
+        avatar_id = avatar_result["avatar_id"]
+        
+        # Try to get streaming session
+        token_result = await did_service.get_streaming_token(avatar_id)
+        if token_result.get("success"):
+            # Make avatar speak
+            speak_success = await did_service.speak_streaming_directly(avatar_id, request.text)
+            if speak_success:
+                return {
+                    "success": True,
+                    "avatar_id": avatar_id,
+                    "session_id": request.session_id,
+                    "text": request.text,
+                    "stream_url": token_result.get("stream_url"),
+                    "mode": "d-id_fallback"
+                }
+        
+        raise HTTPException(status_code=400, detail="D-ID fallback video generation failed")
             
     except Exception as e:
         print(f"Error in generate_fallback_video: {e}")
@@ -156,20 +170,26 @@ async def health_check() -> Dict[str, str]:
         "version": "1.0.0"
     }
 
-# A2E API Integration Endpoints
+# D-ID API Integration Endpoints
 
 @router.get("/voices")
-async def get_available_voices(country: str = "ru", region: str = "RU") -> Dict[str, Any]:
-    """Get available voices from A2E API"""
+async def get_available_voices() -> Dict[str, Any]:
+    """Get available voices for D-ID"""
     try:
-        print("=== Get voices endpoint called ===")
-        a2e_service = A2EService()
-        voices = await a2e_service.get_available_voices(country, region)
+        print("=== Get voices endpoint called (D-ID) ===")
+        # D-ID uses ElevenLabs voices
+        voices = [
+            {
+                "id": "Dimf6681ffz3PTVPPAEX",
+                "name": "D-ID Default Voice",
+                "provider": "elevenlabs",
+                "language": "ru-RU"
+            }
+        ]
         return {
             "voices": voices,
             "count": len(voices),
-            "country": country,
-            "region": region
+            "provider": "d-id"
         }
     except Exception as e:
         print(f"Error in get_available_voices: {e}")
@@ -177,22 +197,37 @@ async def get_available_voices(country: str = "ru", region: str = "RU") -> Dict[
         traceback.print_exc()
         raise HTTPException(status_code=400, detail=str(e))
 
-
-
 @router.post("/tts")
 async def generate_tts(request: TTSRequest) -> Dict[str, Any]:
-    """Generate TTS audio from text"""
+    """Generate TTS using D-ID (via streaming)"""
     try:
-        print("=== TTS endpoint called ===")
-        a2e_service = A2EService()
-        audio_url = await a2e_service.generate_tts(request.text, request.voice_id, request.speech_rate)
+        print("=== TTS endpoint called (D-ID) ===")
+        did_service = DIDStreamingService()
         
-        if audio_url:
+        # For D-ID, TTS is integrated into streaming
+        # We'll create a temporary avatar and make it speak
+        avatar_result = await did_service.create_avatar()
+        if not avatar_result.get("success"):
+            raise HTTPException(status_code=400, detail="Failed to create avatar for TTS")
+        
+        avatar_id = avatar_result["avatar_id"]
+        
+        # Get streaming session
+        token_result = await did_service.get_streaming_token(avatar_id)
+        if not token_result.get("success"):
+            raise HTTPException(status_code=400, detail="Failed to create streaming session for TTS")
+        
+        # Make avatar speak (this generates the TTS)
+        speak_success = await did_service.speak_streaming_directly(avatar_id, request.text)
+        
+        if speak_success:
             return {
-                "audio_url": audio_url,
+                "success": True,
                 "text": request.text,
                 "voice_id": request.voice_id,
-                "speech_rate": request.speech_rate
+                "avatar_id": avatar_id,
+                "stream_url": token_result.get("stream_url"),
+                "provider": "d-id"
             }
         else:
             raise HTTPException(status_code=400, detail="TTS generation failed")
@@ -222,33 +257,18 @@ class AvatarGeneration(BaseModel):
     generated_at: float
     status: str = "completed"
 
-@router.post("/video-status")
-async def check_video_status(request: VideoStatusRequest) -> Dict[str, Any]:
-    """Check video generation status"""
-    try:
-        print("=== Video status endpoint called ===")
-        a2e_service = A2EService()
-        status = await a2e_service.check_video_status(request.task_id)
-        return status
-    except Exception as e:
-        print(f"Error in check_video_status: {e}")
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=400, detail=str(e))
-
 @router.get("/settings")
 async def get_avatar_settings() -> Dict[str, Any]:
-    """Get avatar settings"""
+    """Get avatar settings for D-ID"""
     try:
-        print("=== Get settings endpoint called ===")
-        # В реальном приложении здесь была бы база данных
-        settings = AvatarSettings()
+        print("=== Get settings endpoint called (D-ID) ===")
+        from app.core.config import settings
+        
         return {
-            "voice_id": settings.voice_id,
-            "avatar_id": settings.avatar_id,
-            "resolution": settings.resolution,
-            "speech_rate": settings.speech_rate,
-            "language": settings.language
+            "voice_id": settings.DID_DEFAULT_VOICE,
+            "avatar_image": settings.DID_DEFAULT_AVATAR_IMAGE,
+            "agent_id": settings.DID_DEFAULT_AGENT_ID,
+            "provider": "d-id"
         }
     except Exception as e:
         print(f"Error in get_avatar_settings: {e}")
@@ -256,34 +276,37 @@ async def get_avatar_settings() -> Dict[str, Any]:
 
 @router.put("/settings")
 async def update_avatar_settings(settings: AvatarSettings) -> Dict[str, Any]:
-    """Update avatar settings"""
+    """Update avatar settings for D-ID"""
     try:
-        print("=== Update settings endpoint called ===")
-        # В реальном приложении здесь была бы база данных
+        print("=== Update settings endpoint called (D-ID) ===")
+        print(f"Settings: {settings}")
+        
         return {
-            "message": "Settings updated successfully",
+            "success": True,
             "settings": {
                 "voice_id": settings.voice_id,
                 "avatar_id": settings.avatar_id,
-                "resolution": settings.resolution,
-                "speech_rate": settings.speech_rate,
-                "language": settings.language
-            }
+                "provider": "d-id"
+            },
+            "message": "D-ID settings updated successfully"
         }
     except Exception as e:
         print(f"Error in update_avatar_settings: {e}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/characters")
 async def get_available_characters() -> Dict[str, Any]:
-    """Get available characters/avatars"""
+    """Get available D-ID avatars"""
     try:
-        print("=== Get characters endpoint called ===")
-        a2e_service = A2EService()
-        characters = await a2e_service.get_available_characters()
+        print("=== Get characters endpoint called (D-ID) ===")
+        did_service = DIDStreamingService()
+        characters = await did_service.get_available_streaming_avatars()
         return {
             "characters": characters,
-            "count": len(characters)
+            "count": len(characters),
+            "provider": "d-id"
         }
     except Exception as e:
         print(f"Error in get_available_characters: {e}")
@@ -291,18 +314,15 @@ async def get_available_characters() -> Dict[str, Any]:
 
 @router.get("/status")
 async def get_avatar_status() -> Dict[str, Any]:
-    """Get avatar service status"""
+    """Get D-ID avatar service status"""
     try:
-        print("=== Get avatar status endpoint called ===")
-        a2e_service = A2EService()
-        status = await a2e_service.get_service_status()
+        print("=== Get avatar status endpoint called (D-ID) ===")
+        did_service = DIDStreamingService()
+        status = await did_service.get_streaming_status()
         
-        # Add additional status information
         status.update({
-            "service_type": "A2E Avatar Service",
-            "last_generation": None,  # Would be stored in database
-            "total_generations": 0,   # Would be stored in database
-            "errors_count": 0         # Would be stored in database
+            "service_type": "D-ID Avatar Service",
+            "provider": "d-id"
         })
         
         return status
@@ -312,152 +332,70 @@ async def get_avatar_status() -> Dict[str, Any]:
         traceback.print_exc()
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/settings")
-async def get_avatar_settings() -> Dict[str, Any]:
-    """Get current avatar settings"""
-    try:
-        print("=== Get avatar settings endpoint called ===")
-        a2e_service = A2EService()
-        
-        return {
-            "voice_id": a2e_service.default_voice_id,
-            "avatar_id": a2e_service.default_avatar_id,
-            "resolution": a2e_service.default_resolution,
-            "speech_rate": a2e_service.default_speech_rate,
-            "quality": "high"
-        }
-    except Exception as e:
-        print(f"Error in get_avatar_settings: {e}")
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=400, detail=str(e))
-
-@router.put("/settings")
-async def update_avatar_settings(settings: AvatarSettings) -> Dict[str, Any]:
-    """Update avatar settings"""
-    try:
-        print("=== Update avatar settings endpoint called ===")
-        print(f"Settings: {settings}")
-        
-        # In a real application, these would be saved to database
-        # For now, we just return the updated settings
-        
-        return {
-            "success": True,
-            "settings": {
-                "voice_id": settings.voice_id,
-                "avatar_id": settings.avatar_id,
-                "resolution": settings.resolution,
-                "speech_rate": settings.speech_rate,
-                "quality": settings.quality
-            },
-            "message": "Settings updated successfully"
-        }
-    except Exception as e:
-        print(f"Error in update_avatar_settings: {e}")
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=400, detail=str(e))
-
 @router.get("/languages")
 async def get_supported_languages() -> Dict[str, Any]:
-    """Get supported languages"""
+    """Get supported languages for D-ID"""
     try:
-        print("=== Get languages endpoint called ===")
+        print("=== Get languages endpoint called (D-ID) ===")
         languages = [
             {
                 "code": "ru-RU",
                 "name": "Russian",
-                "voices_count": 6
+                "provider": "d-id"
             },
             {
                 "code": "en-US", 
                 "name": "English (US)",
-                "voices_count": 0
+                "provider": "d-id"
             }
         ]
         return {
             "languages": languages,
-            "count": len(languages)
+            "count": len(languages),
+            "provider": "d-id"
         }
     except Exception as e:
         print(f"Error in get_supported_languages: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
-
-@router.post("/streaming")
-async def setup_streaming_avatar() -> Dict[str, Any]:
-    """Setup streaming avatar for interactivity"""
-    try:
-        print("=== Setup streaming endpoint called ===")
-        # В реальном приложении здесь была бы настройка RTSP стрима
-        return {
-            "message": "Streaming avatar setup initiated",
-            "status": "pending",
-            "stream_url": None,
-            "note": "RTSP streaming not yet implemented"
-        }
-    except Exception as e:
-        print(f"Error in setup_streaming_avatar: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
-
-@router.get("/a2e-status")
-async def get_a2e_status() -> Dict[str, Any]:
-    """Get A2E service status"""
-    print("=== A2E Status endpoint called ===")
-    try:
-        print("Creating A2E service directly...")
-        a2e_service = A2EService()
-        print("Getting A2E service status...")
-        status = await a2e_service.get_service_status()
-        print(f"A2E status: {status}")
-        return status
-    except Exception as e:
-        print(f"Error in get_a2e_status: {e}")
-        import traceback
-        traceback.print_exc()
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/test")
 async def test_endpoint() -> Dict[str, str]:
     """Test endpoint"""
     print("=== Test endpoint called ===")
-    return {"message": "Test endpoint works!"}
+    return {"message": "Test endpoint works!", "provider": "d-id"}
 
-@router.get("/test-simple")
-async def test_simple() -> Dict[str, str]:
-    """Simple test endpoint"""
-    return {"message": "Simple test works!"}
-
-@router.get("/test-a2e")
-async def test_a2e() -> Dict[str, Any]:
-    """Test A2E service directly"""
+@router.get("/test-did")
+async def test_did() -> Dict[str, Any]:
+    """Test D-ID service directly"""
     try:
-        print("=== Test A2E endpoint called ===")
-        a2e_service = A2EService()
-        print("A2E service created successfully")
+        print("=== Test D-ID endpoint called ===")
+        did_service = DIDStreamingService()
+        status = await did_service.get_streaming_status()
         return {
-            "message": "A2E service test",
-            "base_url": a2e_service.base_url,
-            "api_key_configured": bool(a2e_service.api_key)
+            "message": "D-ID service test",
+            "status": status,
+            "provider": "d-id"
         }
     except Exception as e:
-        print(f"Error in test_a2e: {e}")
+        print(f"Error in test_did: {e}")
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=400, detail=str(e))
 
-# Streaming Avatar Endpoints
+# D-ID Streaming Avatar Endpoints
 
-@router.get("/streaming-avatars")
+@router.get("/streaming/avatars")
 async def get_streaming_avatars() -> Dict[str, Any]:
-    """Get all available streaming avatars"""
+    """Get all available D-ID streaming avatars"""
     try:
-        print("=== Get streaming avatars endpoint called ===")
-        did_service = DIDStreamingService()
-        avatars = await did_service.get_available_streaming_avatars()
+        print("=== Get streaming avatars endpoint called (D-ID) ===")
+        streaming_service = DIDStreamingService()
+        avatars = await streaming_service.get_available_streaming_avatars()
         return {
+            "success": True,
             "avatars": avatars,
-            "count": len(avatars)
+            "total_count": len(avatars),
+            "provider": "d-id"
         }
     except Exception as e:
         print(f"Error in get_streaming_avatars: {e}")
@@ -467,172 +405,9 @@ async def get_streaming_avatars() -> Dict[str, Any]:
 
 @router.post("/streaming/get-token")
 async def get_streaming_token(request: StreamingAvatarRequest) -> Dict[str, Any]:
-    """Get streaming avatar token"""
+    """Get D-ID streaming avatar token"""
     try:
-        print("=== Get streaming token endpoint called ===")
-        print(f"Request: {request}")
-        did_service = DIDStreamingService()
-        token_data = await did_service.get_streaming_token(request.avatar_id)
-        
-        # Check if there's an error in the response
-        if token_data.get("error"):
-            if token_data.get("error") == "streaming_unavailable":
-                return {
-                    "success": False,
-                    "error": token_data.get("error"),
-                    "message": token_data.get("message"),
-                    "avatar_id": request.avatar_id,
-                    "stream_url": None,
-                    "fallback_mode": True,
-                    "fallback_endpoint": "/api/v1/avatar/fallback/generate-video"
-                }
-            else:
-                return {
-                    "success": False,
-                    "error": token_data.get("error"),
-                    "message": token_data.get("message"),
-                    "avatar_id": request.avatar_id,
-                    "stream_url": None
-                }
-        
-        return {
-            "success": True,
-            "token": token_data.get("token"),
-            "stream_url": token_data.get("stream_url"),
-            "avatar_id": request.avatar_id,
-            "fallback_mode": False
-        }
-    except Exception as e:
-        print(f"Error in get_streaming_token: {e}")
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=400, detail=str(e))
-
-@router.post("/streaming/set-context")
-async def set_streaming_context(request: StreamingAvatarContextRequest) -> Dict[str, Any]:
-    """Set QA context for streaming avatar"""
-    try:
-        print("=== Set streaming context endpoint called ===")
-        print(f"Request: {request}")
-        did_service = DIDStreamingService()
-        result = await did_service.set_streaming_context(request.avatar_id, request.context)
-        return {
-            "success": result,
-            "avatar_id": request.avatar_id,
-            "context": request.context
-        }
-    except Exception as e:
-        print(f"Error in set_streaming_context: {e}")
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=400, detail=str(e))
-
-@router.get("/streaming/get-context")
-async def get_streaming_context(avatar_id: str) -> Dict[str, Any]:
-    """Get QA context for streaming avatar"""
-    try:
-        print("=== Get streaming context endpoint called ===")
-        print(f"Avatar ID: {avatar_id}")
-        did_service = DIDStreamingService()
-        context = await did_service.get_streaming_context(avatar_id)
-        return {
-            "success": True,
-            "avatar_id": avatar_id,
-            "context": context
-        }
-    except Exception as e:
-        print(f"Error in get_streaming_context: {e}")
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=400, detail=str(e))
-
-@router.post("/streaming/ask-question")
-async def ask_streaming_question(request: StreamingAvatarQuestionRequest) -> Dict[str, Any]:
-    """Ask a question to streaming avatar"""
-    try:
-        print("=== Ask streaming question endpoint called ===")
-        print(f"Request: {request}")
-        did_service = DIDStreamingService()
-        response = await did_service.ask_streaming_question(request.avatar_id, request.question)
-        return {
-            "success": True,
-            "avatar_id": request.avatar_id,
-            "question": request.question,
-            "response": response
-        }
-    except Exception as e:
-        print(f"Error in ask_streaming_question: {e}")
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=400, detail=str(e))
-
-@router.post("/streaming/speak")
-async def speak_streaming_directly(request: StreamingAvatarSpeakRequest) -> Dict[str, Any]:
-    """Make streaming avatar speak directly"""
-    try:
-        print("=== Speak streaming directly endpoint called ===")
-        print(f"Request: {request}")
-        did_service = DIDStreamingService()
-        result = await did_service.speak_streaming_directly(request.avatar_id, request.text)
-        return {
-            "success": True,
-            "avatar_id": request.avatar_id,
-            "text": request.text,
-            "result": result
-        }
-    except Exception as e:
-        print(f"Error in speak_streaming_directly: {e}")
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=400, detail=str(e))
-
-@router.post("/streaming/leave-room")
-async def leave_streaming_room(request: StreamingAvatarRequest) -> Dict[str, Any]:
-    """Leave streaming avatar room"""
-    try:
-        print("=== Leave streaming room endpoint called ===")
-        print(f"Request: {request}")
-        did_service = DIDStreamingService()
-        result = await did_service.leave_streaming_room(request.avatar_id)
-        return {
-            "success": result,
-            "avatar_id": request.avatar_id
-        }
-    except Exception as e:
-        print(f"Error in leave_streaming_room: {e}")
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=400, detail=str(e))
-
-# ============================================================================
-# NEW STREAMING ENDPOINTS (v2) - исправленные endpoints для стриминга
-# ============================================================================
-
-from app.services.did_streaming_service import DIDStreamingService
-
-@router.get("/streaming-v2/avatars")
-async def get_streaming_avatars_v2() -> Dict[str, Any]:
-    """Get all available streaming avatars - исправленная версия"""
-    try:
-        print("=== Get streaming avatars v2 endpoint called ===")
-        streaming_service = DIDStreamingService()
-        avatars = await streaming_service.get_available_streaming_avatars()
-        return {
-            "success": True,
-            "avatars": avatars,
-            "total_count": len(avatars)
-        }
-    except Exception as e:
-        print(f"Error in get_streaming_avatars_v2: {e}")
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=400, detail=str(e))
-
-@router.post("/streaming-v2/get-token")
-async def get_streaming_token_v2(request: StreamingAvatarRequest) -> Dict[str, Any]:
-    """Get streaming avatar token - исправленная версия"""
-    try:
-        print("=== Get streaming token v2 endpoint called ===")
+        print("=== Get streaming token endpoint called (D-ID) ===")
         print(f"Request: {request}")
         streaming_service = DIDStreamingService()
         token_data = await streaming_service.get_streaming_token(request.avatar_id)
@@ -647,7 +422,8 @@ async def get_streaming_token_v2(request: StreamingAvatarRequest) -> Dict[str, A
                     "avatar_id": request.avatar_id,
                     "stream_url": None,
                     "fallback_mode": True,
-                    "fallback_endpoint": "/api/v1/avatar/fallback/generate-video"
+                    "fallback_endpoint": "/api/v1/avatar/fallback/generate-video",
+                    "provider": "d-id"
                 }
             else:
                 return {
@@ -655,7 +431,8 @@ async def get_streaming_token_v2(request: StreamingAvatarRequest) -> Dict[str, A
                     "error": token_data.get("error"),
                     "message": token_data.get("message"),
                     "avatar_id": request.avatar_id,
-                    "stream_url": None
+                    "stream_url": None,
+                    "provider": "d-id"
                 }
         
         return {
@@ -664,57 +441,60 @@ async def get_streaming_token_v2(request: StreamingAvatarRequest) -> Dict[str, A
             "stream_url": token_data.get("stream_url"),
             "room_id": token_data.get("room_id"),
             "avatar_id": request.avatar_id,
-            "fallback_mode": False
+            "fallback_mode": False,
+            "provider": "d-id"
         }
     except Exception as e:
-        print(f"Error in get_streaming_token_v2: {e}")
+        print(f"Error in get_streaming_token: {e}")
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.post("/streaming-v2/set-context")
-async def set_streaming_context_v2(request: StreamingAvatarContextRequest) -> Dict[str, Any]:
-    """Set QA context for streaming avatar - исправленная версия"""
+@router.post("/streaming/set-context")
+async def set_streaming_context(request: StreamingAvatarContextRequest) -> Dict[str, Any]:
+    """Set QA context for D-ID streaming avatar"""
     try:
-        print("=== Set streaming context v2 endpoint called ===")
+        print("=== Set streaming context endpoint called (D-ID) ===")
         print(f"Request: {request}")
         streaming_service = DIDStreamingService()
         result = await streaming_service.set_streaming_context(request.avatar_id, request.context)
         return {
             "success": result,
             "avatar_id": request.avatar_id,
-            "context": request.context
+            "context": request.context,
+            "provider": "d-id"
         }
     except Exception as e:
-        print(f"Error in set_streaming_context_v2: {e}")
+        print(f"Error in set_streaming_context: {e}")
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/streaming-v2/get-context")
-async def get_streaming_context_v2(avatar_id: str) -> Dict[str, Any]:
-    """Get QA context for streaming avatar - исправленная версия"""
+@router.get("/streaming/get-context")
+async def get_streaming_context(avatar_id: str) -> Dict[str, Any]:
+    """Get QA context for D-ID streaming avatar"""
     try:
-        print("=== Get streaming context v2 endpoint called ===")
+        print("=== Get streaming context endpoint called (D-ID) ===")
         print(f"Avatar ID: {avatar_id}")
         streaming_service = DIDStreamingService()
         context = await streaming_service.get_streaming_context(avatar_id)
         return {
             "success": True,
             "avatar_id": avatar_id,
-            "context": context
+            "context": context,
+            "provider": "d-id"
         }
     except Exception as e:
-        print(f"Error in get_streaming_context_v2: {e}")
+        print(f"Error in get_streaming_context: {e}")
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.post("/streaming-v2/ask-question")
-async def ask_streaming_question_v2(request: StreamingAvatarQuestionRequest) -> Dict[str, Any]:
-    """Ask a question to streaming avatar - исправленная версия"""
+@router.post("/streaming/ask-question")
+async def ask_streaming_question(request: StreamingAvatarQuestionRequest) -> Dict[str, Any]:
+    """Ask a question to D-ID streaming avatar"""
     try:
-        print("=== Ask streaming question v2 endpoint called ===")
+        print("=== Ask streaming question endpoint called (D-ID) ===")
         print(f"Request: {request}")
         streaming_service = DIDStreamingService()
         response = await streaming_service.ask_streaming_question(request.avatar_id, request.question)
@@ -722,19 +502,20 @@ async def ask_streaming_question_v2(request: StreamingAvatarQuestionRequest) -> 
             "success": True,
             "avatar_id": request.avatar_id,
             "question": request.question,
-            "response": response
+            "response": response,
+            "provider": "d-id"
         }
     except Exception as e:
-        print(f"Error in ask_streaming_question_v2: {e}")
+        print(f"Error in ask_streaming_question: {e}")
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.post("/streaming-v2/speak")
-async def speak_streaming_directly_v2(request: StreamingAvatarSpeakRequest) -> Dict[str, Any]:
-    """Make streaming avatar speak directly - исправленная версия"""
+@router.post("/streaming/speak")
+async def speak_streaming_directly(request: StreamingAvatarSpeakRequest) -> Dict[str, Any]:
+    """Make D-ID streaming avatar speak directly"""
     try:
-        print("=== Speak streaming directly v2 endpoint called ===")
+        print("=== Speak streaming directly endpoint called (D-ID) ===")
         print(f"Request: {request}")
         streaming_service = DIDStreamingService()
         result = await streaming_service.speak_streaming_directly(request.avatar_id, request.text)
@@ -742,45 +523,48 @@ async def speak_streaming_directly_v2(request: StreamingAvatarSpeakRequest) -> D
             "success": True,
             "avatar_id": request.avatar_id,
             "text": request.text,
-            "result": result
+            "result": result,
+            "provider": "d-id"
         }
     except Exception as e:
-        print(f"Error in speak_streaming_directly_v2: {e}")
+        print(f"Error in speak_streaming_directly: {e}")
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.post("/streaming-v2/leave-room")
-async def leave_streaming_room_v2(request: StreamingAvatarRequest) -> Dict[str, Any]:
-    """Leave streaming avatar room - исправленная версия"""
+@router.post("/streaming/leave-room")
+async def leave_streaming_room(request: StreamingAvatarRequest) -> Dict[str, Any]:
+    """Leave D-ID streaming avatar room"""
     try:
-        print("=== Leave streaming room v2 endpoint called ===")
+        print("=== Leave streaming room endpoint called (D-ID) ===")
         print(f"Request: {request}")
         streaming_service = DIDStreamingService()
         result = await streaming_service.leave_streaming_room(request.avatar_id)
         return {
             "success": result,
-            "avatar_id": request.avatar_id
+            "avatar_id": request.avatar_id,
+            "provider": "d-id"
         }
     except Exception as e:
-        print(f"Error in leave_streaming_room_v2: {e}")
+        print(f"Error in leave_streaming_room: {e}")
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/streaming-v2/status")
-async def get_streaming_status_v2() -> Dict[str, Any]:
-    """Get streaming service status - исправленная версия"""
+@router.get("/streaming/status")
+async def get_streaming_status() -> Dict[str, Any]:
+    """Get D-ID streaming service status"""
     try:
-        print("=== Get streaming status v2 endpoint called ===")
+        print("=== Get streaming status endpoint called (D-ID) ===")
         streaming_service = DIDStreamingService()
         status = await streaming_service.get_streaming_status()
         return {
             "success": True,
-            "status": status
+            "status": status,
+            "provider": "d-id"
         }
     except Exception as e:
-        print(f"Error in get_streaming_status_v2: {e}")
+        print(f"Error in get_streaming_status: {e}")
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=400, detail=str(e))

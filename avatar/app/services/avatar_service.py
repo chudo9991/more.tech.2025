@@ -12,7 +12,7 @@ from PIL import Image
 import io
 
 from app.core.config import settings
-from app.services.a2e_service import A2EService
+from app.services.did_streaming_service import DIDStreamingService
 
 
 class AvatarService:
@@ -20,8 +20,8 @@ class AvatarService:
         print("AvatarService: Initializing...")
         self.cache = {}
         self._init_minio_client()
-        print("AvatarService: Creating A2E service...")
-        self.a2e_service = A2EService()
+        print("AvatarService: Creating D-ID service...")
+        self.did_service = DIDStreamingService()
         print("AvatarService: Initialization complete")
 
     def _init_minio_client(self):
@@ -265,15 +265,32 @@ class AvatarService:
             print(f"Avatar URL retrieval failed: {e}")
             return None
 
-    # A2E API Integration Methods
+    # D-ID API Integration Methods
     
-    async def get_available_voices(self, country: str = "ru", region: str = "RU") -> List[Dict[str, Any]]:
-        """Get available voices from A2E API"""
-        return await self.a2e_service.get_available_voices(country, region)
+    async def get_available_voices(self) -> List[Dict[str, Any]]:
+        """Get available voices for D-ID"""
+        return [
+            {
+                "id": "Dimf6681ffz3PTVPPAEX",
+                "name": "D-ID Default Voice",
+                "provider": "elevenlabs",
+                "language": "ru-RU"
+            }
+        ]
 
     async def generate_tts(self, text: str, voice_id: Optional[str] = None, speech_rate: Optional[float] = None) -> Optional[str]:
-        """Generate TTS audio from text"""
-        return await self.a2e_service.generate_tts(text, voice_id, speech_rate)
+        """Generate TTS using D-ID (via streaming)"""
+        avatar_result = await self.did_service.create_avatar()
+        if not avatar_result.get("success"):
+            return None
+        
+        avatar_id = avatar_result["avatar_id"]
+        token_result = await self.did_service.get_streaming_token(avatar_id)
+        if not token_result.get("success"):
+            return None
+        
+        speak_success = await self.did_service.speak_streaming_directly(avatar_id, text)
+        return token_result.get("stream_url") if speak_success else None
 
     async def generate_avatar_video(
         self,
@@ -283,25 +300,30 @@ class AvatarService:
         avatar_id: Optional[str] = None,
         resolution: Optional[int] = None
     ) -> Dict[str, Any]:
-        """Generate avatar video from text"""
+        """Generate avatar video using D-ID"""
         try:
-            # Generate video using A2E API
-            video_url = await self.a2e_service.generate_avatar_video_from_text(
-                text=text,
-                voice_id=voice_id,
-                avatar_id=avatar_id,
-                resolution=resolution,
-                title=f"interview-{session_id}-{int(time.time())}"
-            )
+            # Create avatar
+            avatar_result = await self.did_service.create_avatar()
+            if not avatar_result.get("success"):
+                return None
             
-            if video_url:
+            did_avatar_id = avatar_result["avatar_id"]
+            
+            # Get streaming session
+            token_result = await self.did_service.get_streaming_token(did_avatar_id)
+            if not token_result.get("success"):
+                return None
+            
+            # Make avatar speak
+            speak_success = await self.did_service.speak_streaming_directly(did_avatar_id, text)
+            if speak_success:
                 result = {
-                    "video_url": video_url,
+                    "video_url": token_result.get("stream_url"),
                     "session_id": session_id,
                     "text": text,
-                    "voice_id": voice_id or self.a2e_service.default_voice_id,
-                    "avatar_id": avatar_id or self.a2e_service.default_avatar_id,
-                    "resolution": resolution or self.a2e_service.default_resolution,
+                    "voice_id": voice_id or "Dimf6681ffz3PTVPPAEX",
+                    "avatar_id": did_avatar_id,
+                    "resolution": resolution or 720,
                     "generated_at": asyncio.get_event_loop().time()
                 }
                 
@@ -317,9 +339,9 @@ class AvatarService:
             raise Exception(f"Avatar video generation failed: {str(e)}")
 
     async def check_video_status(self, task_id: str) -> Dict[str, Any]:
-        """Check video generation status"""
-        return await self.a2e_service.check_video_status(task_id)
+        """Check D-ID talk status"""
+        return await self.did_service.get_talk_status(task_id)
 
-    async def get_a2e_service_status(self) -> Dict[str, Any]:
-        """Get A2E service status"""
-        return await self.a2e_service.get_service_status()
+    async def get_did_service_status(self) -> Dict[str, Any]:
+        """Get D-ID service status"""
+        return await self.did_service.get_streaming_status()

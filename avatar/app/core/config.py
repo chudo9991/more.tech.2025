@@ -25,15 +25,6 @@ class Settings(BaseSettings):
     AVATAR_SIZE: str = "512x512"
     AVATAR_CACHE_TTL_HOURS: int = 24
 
-    # A2E API settings
-    A2E_API_KEY: str = ""
-    A2E_BASE_URL: str = "https://video.a2e.ai"
-    # Default Avatar (working for video)
-    A2E_DEFAULT_AVATAR_ID: str = "68af59a86eeedd0042ca7e27"
-    A2E_DEFAULT_VOICE_ID: str = "66d3f6a704d077b1432fb7d3"  # Nadia
-    A2E_DEFAULT_RESOLUTION: int = 720  # Default video resolution (1:1 format)
-    A2E_DEFAULT_SPEECH_RATE: float = 1.5
-
     # D-ID API settings
     DID_API_KEY: str = "a3NlbWRtQGdtYWlsLmNvbQ:IWvkftealDhU6fu604x91"
     DID_BASE_URL: str = "https://api.d-id.com"
